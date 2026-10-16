@@ -2,10 +2,11 @@ import { defineConfig, devices } from "@playwright/test";
 
 /**
  * Playwright gegen den Vite-Dev-Server (Port 1420) mit gemocktem IPC (ARCHITEKTUR 8.3).
- * Der Produktions-Build mit Produktions-CSP läuft auf Port 4173 (csp.spec.ts).
+ * Der Produktions-Build mit Produktions-CSP läuft auf Port 4175 (csp.spec.ts).
  */
 export default defineConfig({
   testDir: "e2e",
+  testIgnore: ["**/csp.spec.ts", "**/shots.spec.ts"],
   timeout: 45_000,
   expect: { timeout: 8_000 },
   fullyParallel: true,

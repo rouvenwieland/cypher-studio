@@ -4,7 +4,8 @@ import reactHooks from "eslint-plugin-react-hooks";
 import globals from "globals";
 
 const JSX_TEXT = "JSXText[value=/[A-Za-zÄÖÜäöüß]{2,}/]";
-const TEXT_ATTRS = "JSXAttribute[name.name=/^(aria-label|aria-description|title|placeholder|alt|aria-valuetext)$/] > Literal";
+const TEXT_ATTRS =
+  "JSXAttribute[name.name=/^(aria-label|aria-description|title|placeholder|alt|aria-valuetext)$/] > Literal[value=/[^ ]/]";
 
 export default tseslint.config(
   { ignores: ["dist", "dist-mock", "src/ipc/generated", "test-results", "playwright-report", "coverage", "src-tauri"] },
@@ -13,14 +14,15 @@ export default tseslint.config(
   {
     languageOptions: {
       globals: { ...globals.browser },
-      parserOptions: { projectService: { allowDefaultProject: ["e2e/*.ts", "eslint.config.js"] }, tsconfigRootDir: import.meta.dirname },
+      parserOptions: { project: ["./tsconfig.json", "./tsconfig.node.json"], tsconfigRootDir: import.meta.dirname },
     },
     plugins: { "react-hooks": reactHooks },
     rules: {
       "react-hooks/rules-of-hooks": "error",
       "react-hooks/exhaustive-deps": "error",
       "@typescript-eslint/no-explicit-any": "error",
-      "@typescript-eslint/switch-exhaustiveness-check": "error",
+      // ein `default` zählt als erschöpfend (z. B. allgemeiner Fehlertext für alle übrigen AppError-Arten)
+      "@typescript-eslint/switch-exhaustiveness-check": ["error", { considerDefaultExhaustiveForUnions: true }],
       "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
       "@typescript-eslint/no-floating-promises": ["error", { ignoreVoid: true }],
       "@typescript-eslint/no-misused-promises": ["error", { checksVoidReturn: { attributes: false } }],
@@ -42,8 +44,14 @@ export default tseslint.config(
       "@typescript-eslint/no-unsafe-assignment": "off",
       "@typescript-eslint/no-unsafe-member-access": "off",
       "@typescript-eslint/no-unsafe-call": "off",
+      "@typescript-eslint/no-unsafe-return": "off",
       "@typescript-eslint/unbound-method": "off",
     },
+  },
+  {
+    // Das IPC lehnt mit schlichten `AppError`-Objekten ab (Vertrag, wie Tauri es tut), nicht mit `Error`.
+    files: ["src/ipc/**"],
+    rules: { "@typescript-eslint/only-throw-error": "off" },
   },
   { files: ["eslint.config.js"], extends: [tseslint.configs.disableTypeChecked] },
 );

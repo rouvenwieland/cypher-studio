@@ -1,0 +1,8 @@
+src/ipc/generated
+dist
+dist-mock
+coverage
+test-results
+playwright-report
+public
+src-tauri

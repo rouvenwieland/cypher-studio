@@ -22,3 +22,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Mock-Build für den CSP-Test
+dist-mock
+coverage
+test-results
+playwright-report
+*.tsbuildinfo
