@@ -78,9 +78,9 @@ def build(view):
         bands.append(G.RibBand(np.array([c1 - dd * 0.0375, c2 - dd * 0.0375]), 0.0375, pitch=0.0034, height=0.0016))
     if top_is_front:
         ring = np.stack([fx + (fa + 0.0125) * np.cos(ang), fy + (fb + 0.0125) * np.sin(ang)], axis=1)
-        bands.append(G.RibBand(np.vstack([ring, ring[:1]]), 0.0125, height=0.0032, ribbed=False, edge=0.0055))
+        bands.append(G.RibBand(np.vstack([ring, ring[:1]]), 0.0125, height=0.0030, ribbed=False, edge=0.0070))
         face_poly = np.stack([fx + fa * np.cos(ang), fy + fb * np.sin(ang)], axis=1)
-        feats.append(Plateau(face_poly, -0.0070, edge=0.0075))  # Öffnung liegt vertieft (Futter)
+        feats.append(Plateau(face_poly, -0.0055, edge=0.0100))  # Öffnung liegt vertieft (Futter)
     else:
         tape = spline([[-0.108, 0.709], [-0.070, 0.682], [0.0, 0.670], [0.070, 0.682], [0.108, 0.709]], 14)
         bands.append(G.RibBand(tape, 0.0120, height=0.0024, ribbed=False, edge=0.0055))
@@ -172,5 +172,5 @@ def build(view):
         print_area_mm=mm,
         print_area_top_y=top_y,
         displace_px=5.0,
-        mesh_h=0.0036,
+        mesh_h=0.0027,
     )

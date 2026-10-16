@@ -1,0 +1,55 @@
+{
+  "$schema": "../../schema/mockup.schema.json",
+  "formatVersion": 1,
+  "id": "tee-front",
+  "title": "Shirt vorne",
+  "product": "tee",
+  "view": "front",
+  "canvas": { "width": 2000, "height": 2500 },
+  "printProfileId": "shirtigo-tee-front",
+  "printArea": {
+    "quad": [
+      { "x": 645.2, "y": 755.5 },
+      { "x": 1354.8, "y": 755.5 },
+      { "x": 1354.8, "y": 1723.0 },
+      { "x": 645.2, "y": 1723.0 }
+    ]
+  },
+  "displaceStrengthPx": 5.0,
+  "variants": [
+    {
+      "exposure": "light",
+      "layers": {
+        "mask": "mask.png",
+        "displace": "displace.png",
+        "texture": null,
+        "heather": "heather.png",
+        "background": null,
+        "shade": "shade.png",
+        "light": "light.png"
+      },
+      "colorIds": [
+        "weiss",
+        "creme",
+        "sand",
+        "grau-meliert"
+      ]
+    },
+    {
+      "exposure": "dark",
+      "layers": {
+        "mask": "mask.png",
+        "displace": "displace.png",
+        "texture": null,
+        "heather": "heather.png",
+        "background": null,
+        "shade": "shade.png",
+        "light": "light-dark.png"
+      },
+      "colorIds": [
+        "schwarz",
+        "navy"
+      ]
+    }
+  ]
+}

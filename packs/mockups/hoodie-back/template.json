@@ -1,0 +1,55 @@
+{
+  "$schema": "../../schema/mockup.schema.json",
+  "formatVersion": 1,
+  "id": "hoodie-back",
+  "title": "Hoodie hinten",
+  "product": "hoodie",
+  "view": "back",
+  "canvas": { "width": 2000, "height": 2500 },
+  "printProfileId": "shirtigo-hoodie-back",
+  "printArea": {
+    "quad": [
+      { "x": 726.0, "y": 1029.9 },
+      { "x": 1274.0, "y": 1029.9 },
+      { "x": 1274.0, "y": 1677.7 },
+      { "x": 726.0, "y": 1677.7 }
+    ]
+  },
+  "displaceStrengthPx": 5.0,
+  "variants": [
+    {
+      "exposure": "light",
+      "layers": {
+        "mask": "mask.png",
+        "displace": "displace.png",
+        "texture": null,
+        "heather": "heather.png",
+        "background": null,
+        "shade": "shade.png",
+        "light": "light.png"
+      },
+      "colorIds": [
+        "weiss",
+        "creme",
+        "sand",
+        "grau-meliert"
+      ]
+    },
+    {
+      "exposure": "dark",
+      "layers": {
+        "mask": "mask.png",
+        "displace": "displace.png",
+        "texture": null,
+        "heather": "heather.png",
+        "background": null,
+        "shade": "shade.png",
+        "light": "light-dark.png"
+      },
+      "colorIds": [
+        "schwarz",
+        "navy"
+      ]
+    }
+  ]
+}

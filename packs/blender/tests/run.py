@@ -830,9 +830,85 @@ def startup_example_exports_and_validates():
         s.prefix, s.name = prefix, cname[len(prefix):]
         assert export() == {"FINISHED"}, cname
         gltf, _ = glb_check.check_conformance(d / f"{cname}.glb")
+        limit = checks.load_budgets()["prefixes"][prefix]["maxTris"]
+        assert glb_check.triangles(gltf) <= limit, f"{cname}: {glb_check.triangles(gltf)} Dreiecke in der GLB über dem Budget {limit}"
         assert operators.LAST_RESULT.tris == checks.run_checks(bpy.context, scope="COLLECTION", prefix=prefix, name=s.name).stats["tris"]
         for obj in ecoll.all_objects:
             export_coll.objects.unlink(obj)
+
+
+# --------------------------------------------------------------------------- Mockup-Bausteine
+
+
+def _mockup_modules():
+    sys.path.insert(0, str(PACK / "mockup_build"))
+    try:
+        import fields
+        import png_io
+    finally:
+        sys.path.pop(0)
+    return fields, png_io
+
+
+@test
+def mockup_png_writer_roundtrip():
+    _, png_io = _mockup_modules()
+    rng = np.random.default_rng(3)
+    yy, xx = np.mgrid[0:90, 0:120]
+    gray = (128 + 70 * np.sin(xx / 9.0) * np.cos(yy / 13.0) + rng.normal(0, 3, (90, 120))).clip(0, 255).astype(np.uint8)
+    rgb = np.stack([gray, 255 - gray, (xx * 2 % 256).astype(np.uint8)], axis=2)
+    rgba = np.concatenate([rgb, (xx > 30).astype(np.uint8)[..., None] * 255], axis=2)
+    for name, arr in (("g", gray), ("rgb", rgb), ("rgba", rgba)):
+        path = TMP_ROOT / f"png-{name}.png"
+        assert png_io.write_png(path, arr) == path.stat().st_size
+        assert path.read_bytes() == png_io.encode_png(arr), "PNG-Ausgabe muss deterministisch sein"
+        img = bpy.data.images.load(str(path))
+        img.colorspace_settings.name = "Non-Color"
+        px = np.empty(img.size[0] * img.size[1] * 4, np.float32)
+        img.pixels.foreach_get(px)
+        back = np.round(px.reshape(img.size[1], img.size[0], 4)[::-1] * 255).astype(np.int32)
+        ref = arr[..., None] if arr.ndim == 2 else arr
+        assert np.abs(back[..., : ref.shape[2]] - ref.astype(np.int32)).max() == 0, name
+        bpy.data.images.remove(img)
+
+
+@test
+def mockup_fields_geometry():
+    fields, _ = _mockup_modules()
+    line = np.array([[0.0, 0.0], [0.1, 0.0], [0.2, 0.0]])
+    d, s, side, tangent = fields.nearest_on_polyline(np.array([[0.05, 0.02], [0.15, -0.03], [0.5, 0.0]]), line)
+    assert np.allclose(d, [0.02, 0.03, 0.3]) and np.allclose(s, [0.05, 0.15, 0.2])
+    assert list(side[:2]) == [1.0, -1.0], "links der Laufrichtung = +1"
+    ridge = fields.Ridge(line, 0.002, 0.01, 0.01, taper=0.2)
+    z = ridge.height(np.array([[0.1, 0.0], [0.1, 0.05], [0.0, 0.0]]))
+    assert abs(z[0] - 0.002) < 1e-9 and z[1] < 1e-6 and z[2] < 1e-9, z
+    square = np.array([[0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0]])
+    sd = fields.signed_distance_polygon(np.array([[0.5, 0.5], [1.5, 0.5]]), square)
+    assert np.allclose(sd, [-0.5, 0.5])
+    plateau = fields.Plateau(square, 0.003, edge=0.01)
+    h = plateau.height(np.array([[0.5, 0.5], [3.0, 3.0]]))
+    assert abs(h[0] - 0.003) < 1e-9 and abs(h[1]) < 1e-9
+
+
+@test
+def mockup_garment_definitions():
+    sys.path.insert(0, str(PACK / "mockup_build"))
+    try:
+        import garments
+        import maps
+    finally:
+        sys.path.pop(0)
+    for gid in garments.ALL_IDS:
+        g = garments.build(gid)
+        quad = maps.print_quad_px(g)
+        (x0, y0), (x1, y1), (x2, y2), (x3, y3) = ((p["x"], p["y"]) for p in quad)
+        w_mm, h_mm = g.print_area_mm
+        assert abs((x1 - x0) / (y3 - y0) - w_mm / h_mm) < 0.002, gid
+        assert 0 < x0 and x1 < garments.CANVAS[0] and 0 < y0 and y3 < garments.CANVAS[1], (gid, quad)
+        for panel in g.panels:
+            assert panel.outline.shape[1] == 2 and len(panel.outline) > 40
+            area = 0.5 * np.sum(panel.outline[:, 0] * np.roll(panel.outline[:, 1], -1) - np.roll(panel.outline[:, 0], -1) * panel.outline[:, 1])
+            assert area > 0.2, f"{gid}/{panel.name}: Umriss muss gegen den Uhrzeigersinn laufen und Fläche haben ({area:.3f} m²)"
 
 
 # --------------------------------------------------------------------------- Lauf

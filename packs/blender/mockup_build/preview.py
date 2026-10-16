@@ -155,7 +155,7 @@ def compose(layers, template, color, motif_rgba, placement, brand):
         base = soft_light(base, np.repeat(hv, 3, axis=2))
     # Motiv auf die Druckfläche setzen
     quad = template["printArea"]["quad"]
-    (x0, y0), (x1, y1), (x2, y2), (x3, y3) = quad
+    (x0, y0), (x1, y1), (x2, y2), (x3, y3) = ((p["x"], p["y"]) for p in quad)
     area_w_px = math.hypot(x1 - x0, y1 - y0)
     px_per_mm = area_w_px / template["_printAreaMm"][0]
     mw = placement["widthMm"] * px_per_mm

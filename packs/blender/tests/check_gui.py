@@ -60,6 +60,13 @@ def tick():
             print("GUI-CHECK Zustand 3: Textur zu groß")
             return 1.5
         if n == 5:
+            # alle Arbeitsbereiche der Startszene einmal öffnen (Modus „Vertexfarben“ braucht ein aktives Objekt)
+            bpy.context.view_layer.objects.active = bpy.data.objects["prop-kiste"]
+            for ws in list(bpy.data.workspaces):
+                bpy.context.window.workspace = ws
+                print("GUI-CHECK Arbeitsbereich", ws.name)
+            return 1.0
+        if n == 6:
             print("GUI-CHECK fertig")
             bpy.ops.wm.quit_blender()
     except Exception:

@@ -15,6 +15,7 @@ Ebenen (8 Bit, Leinwand 2000 x 2500):
 import json
 import math
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -181,7 +182,7 @@ def print_quad_px(g):
     bottom = top - g.print_area_mm[1] / 1000.0
 
     def px(x, y):
-        return [round(w / 2 + (x - cx) * ppm, 1), round(h / 2 - (y - cy) * ppm, 1)]
+        return {"x": round(w / 2 + (x - cx) * ppm, 1), "y": round(h / 2 - (y - cy) * ppm, 1)}
 
     return [px(-half, top), px(half, top), px(half, bottom), px(-half, bottom)]
 
@@ -207,7 +208,9 @@ def write_template(g, out_dir):
         ],
     }
     order = ["$schema", "formatVersion", "id", "title", "product", "view", "canvas", "printProfileId", "printArea", "displaceStrengthPx", "variants"]
-    text = json.dumps({k: data[k] for k in order}, indent=2, ensure_ascii=False) + "\n"
+    text = json.dumps({k: data[k] for k in order}, indent=2, ensure_ascii=False)
+    text = re.sub(r'\{\s*"x": ([-\d.]+),\s*"y": ([-\d.]+)\s*\}', r'{ "x": \1, "y": \2 }', text)  # Punkte einzeilig
+    text = re.sub(r'\{\s*"width": (\d+),\s*"height": (\d+)\s*\}', r'{ "width": \1, "height": \2 }', text) + "\n"
     (Path(out_dir) / "template.json").write_text(text, encoding="utf-8")
 
 

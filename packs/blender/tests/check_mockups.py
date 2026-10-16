@@ -72,11 +72,11 @@ def check(gid):
     need(seen == colors, f"{gid}: Farben nicht vollständig abgedeckt: {sorted(colors - seen)}")
     quad = tpl["printArea"]["quad"]
     need(len(quad) == 4, f"{gid}: Viereck")
-    (x0, y0), (x1, y1), (x2, y2), (x3, y3) = quad
+    (x0, y0), (x1, y1), (x2, y2), (x3, y3) = ((p["x"], p["y"]) for p in quad)
     wpx, hpx = x1 - x0, y3 - y0
     need(abs(wpx / hpx - mm[0] / mm[1]) < 0.01, f"{gid}: Druckfläche {wpx:.0f}x{hpx:.0f} px passt nicht zu {mm[0]}x{mm[1]} mm")
     need(abs(y1 - y0) < 0.5 and abs(x2 - x1) < 0.5 and abs(x3 - x0) < 0.5, f"{gid}: Viereck kein Rechteck (Draufsicht)")
-    need(all(0 <= x <= cw and 0 <= y <= ch for x, y in quad), f"{gid}: Viereck außerhalb der Leinwand")
+    need(all(0 <= p["x"] <= cw and 0 <= p["y"] <= ch for p in quad), f"{gid}: Viereck außerhalb der Leinwand")
     need(abs((x0 + x1) / 2 - cw / 2) < 2, f"{gid}: Druckfläche nicht mittig")
     px_per_cm = wpx / (mm[0] / 10)
 

@@ -1,0 +1,55 @@
+{
+  "$schema": "../../schema/mockup.schema.json",
+  "formatVersion": 1,
+  "id": "tee-back",
+  "title": "Shirt hinten",
+  "product": "tee",
+  "view": "back",
+  "canvas": { "width": 2000, "height": 2500 },
+  "printProfileId": "shirtigo-tee-back",
+  "printArea": {
+    "quad": [
+      { "x": 645.2, "y": 721.1 },
+      { "x": 1354.8, "y": 721.1 },
+      { "x": 1354.8, "y": 1688.6 },
+      { "x": 645.2, "y": 1688.6 }
+    ]
+  },
+  "displaceStrengthPx": 5.0,
+  "variants": [
+    {
+      "exposure": "light",
+      "layers": {
+        "mask": "mask.png",
+        "displace": "displace.png",
+        "texture": null,
+        "heather": "heather.png",
+        "background": null,
+        "shade": "shade.png",
+        "light": "light.png"
+      },
+      "colorIds": [
+        "weiss",
+        "creme",
+        "sand",
+        "grau-meliert"
+      ]
+    },
+    {
+      "exposure": "dark",
+      "layers": {
+        "mask": "mask.png",
+        "displace": "displace.png",
+        "texture": null,
+        "heather": "heather.png",
+        "background": null,
+        "shade": "shade.png",
+        "light": "light-dark.png"
+      },
+      "colorIds": [
+        "schwarz",
+        "navy"
+      ]
+    }
+  ]
+}
