@@ -1,0 +1,25 @@
+{
+  "name": "cypher-studio-site",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Downloader-Seite studio.cypherxcypher.de: statisch, Cloudflare Workers Static Assets.",
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "dev": "npm run build && wrangler dev --port 8788",
+    "serve": "node scripts/serve.mjs",
+    "fit": "node scripts/fit.mjs",
+    "test:unit": "node --test \"tests/unit/*.test.mjs\"",
+    "test:e2e": "node tests/run.mjs",
+    "test": "npm run test:unit && npm run test:e2e",
+    "deploy": "npm run build && wrangler deploy"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "ajv": "8.20.0",
+    "axe-core": "4.13.0",
+    "marked": "18.1.1",
+    "wrangler": "4.151.1"
+  }
+}

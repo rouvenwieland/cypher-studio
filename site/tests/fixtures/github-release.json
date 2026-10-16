@@ -1,0 +1,56 @@
+{
+  "_comment": "TEST-FIXTURE: erfundene Release-Daten (Org example-org, Prüfsummen aus \"FIXTURE:<name>\"), keine echte Veröffentlichung.",
+  "tag_name": "v0.4.0",
+  "html_url": "https://github.com/example-org/cypher-studio/releases/tag/v0.4.0",
+  "published_at": "2026-11-02T09:30:00Z",
+  "assets": [
+    {
+      "name": "Cypher-Studio_0.4.0_x64-setup.exe",
+      "size": 10276044,
+      "digest": "sha256:f18af273b6ea35cfc9a46398b99f9edc6f460b266a20f3c1fcc737f4fc51770f",
+      "browser_download_url": "https://github.com/example-org/cypher-studio/releases/download/v0.4.0/Cypher-Studio_0.4.0_x64-setup.exe"
+    },
+    {
+      "name": "Cypher-Studio_0.4.0_x64-setup.exe.sig",
+      "size": 420,
+      "digest": "sha256:d46386e8c751eb15606e570a15070f51f059f025d0ab65f7e65992547dd8a3ce",
+      "browser_download_url": "https://github.com/example-org/cypher-studio/releases/download/v0.4.0/Cypher-Studio_0.4.0_x64-setup.exe.sig"
+    },
+    {
+      "name": "Cypher-Studio_0.4.0_universal.dmg",
+      "size": 22335488,
+      "digest": "sha256:1dd14008b808faca03ad1d4fee14a927f53e54cfc6ab714fa1b338482fc2db9f",
+      "browser_download_url": "https://github.com/example-org/cypher-studio/releases/download/v0.4.0/Cypher-Studio_0.4.0_universal.dmg"
+    },
+    {
+      "name": "Cypher-Studio.app.tar.gz",
+      "size": 21000000,
+      "digest": "sha256:cf437ec5c1535755ae6b8ad5087d2bbff72ebca94c75f5861ad8db70a435a16d",
+      "browser_download_url": "https://github.com/example-org/cypher-studio/releases/download/v0.4.0/Cypher-Studio.app.tar.gz"
+    },
+    {
+      "name": "Cypher-Studio_0.4.0_amd64.AppImage",
+      "size": 81788928,
+      "digest": "sha256:6e5421b65f94c914703208ce59dbb4fd8c1c29a04399e38d611d6c5e3d302ff2",
+      "browser_download_url": "https://github.com/example-org/cypher-studio/releases/download/v0.4.0/Cypher-Studio_0.4.0_amd64.AppImage"
+    },
+    {
+      "name": "Cypher-Studio_0.4.0_amd64.deb",
+      "size": 9331712,
+      "digest": "sha256:0ae91916512496efdb161481e55a4a25aec3237bf566f5d489132d2c206757e5",
+      "browser_download_url": "https://github.com/example-org/cypher-studio/releases/download/v0.4.0/Cypher-Studio_0.4.0_amd64.deb"
+    },
+    {
+      "name": "Cypher-Studio-0.4.0-1.x86_64.rpm",
+      "size": 9437184,
+      "digest": "sha256:5be6a110f18ca3efd1c794b32b2b22d3dc2fd6a2ea364a471271aa3de4578c54",
+      "browser_download_url": "https://github.com/example-org/cypher-studio/releases/download/v0.4.0/Cypher-Studio-0.4.0-1.x86_64.rpm"
+    },
+    {
+      "name": "latest.json",
+      "size": 1500,
+      "digest": "sha256:41c886269102fb0e4fbd7461a61b69696912ec5a03eb99d6a780085c6caa6dd5",
+      "browser_download_url": "https://github.com/example-org/cypher-studio/releases/download/v0.4.0/latest.json"
+    }
+  ]
+}

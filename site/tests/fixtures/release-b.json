@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "state": "released",
+  "version": "0.4.0",
+  "date": "2026-11-02",
+  "releaseUrl": "https://github.com/example-org/cypher-studio/releases/tag/v0.4.0",
+  "notes": null,
+  "signed": {
+    "windows": false,
+    "macos": false
+  },
+  "files": [
+    {
+      "os": "linux",
+      "arch": "x86_64",
+      "kind": "appimage",
+      "name": "Cypher-Studio_0.4.0_amd64.AppImage",
+      "url": "https://github.com/example-org/cypher-studio/releases/download/v0.4.0/Cypher-Studio_0.4.0_amd64.AppImage",
+      "size": 81788928,
+      "sha256": "6e5421b65f94c914703208ce59dbb4fd8c1c29a04399e38d611d6c5e3d302ff2"
+    },
+    {
+      "os": "linux",
+      "arch": "x86_64",
+      "kind": "deb",
+      "name": "Cypher-Studio_0.4.0_amd64.deb",
+      "url": "/releases/Cypher-Studio_0.4.0_amd64.deb",
+      "size": 9331712,
+      "sha256": "0ae91916512496efdb161481e55a4a25aec3237bf566f5d489132d2c206757e5"
+    },
+    {
+      "os": "linux",
+      "arch": "x86_64",
+      "kind": "rpm",
+      "name": "Cypher-Studio-0.4.0-1.x86_64.rpm",
+      "url": "/releases/Cypher-Studio-0.4.0-1.x86_64.rpm",
+      "size": 9437184,
+      "sha256": "5be6a110f18ca3efd1c794b32b2b22d3dc2fd6a2ea364a471271aa3de4578c54"
+    },
+    {
+      "os": "macos",
+      "arch": "universal",
+      "kind": "dmg",
+      "name": "Cypher-Studio_0.4.0_universal.dmg",
+      "url": "/releases/Cypher-Studio_0.4.0_universal.dmg",
+      "size": 22335488,
+      "sha256": "1dd14008b808faca03ad1d4fee14a927f53e54cfc6ab714fa1b338482fc2db9f"
+    },
+    {
+      "os": "windows",
+      "arch": "x86_64",
+      "kind": "nsis",
+      "name": "Cypher-Studio_0.4.0_x64-setup.exe",
+      "url": "/releases/Cypher-Studio_0.4.0_x64-setup.exe",
+      "size": 10276044,
+      "sha256": "f18af273b6ea35cfc9a46398b99f9edc6f460b266a20f3c1fcc737f4fc51770f"
+    }
+  ]
+}

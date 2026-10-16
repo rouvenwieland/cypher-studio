@@ -1,0 +1,182 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://studio.cypherxcypher.de/release.schema.json",
+  "title": "Cypher Studio · release.json",
+  "description": "Steuert die Downloader-Seite. Zustand A (\"none\"): noch keine Veröffentlichung, die Seite zeigt \"Die erste Version erscheint in Kürze\". Zustand B (\"released\"): echte Downloads mit Größe und SHA-256. Wird von scripts/gen-release-json.mjs aus den Release-Daten erzeugt und beim Bauen (scripts/build.mjs) in die HTML-Seiten eingebacken.",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "state"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "state": {
+      "enum": [
+        "none",
+        "released"
+      ]
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+(-[0-9A-Za-z.-]+)?$",
+      "description": "SemVer ohne führendes v."
+    },
+    "date": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "description": "Veröffentlichungsdatum, ISO."
+    },
+    "releaseUrl": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^https://",
+      "description": "Release-Seite (Fallback-Link und Änderungsliste), oder null."
+    },
+    "notes": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 600,
+      "description": "Kurzer Satz, was neu ist (optional)."
+    },
+    "signed": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Sobald ein Betriebssystem signiert (Windows) bzw. beglaubigt (macOS) ist, blendet die Seite die Warnungs-Schritte dafür aus.",
+      "properties": {
+        "windows": {
+          "type": "boolean"
+        },
+        "macos": {
+          "type": "boolean"
+        }
+      }
+    },
+    "files": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/file"
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "state": {
+            "type": "string",
+            "const": "released"
+          }
+        },
+        "required": [
+          "state"
+        ]
+      },
+      "then": {
+        "required": [
+          "version",
+          "date",
+          "files"
+        ]
+      },
+      "else": {
+        "properties": {
+          "files": false,
+          "version": false,
+          "date": false
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "file": {
+      "type": "object",
+      "required": [
+        "os",
+        "arch",
+        "kind",
+        "name",
+        "url",
+        "size",
+        "sha256"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "os": {
+          "enum": [
+            "windows",
+            "macos",
+            "linux"
+          ]
+        },
+        "arch": {
+          "enum": [
+            "x86_64",
+            "aarch64",
+            "universal"
+          ]
+        },
+        "kind": {
+          "enum": [
+            "nsis",
+            "dmg",
+            "appimage",
+            "deb",
+            "rpm"
+          ],
+          "description": "nsis = Windows-Setup (.exe), dmg = macOS-Abbild, appimage/deb/rpm = Linux."
+        },
+        "name": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._+-]+$",
+          "description": "Dateiname ohne Leerzeichen."
+        },
+        "url": {
+          "type": "string",
+          "pattern": "^(/|https://)",
+          "description": "Relativ zur Seite (/releases/...) oder https."
+        },
+        "size": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Bytes. Liegt die Datei auf der Seite (url beginnt mit /), gilt die Grenze 24 MiB (Workers Static Assets erlauben 25 MiB je Datei, ARCHITEKTUR R18); größere Dateien verlinken auf https (GitHub-Release)."
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "SHA-256, Kleinbuchstaben, 64 Zeichen."
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "url": {
+                "type": "string",
+                "pattern": "^/"
+              }
+            },
+            "required": [
+              "url"
+            ]
+          },
+          "then": {
+            "properties": {
+              "size": {
+                "type": "integer",
+                "maximum": 25165824
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

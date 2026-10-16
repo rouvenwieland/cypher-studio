@@ -1,0 +1,19 @@
+{
+  "version": "0.4.0",
+  "notes": "Fixture",
+  "pub_date": "2026-11-02T09:30:00Z",
+  "platforms": {
+    "windows-x86_64": {
+      "signature": "FIXTURE-SIG-WINDOWS",
+      "url": "https://studio.cypherxcypher.de/releases/Cypher-Studio_0.4.0_x64-setup.exe"
+    },
+    "darwin-aarch64": {
+      "signature": "FIXTURE-SIG-MAC",
+      "url": "https://studio.cypherxcypher.de/releases/Cypher-Studio.app.tar.gz"
+    },
+    "linux-x86_64": {
+      "signature": "FIXTURE-SIG-LINUX",
+      "url": "https://studio.cypherxcypher.de/releases/Cypher-Studio_0.4.0_amd64.AppImage"
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  // Downloader-Seite studio.cypherxcypher.de: Workers Static Assets (kostenlos), nur Dateien, kein Worker-Skript.
+  // Vor dem Deploy: npm run build (erzeugt ./dist). Deploy: npm run deploy (setzt Cloudflare-Anmeldung voraus, hier NICHT ausgeführt).
+  // Beim ersten Deploy legt Cloudflare die Custom Domain samt DNS-Eintrag und Zertifikat an.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "cypher-studio-site",
+  "compatibility_date": "2026-10-01",
+  "account_id": "017af360b67c2dbed21ed0d7d123a948",
+  "workers_dev": false,
+  "preview_urls": false,
+  "routes": [
+    { "pattern": "studio.cypherxcypher.de", "custom_domain": true }
+  ],
+  "assets": {
+    "directory": "./dist",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page"
+  },
+  "observability": { "enabled": false }
+}

@@ -1,0 +1,21 @@
+{
+  "siteUrl": "https://studio.cypherxcypher.de",
+  "repoUrl": null,
+  "requirements": {
+    "windows": "Windows 10 oder 11, 64 Bit (x64)",
+    "macos": "macOS 13 oder neuer, Apple Silicon und Intel (ein Installer für beide)",
+    "linux": "64 Bit (x86_64) mit WebKitGTK 4.1, zum Beispiel Ubuntu 22.04, Debian 12 oder Fedora 36 und neuer"
+  },
+  "filePatterns": {
+    "windows": "Cypher-Studio_{version}_x64-setup.exe",
+    "macos": "Cypher-Studio_{version}_universal.dmg",
+    "linux-appimage": "Cypher-Studio_{version}_amd64.AppImage",
+    "linux-deb": "Cypher-Studio_{version}_amd64.deb",
+    "linux-rpm": "Cypher-Studio-{version}-1.x86_64.rpm"
+  },
+  "family": [
+    { "name": "Startseite", "host": "cypherxcypher.de", "url": "https://cypherxcypher.de/" },
+    { "name": "News", "host": "news.cypherxcypher.de", "url": "https://news.cypherxcypher.de/" },
+    { "name": "Shop", "host": "shop.cypherxcypher.de", "url": "https://shop.cypherxcypher.de/" }
+  ]
+}

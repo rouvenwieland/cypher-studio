@@ -1,0 +1,8 @@
+node_modules/
+dist/
+dist-*/
+.wrangler/
+test-results/
+playwright-report/
+*.log
+shots/tmp/
