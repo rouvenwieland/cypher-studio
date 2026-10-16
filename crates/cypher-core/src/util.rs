@@ -38,6 +38,23 @@ pub fn short_hash(text: &str) -> String {
     hex::encode(digest)[..12].to_owned()
 }
 
+/// SHA-256 einer Datei als Hex (gestreamt, 1 MiB Puffer).
+pub fn sha256_file_hex(path: &std::path::Path) -> std::io::Result<String> {
+    use sha2::{Digest, Sha256};
+    use std::io::Read;
+    let mut file = std::fs::File::open(path)?;
+    let mut hasher = Sha256::new();
+    let mut buf = vec![0u8; 1 << 20];
+    loop {
+        let n = file.read(&mut buf)?;
+        if n == 0 {
+            break;
+        }
+        hasher.update(&buf[..n]);
+    }
+    Ok(hex::encode(hasher.finalize()))
+}
+
 /// Bytes lesbar für Logs und Fehlertexte (1024er-Schritte).
 pub fn human_bytes(bytes: u64) -> String {
     const UNITS: [&str; 5] = ["B", "KB", "MB", "GB", "TB"];

@@ -63,6 +63,9 @@ png = "0.18"
 tiff = { version = "0.11", default-features = false }
 fast_image_resize = "5"
 moxcms = "0.9"
+# Bibliothek: Ordnerüberwachung und SVG-Vorschaubilder (nur gerastert, ohne System-Schriften)
+notify = "8"
+resvg = { version = "0.48", default-features = false, features = ["text"] }
 unicode-normalization = "0.1.25"
 base64 = "0.22"
 
