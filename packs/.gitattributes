@@ -1,0 +1,8 @@
+# Pakete (Zone C): Schrift- und Archivdateien bytegenau halten (Prüfsummen in SHA256SUMS bzw. pack.json)
+shared/fonts/**/OFL.txt -text
+*.ttf binary
+*.png binary
+*.kra binary
+*.kpl binary
+*.bundle binary
+*.zip binary
