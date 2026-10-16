@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://studio.cypherxcypher.de/schemas/template.schema.json",
+  "title": "Projektvorlage (packs/projects/<id>/template.json)",
+  "description": "ARCHITEKTUR.md 4.5, Typ TemplateInfo im IPC-Vertrag. Rust ergänzt id-Präfix (builtin:), aspect, previewUrl und source. target \"program\" kopiert die Datei `file` ins Projekt; target \"social\"/\"mockup\" öffnet ein Modul-Dokument auf Basis der verlinkten Modulvorlage.",
+  "type": "object",
+  "properties": {
+    "$schema": { "type": "string" },
+    "formatVersion": { "type": "integer", "const": 1 },
+    "id": { "$ref": "common.schema.json#/$defs/id" },
+    "title": { "$ref": "common.schema.json#/$defs/label" },
+    "description": { "type": "string", "minLength": 1, "maxLength": 400 },
+    "target": { "type": "string", "enum": ["program", "mockup", "social"] },
+    "programId": { "oneOf": [{ "$ref": "common.schema.json#/$defs/programId" }, { "type": "null" }] },
+    "format": {
+      "type": "object",
+      "properties": {
+        "label": { "type": "string", "minLength": 1, "maxLength": 60 },
+        "widthPx": { "type": "integer", "minimum": 1 },
+        "heightPx": { "type": "integer", "minimum": 1 },
+        "dpi": { "oneOf": [{ "type": "integer", "minimum": 1 }, { "type": "null" }] },
+        "widthMm": { "oneOf": [{ "type": "number", "exclusiveMinimum": 0 }, { "type": "null" }] },
+        "heightMm": { "oneOf": [{ "type": "number", "exclusiveMinimum": 0 }, { "type": "null" }] }
+      },
+      "required": ["label", "widthPx", "heightPx", "dpi", "widthMm", "heightMm"],
+      "additionalProperties": false
+    },
+    "folder": { "type": "string", "enum": ["Motive", "Mockups", "Social", "Video", "3D", "Export/Druck", "Export/Social"] },
+    "fileExtension": { "type": "string", "pattern": "^\\.[a-z0-9]+(\\.[a-z0-9]+)?$" },
+    "file": {
+      "description": "Vorlagendatei relativ zum Vorlagenordner (nur target \"program\").",
+      "$ref": "common.schema.json#/$defs/relPath"
+    },
+    "socialTemplateId": { "description": "Verweis auf packs/social/<id> (nur target \"social\").", "$ref": "common.schema.json#/$defs/id" },
+    "mockupTemplateId": { "description": "Verweis auf packs/mockups/<id> (nur target \"mockup\").", "$ref": "common.schema.json#/$defs/id" },
+    "printProfileId": { "oneOf": [{ "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" }, { "type": "null" }] },
+    "preview": { "$ref": "common.schema.json#/$defs/relPath" },
+    "requiresSetup": { "type": "boolean" },
+    "tags": { "type": "array", "items": { "type": "string", "minLength": 1, "maxLength": 32 }, "uniqueItems": true },
+    "assumptions": {
+      "description": "Offene Annahmen der Vorlage (z. B. Lage der sicheren Fläche), für Hinweise und den Bericht.",
+      "type": "array",
+      "items": { "type": "string", "minLength": 1, "maxLength": 300 }
+    }
+  },
+  "required": ["id", "title", "description", "target", "programId", "format", "folder", "fileExtension", "printProfileId", "preview", "requiresSetup", "tags"],
+  "allOf": [
+    {
+      "if": { "properties": { "target": { "const": "program" } }, "required": ["target"] },
+      "then": { "required": ["file"], "properties": { "programId": { "$ref": "common.schema.json#/$defs/programId" } } }
+    },
+    {
+      "if": { "properties": { "target": { "const": "social" } }, "required": ["target"] },
+      "then": { "required": ["socialTemplateId"], "properties": { "programId": { "type": "null" }, "folder": { "const": "Social" } } }
+    },
+    {
+      "if": { "properties": { "target": { "const": "mockup" } }, "required": ["target"] },
+      "then": { "required": ["mockupTemplateId"], "properties": { "programId": { "type": "null" }, "folder": { "const": "Mockups" } } }
+    }
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,29 @@
+<kdenlivetitle LC_NUMERIC="C" width="1080" height="1350" out="149">
+  <item type="QGraphicsRectItem" z-index="0">
+   <position x="60" y="930">
+    <transform>1,0,0,0,1,0,0,0,1</transform>
+   </position>
+   <content pencolor="0,0,0,0" rect="0,0,960,156" penwidth="0" brushcolor="239,238,233,255"/>
+  </item>
+  <item type="QGraphicsRectItem" z-index="1">
+   <position x="60" y="930">
+    <transform>1,0,0,0,1,0,0,0,1</transform>
+   </position>
+   <content pencolor="0,0,0,0" rect="0,0,20,156" penwidth="0" brushcolor="228,245,49,255"/>
+  </item>
+  <item type="QGraphicsTextItem" z-index="2">
+   <position x="104" y="942">
+    <transform>1,0,0,0,1,0,0,0,1</transform>
+   </position>
+   <content font="Anybody ExtraBold" font-pixel-size="66" font-italic="0" font-underline="0" font-weight="400" font-color="13,13,13,255" font-outline-color="13,13,13,255" font-outline="0" letter-spacing="0" line-spacing="0" alignment="1" box-width="896" box-height="90">NAME NACHNAME</content>
+  </item>
+  <item type="QGraphicsTextItem" z-index="3">
+   <position x="104" y="1028">
+    <transform>1,0,0,0,1,0,0,0,1</transform>
+   </position>
+   <content font="Atkinson Hyperlegible Next" font-pixel-size="36" font-italic="0" font-underline="0" font-weight="400" font-color="91,90,86,255" font-outline-color="13,13,13,255" font-outline="0" letter-spacing="0" line-spacing="0" alignment="1" box-width="896" box-height="48">Rolle im Kollektiv · Kollektion</content>
+  </item>
+ <startviewport rect="0,0,1080,1350"/>
+ <endviewport rect="0,0,1080,1350"/>
+ <background color="0,0,0,0"/>
+</kdenlivetitle>

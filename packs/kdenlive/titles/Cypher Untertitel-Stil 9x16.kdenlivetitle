@@ -1,0 +1,18 @@
+<kdenlivetitle LC_NUMERIC="C" width="1080" height="1920" out="149">
+  <item type="QGraphicsRectItem" z-index="0">
+   <position x="120" y="1050">
+    <transform>1,0,0,0,1,0,0,0,1</transform>
+   </position>
+   <content pencolor="0,0,0,0" rect="0,0,840,184" penwidth="0" brushcolor="13,13,13,200"/>
+  </item>
+  <item type="QGraphicsTextItem" z-index="1">
+   <position x="144" y="1072">
+    <transform>1,0,0,0,1,0,0,0,1</transform>
+   </position>
+   <content font="Atkinson Hyperlegible Next" font-pixel-size="54" font-italic="0" font-underline="0" font-weight="700" font-color="239,238,233,255" font-outline-color="13,13,13,255" font-outline="0" letter-spacing="0" line-spacing="4" alignment="4" box-width="792" box-height="140">Untertitel in zwei Zeilen,
+lesbar auf jedem Bild</content>
+  </item>
+ <startviewport rect="0,0,1080,1920"/>
+ <endviewport rect="0,0,1080,1920"/>
+ <background color="0,0,0,0"/>
+</kdenlivetitle>

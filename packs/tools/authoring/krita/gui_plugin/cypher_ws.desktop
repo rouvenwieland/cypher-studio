@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Service
+ServiceTypes=Krita/PythonPlugin
+X-KDE-Library=cypher_ws
+X-Python-2-Compatible=false
+Name=Cypher Workspace Builder
+Comment=Entwicklungswerkzeug: legt den Docker-Zustand für die Arbeitsfläche "Cypher Druck" fest und beendet Krita (nur für die Paketerzeugung)

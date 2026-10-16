@@ -1,0 +1,121 @@
+{
+  "$schema": "../../schema/brand.schema.json",
+  "formatVersion": 1,
+  "collections": [
+    { "id": "rauschen", "name": "Rauschen", "hex": "#0b0b0a" },
+    { "id": "mittelwelle", "name": "Mittelwelle", "hex": "#1f2bd0" },
+    { "id": "gold", "name": "Gold-Lounge", "hex": "#c9a03f" }
+  ],
+  "garmentColors": [
+    {
+      "id": "schwarz", "name": "Schwarz", "hex": "#141210", "textileHex": "#201e1f", "providerColorName": "Black",
+      "heather": false, "underbase": true, "textOnGarment": "#efeee9"
+    },
+    {
+      "id": "weiss", "name": "Weiß", "hex": "#f2efe8", "textileHex": "#ffffff", "providerColorName": "White",
+      "heather": false, "underbase": false, "textOnGarment": "#0d0d0d"
+    },
+    {
+      "id": "grau-meliert", "name": "Grau meliert", "hex": "#8c8a86", "textileHex": "#818381", "providerColorName": "Mid Heather Grey",
+      "heather": true, "underbase": true, "textOnGarment": "#0d0d0d"
+    },
+    {
+      "id": "navy", "name": "Navy", "hex": "#1d2738", "textileHex": "#2f354a", "providerColorName": "French Navy",
+      "heather": false, "underbase": true, "textOnGarment": "#efeee9"
+    },
+    {
+      "id": "sand", "name": "Sand", "hex": "#cdbb9a", "textileHex": "#d5c9bc", "providerColorName": "Desert Dust",
+      "heather": false, "underbase": true, "textOnGarment": "#0d0d0d"
+    },
+    {
+      "id": "creme", "name": "Creme", "hex": "#efe4cc", "textileHex": "#fcf0dc", "providerColorName": "Natural Raw",
+      "heather": false, "underbase": true, "textOnGarment": "#0d0d0d"
+    }
+  ],
+  "channels": [
+    { "id": "news", "name": "Zeitzeichen (News)", "surface": "#ff4f12", "on": "#0d0d0d", "deep": null },
+    { "id": "shop", "name": "Empfang (Shop)", "surface": "#e4f531", "on": "#0d0d0d", "deep": null },
+    { "id": "studio", "name": "Studio", "surface": "#00d4d8", "on": "#0d0d0d", "deep": "#00676b" }
+  ],
+  "base": { "ink": "#0d0d0d", "paper": "#efeee9" },
+  "palettes": [
+    {
+      "id": "cypher-kollektionen",
+      "name": "Cypher Kollektionen",
+      "colors": [
+        { "name": "Tinte", "hex": "#0d0d0d" },
+        { "name": "Papier", "hex": "#efeee9" },
+        { "name": "Zeitzeichen-Orange (News)", "hex": "#ff4f12" },
+        { "name": "Empfang-Gelb (Shop)", "hex": "#e4f531" },
+        { "name": "Studio-Cyan", "hex": "#00d4d8" },
+        { "name": "Rauschen", "hex": "#0b0b0a" },
+        { "name": "Mittelwelle Kobalt", "hex": "#1f2bd0" },
+        { "name": "Mittelwelle Hell", "hex": "#f3f4f7" },
+        { "name": "Gold-Lounge Gold", "hex": "#c9a03f" },
+        { "name": "Gold-Lounge Tiefgold", "hex": "#a47c2a" },
+        { "name": "Gold-Lounge Tinte", "hex": "#0d0a05" },
+        { "name": "Textil Schwarz", "hex": "#141210" },
+        { "name": "Textil Weiß", "hex": "#f2efe8" },
+        { "name": "Textil Grau meliert", "hex": "#8c8a86" },
+        { "name": "Textil Navy", "hex": "#1d2738" },
+        { "name": "Textil Sand", "hex": "#cdbb9a" },
+        { "name": "Textil Creme", "hex": "#efe4cc" }
+      ]
+    },
+    {
+      "id": "cypher-textil-druck",
+      "name": "Cypher Textil (Druckfarben)",
+      "colors": [
+        { "name": "Schwarz (Black)", "hex": "#201e1f" },
+        { "name": "Weiß (White)", "hex": "#ffffff" },
+        { "name": "Grau meliert (Mid Heather Grey)", "hex": "#818381" },
+        { "name": "Navy (French Navy)", "hex": "#2f354a" },
+        { "name": "Sand (Desert Dust)", "hex": "#d5c9bc" },
+        { "name": "Creme (Natural Raw)", "hex": "#fcf0dc" }
+      ]
+    }
+  ],
+  "fonts": [
+    {
+      "family": "Anybody",
+      "usage": "display",
+      "license": "OFL-1.1",
+      "files": [
+        { "file": "shared/fonts/anybody/static/Anybody-Regular.ttf", "weight": 400, "style": "normal" },
+        { "file": "shared/fonts/anybody/static/Anybody-Medium.ttf", "weight": 500, "style": "normal" },
+        { "file": "shared/fonts/anybody/static/Anybody-SemiBold.ttf", "weight": 600, "style": "normal" },
+        { "file": "shared/fonts/anybody/static/Anybody-Bold.ttf", "weight": 700, "style": "normal" },
+        { "file": "shared/fonts/anybody/static/Anybody-ExtraBold.ttf", "weight": 800, "style": "normal" },
+        { "file": "shared/fonts/anybody/static/Anybody-Black.ttf", "weight": 900, "style": "normal" }
+      ]
+    },
+    {
+      "family": "Atkinson Hyperlegible Next",
+      "usage": "text",
+      "license": "OFL-1.1",
+      "files": [
+        { "file": "shared/fonts/atkinson-hyperlegible-next/static/AtkinsonHyperlegibleNext-Regular.ttf", "weight": 400, "style": "normal" },
+        { "file": "shared/fonts/atkinson-hyperlegible-next/static/AtkinsonHyperlegibleNext-Italic.ttf", "weight": 400, "style": "italic" },
+        { "file": "shared/fonts/atkinson-hyperlegible-next/static/AtkinsonHyperlegibleNext-Medium.ttf", "weight": 500, "style": "normal" },
+        { "file": "shared/fonts/atkinson-hyperlegible-next/static/AtkinsonHyperlegibleNext-SemiBold.ttf", "weight": 600, "style": "normal" },
+        { "file": "shared/fonts/atkinson-hyperlegible-next/static/AtkinsonHyperlegibleNext-Bold.ttf", "weight": 700, "style": "normal" },
+        { "file": "shared/fonts/atkinson-hyperlegible-next/static/AtkinsonHyperlegibleNext-BoldItalic.ttf", "weight": 700, "style": "italic" }
+      ]
+    },
+    {
+      "family": "Martian Mono",
+      "usage": "mono",
+      "license": "OFL-1.1",
+      "files": [
+        { "file": "shared/fonts/martian-mono/static/MartianMono-Regular.ttf", "weight": 400, "style": "normal" },
+        { "file": "shared/fonts/martian-mono/static/MartianMono-Medium.ttf", "weight": 500, "style": "normal" },
+        { "file": "shared/fonts/martian-mono/static/MartianMono-SemiBold.ttf", "weight": 600, "style": "normal" },
+        { "file": "shared/fonts/martian-mono/static/MartianMono-Bold.ttf", "weight": 700, "style": "normal" }
+      ]
+    }
+  ],
+  "logos": [
+    { "id": "cypher-kollektiv", "variant": "light", "file": "shared/brand/logos/cypher-kollektiv-hell.svg" },
+    { "id": "cypher-kollektiv", "variant": "dark", "file": "shared/brand/logos/cypher-kollektiv-dunkel.svg" }
+  ]
+}

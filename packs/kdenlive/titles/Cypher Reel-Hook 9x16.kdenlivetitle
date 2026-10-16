@@ -1,0 +1,23 @@
+<kdenlivetitle LC_NUMERIC="C" width="1080" height="1920" out="149">
+  <item type="QGraphicsRectItem" z-index="0">
+   <position x="100" y="746">
+    <transform>1,0,0,0,1,0,0,0,1</transform>
+   </position>
+   <content pencolor="0,0,0,0" rect="0,0,880,178" penwidth="0" brushcolor="228,245,49,255"/>
+  </item>
+  <item type="QGraphicsTextItem" z-index="1">
+   <position x="120" y="520">
+    <transform>1,0,0,0,1,0,0,0,1</transform>
+   </position>
+   <content font="Anybody UltraCondensed Black" font-pixel-size="230" font-italic="0" font-underline="0" font-weight="400" font-color="239,238,233,255" font-outline-color="13,13,13,255" font-outline="8" letter-spacing="0" line-spacing="0" alignment="1" box-width="840" box-height="230">DAS HAST DU</content>
+  </item>
+  <item type="QGraphicsTextItem" z-index="2">
+   <position x="120" y="752">
+    <transform>1,0,0,0,1,0,0,0,1</transform>
+   </position>
+   <content font="Anybody UltraCondensed Black" font-pixel-size="150" font-italic="0" font-underline="0" font-weight="400" font-color="13,13,13,255" font-outline-color="13,13,13,255" font-outline="0" letter-spacing="0" line-spacing="0" alignment="1" box-width="840" box-height="170">NOCH NIE GESEHEN</content>
+  </item>
+ <startviewport rect="0,0,1080,1920"/>
+ <endviewport rect="0,0,1080,1920"/>
+ <background color="0,0,0,0"/>
+</kdenlivetitle>

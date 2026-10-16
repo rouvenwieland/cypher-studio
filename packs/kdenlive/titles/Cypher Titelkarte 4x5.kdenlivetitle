@@ -1,0 +1,30 @@
+<kdenlivetitle LC_NUMERIC="C" width="1080" height="1350" out="149">
+  <item type="QGraphicsTextItem" z-index="0">
+   <position x="60" y="330">
+    <transform>1,0,0,0,1,0,0,0,1</transform>
+   </position>
+   <content font="Martian Mono" font-pixel-size="32" font-italic="0" font-underline="0" font-weight="400" font-color="228,245,49,255" font-outline-color="13,13,13,255" font-outline="0" letter-spacing="0" line-spacing="0" alignment="1" box-width="960" box-height="48">CYPHER KOLLEKTIV</content>
+  </item>
+  <item type="QGraphicsTextItem" z-index="1">
+   <position x="60" y="400">
+    <transform>1,0,0,0,1,0,0,0,1</transform>
+   </position>
+   <content font="Anybody UltraCondensed Black" font-pixel-size="250" font-italic="0" font-underline="0" font-weight="400" font-color="239,238,233,255" font-outline-color="13,13,13,255" font-outline="0" letter-spacing="0" line-spacing="-30" alignment="1" box-width="960" box-height="520">TITEL DER
+FOLGE</content>
+  </item>
+  <item type="QGraphicsRectItem" z-index="2">
+   <position x="60" y="890">
+    <transform>1,0,0,0,1,0,0,0,1</transform>
+   </position>
+   <content pencolor="0,0,0,0" rect="0,0,160,16" penwidth="0" brushcolor="228,245,49,255"/>
+  </item>
+  <item type="QGraphicsTextItem" z-index="3">
+   <position x="60" y="940">
+    <transform>1,0,0,0,1,0,0,0,1</transform>
+   </position>
+   <content font="Atkinson Hyperlegible Next" font-pixel-size="44" font-italic="0" font-underline="0" font-weight="400" font-color="239,238,233,255" font-outline-color="13,13,13,255" font-outline="0" letter-spacing="0" line-spacing="0" alignment="1" box-width="960" box-height="56">Untertitel oder Datum</content>
+  </item>
+ <startviewport rect="0,0,1080,1350"/>
+ <endviewport rect="0,0,1080,1350"/>
+ <background color="13,13,13,255"/>
+</kdenlivetitle>

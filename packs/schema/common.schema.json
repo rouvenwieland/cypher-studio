@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://studio.cypherxcypher.de/schemas/common.schema.json",
+  "title": "Gemeinsame Bausteine der Paket-Schemas",
+  "description": "Wird von pack, template, mockup und social per $ref benutzt. Änderungen nur zusammen mit den Teams, die diese Schemas lesen (Rust: setup, templates, brand).",
+  "$defs": {
+    "id": {
+      "description": "Kleinbuchstaben, Ziffern, Bindestriche (z. B. shirt-front-krita).",
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "maxLength": 64
+    },
+    "semver": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(-[0-9A-Za-z.-]+)?(\\+[0-9A-Za-z.-]+)?$"
+    },
+    "hex": {
+      "description": "Farbe als #rrggbb (Kleinbuchstaben).",
+      "type": "string",
+      "pattern": "^#[0-9a-f]{6}$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "relPath": {
+      "description": "Relativer Pfad mit \"/\" als Trenner: kein Anfangs-Schrägstrich, kein \"..\", kein Laufwerk, keine Steuerzeichen oder Windows-Sonderzeichen. Auch als Ziel (rel) im Programmordner gültig.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "pattern": "^(?!/)(?!.*(^|/)\\.\\.?(/|$))(?!.*//)[^\\\\:*?\"<>|\\u0000-\\u001f]+$"
+    },
+    "srcPath": {
+      "description": "Quelle innerhalb von packs/: wie relPath, zusätzlich mit führendem \"../\" erlaubt (z. B. ../shared/fonts/…), damit Pakete gemeinsame Dateien nutzen können.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "pattern": "^(\\.\\./)?(?!/)(?!.*(^|/)\\.\\.?(/|$))(?!.*//)[^\\\\:*?\"<>|\\u0000-\\u001f]+$"
+    },
+    "size": {
+      "type": "object",
+      "properties": {
+        "width": { "type": "integer", "minimum": 1 },
+        "height": { "type": "integer", "minimum": 1 }
+      },
+      "required": ["width", "height"],
+      "additionalProperties": false
+    },
+    "rect": {
+      "type": "object",
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "width": { "type": "number", "exclusiveMinimum": 0 },
+        "height": { "type": "number", "exclusiveMinimum": 0 }
+      },
+      "required": ["x", "y", "width", "height"],
+      "additionalProperties": false
+    },
+    "point": {
+      "type": "object",
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" }
+      },
+      "required": ["x", "y"],
+      "additionalProperties": false
+    },
+    "programId": {
+      "type": "string",
+      "enum": ["krita", "inkscape", "blender", "kdenlive"]
+    },
+    "label": {
+      "description": "Deutscher Anzeigetext.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    }
+  }
+}

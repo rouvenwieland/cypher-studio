@@ -1,0 +1,148 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://studio.cypherxcypher.de/schemas/pack.schema.json",
+  "title": "Einrichtungspaket (packs/<id>/pack.json)",
+  "description": "ARCHITEKTUR.md 4.4. Zielwurzeln (root) sind Namen aus setup/roots.rs; welcher Ordner dahintersteckt (je Betriebssystem, Installationsart und Programmversion, ARCHITEKTUR 7.4), entscheidet allein der Rust-Kern. Das Paket nennt nur root + rel.",
+  "type": "object",
+  "properties": {
+    "$schema": { "type": "string" },
+    "formatVersion": { "type": "integer", "const": 1 },
+    "id": { "$ref": "common.schema.json#/$defs/id" },
+    "programId": {
+      "description": "null = programmübergreifend (Paket fonts).",
+      "oneOf": [{ "$ref": "common.schema.json#/$defs/programId" }, { "type": "null" }]
+    },
+    "version": { "$ref": "common.schema.json#/$defs/semver" },
+    "title": { "$ref": "common.schema.json#/$defs/label" },
+    "description": { "type": "string", "maxLength": 600 },
+    "programVersions": {
+      "description": "Unterstützte Programmversionen als Bereich, z. B. \">=5.2, <6\".",
+      "type": "string",
+      "pattern": "^(\\s*(>=|<=|>|<|=)?\\s*[0-9]+(\\.[0-9]+){0,2}\\s*,?)+$"
+    },
+    "requiresPacks": { "type": "array", "items": { "$ref": "common.schema.json#/$defs/id" }, "uniqueItems": true },
+    "requiresProgramClosed": { "type": "boolean" },
+    "components": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/component" }
+    },
+    "files": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/file" }
+    },
+    "actions": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/action" }
+    },
+    "sha256": {
+      "description": "Prüfsummen aller Quelldateien (Schlüssel = src). Erzeugt von build.mjs, im Quellbaum leer oder fehlend; in packs/dist Pflicht für jede Datei.",
+      "type": "object",
+      "patternProperties": { "^.+$": { "$ref": "common.schema.json#/$defs/sha256" } },
+      "additionalProperties": false
+    }
+  },
+  "required": ["id", "programId", "version", "title", "components", "files", "actions"],
+  "additionalProperties": false,
+  "$defs": {
+    "root": {
+      "type": "string",
+      "enum": [
+        "kritaResources", "inkscapeProfile", "blenderConfig", "blenderScripts", "blenderExtensions",
+        "blenderExtensionConfig", "kdenliveData", "kdenliveLocalData", "userFonts", "projectTemplates"
+      ]
+    },
+    "component": {
+      "type": "object",
+      "properties": {
+        "id": { "$ref": "common.schema.json#/$defs/id" },
+        "kind": {
+          "type": "string",
+          "enum": ["palette", "fonts", "templates", "workspace", "bundle", "appTemplate", "extension", "assetLibrary", "titles", "videoProfiles", "renderPreset"]
+        },
+        "label": { "$ref": "common.schema.json#/$defs/label" },
+        "optional": { "type": "boolean" },
+        "defaultSelected": { "type": "boolean" },
+        "fallbackFor": {
+          "description": "Ausweichweg: Baustein mit losen Dateien für einen anderen Baustein (z. B. Krita-Bundle). Wird nur angeboten, wenn der andere nicht greift; nie zusammen mit ihm anwenden (Doppelte Ressourcen).",
+          "$ref": "common.schema.json#/$defs/id"
+        },
+        "files": { "type": "array", "minItems": 1, "items": { "$ref": "common.schema.json#/$defs/id" }, "uniqueItems": true },
+        "preview": {
+          "description": "Vorschau in der Einrichtungstabelle (CONCEPT 6.3): Farben, Maße, Schriftnamen.",
+          "type": "object",
+          "properties": {
+            "colors": { "type": "array", "items": { "$ref": "common.schema.json#/$defs/hex" } },
+            "formats": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+            "fonts": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+          },
+          "required": ["colors", "formats", "fonts"],
+          "additionalProperties": false
+        }
+      },
+      "required": ["id", "kind", "label", "optional", "files"],
+      "additionalProperties": false
+    },
+    "file": {
+      "type": "object",
+      "properties": {
+        "id": { "$ref": "common.schema.json#/$defs/id" },
+        "src": { "$ref": "common.schema.json#/$defs/srcPath" },
+        "root": { "$ref": "#/$defs/root" },
+        "rel": { "$ref": "common.schema.json#/$defs/relPath" },
+        "platforms": {
+          "description": "Nur auf diesen Betriebssystemen anwenden (leer/fehlt = alle).",
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "enum": ["windows", "macos", "linux"] },
+          "uniqueItems": true
+        },
+        "programVersions": {
+          "description": "Nur für diese Programmversionen (wie programVersions des Pakets).",
+          "type": "string",
+          "pattern": "^(\\s*(>=|<=|>|<|=)?\\s*[0-9]+(\\.[0-9]+){0,2}\\s*,?)+$"
+        }
+      },
+      "required": ["id", "src", "root", "rel"],
+      "additionalProperties": false
+    },
+    "action": {
+      "oneOf": [
+        {
+          "description": "Schrift im Benutzer-Schriftordner des Betriebssystems anmelden (Windows: Registry-Wert, Linux: fc-cache).",
+          "type": "object",
+          "properties": {
+            "type": { "const": "installFont" },
+            "file": { "$ref": "common.schema.json#/$defs/id" },
+            "displayName": { "type": "string", "minLength": 1, "maxLength": 120 }
+          },
+          "required": ["type", "file", "displayName"],
+          "additionalProperties": false
+        },
+        {
+          "description": "Kleine JSON-Konfiguration aus festen Feldern (Platzhalter nur {libraryRoot}).",
+          "type": "object",
+          "properties": {
+            "type": { "const": "writeConfig" },
+            "root": { "$ref": "#/$defs/root" },
+            "rel": { "$ref": "common.schema.json#/$defs/relPath" },
+            "fields": { "type": "object", "additionalProperties": { "type": "string" } }
+          },
+          "required": ["type", "root", "rel", "fields"],
+          "additionalProperties": false
+        },
+        {
+          "description": "Blender-Extension über die Blender-Kommandozeile installieren (nur Paket blender).",
+          "type": "object",
+          "properties": {
+            "type": { "const": "blenderExtensionInstall" },
+            "zip": { "$ref": "common.schema.json#/$defs/srcPath" }
+          },
+          "required": ["type", "zip"],
+          "additionalProperties": false
+        }
+      ]
+    }
+  }
+}

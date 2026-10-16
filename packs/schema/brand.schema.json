@@ -1,0 +1,139 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://studio.cypherxcypher.de/schemas/brand.schema.json",
+  "title": "Marke (packs/shared/brand/brand.json)",
+  "description": "ARCHITEKTUR.md 4.8, Typ Brand im IPC-Vertrag ohne URLs: Dateiangaben (file) sind Pfade relativ zu packs/ (Rust ersetzt sie durch cyasset-URLs). Zusätze gegenüber dem Vertrag: formatVersion, channels (Kanalfarben aus DESIGN.md), base (Tinte, Papier). Logo-Variante \"light\" = helles Logo für dunklen Grund, \"dark\" = dunkles Logo für hellen Grund.",
+  "type": "object",
+  "properties": {
+    "$schema": { "type": "string" },
+    "formatVersion": { "type": "integer", "const": 1 },
+    "collections": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "$ref": "common.schema.json#/$defs/id" },
+          "name": { "$ref": "common.schema.json#/$defs/label" },
+          "hex": { "$ref": "common.schema.json#/$defs/hex" }
+        },
+        "required": ["id", "name", "hex"],
+        "additionalProperties": false
+      }
+    },
+    "garmentColors": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "$ref": "common.schema.json#/$defs/id" },
+          "name": { "$ref": "common.schema.json#/$defs/label" },
+          "hex": { "$ref": "common.schema.json#/$defs/hex" },
+          "textileHex": { "$ref": "common.schema.json#/$defs/hex" },
+          "providerColorName": { "oneOf": [{ "type": "string", "minLength": 1 }, { "type": "null" }] },
+          "heather": { "type": "boolean" },
+          "underbase": { "type": "boolean" },
+          "textOnGarment": { "$ref": "common.schema.json#/$defs/hex" }
+        },
+        "required": ["id", "name", "hex", "textileHex", "providerColorName", "heather", "underbase", "textOnGarment"],
+        "additionalProperties": false
+      }
+    },
+    "channels": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "$ref": "common.schema.json#/$defs/id" },
+          "name": { "$ref": "common.schema.json#/$defs/label" },
+          "surface": { "$ref": "common.schema.json#/$defs/hex" },
+          "on": { "$ref": "common.schema.json#/$defs/hex" },
+          "deep": { "oneOf": [{ "$ref": "common.schema.json#/$defs/hex" }, { "type": "null" }] }
+        },
+        "required": ["id", "name", "surface", "on", "deep"],
+        "additionalProperties": false
+      }
+    },
+    "base": {
+      "type": "object",
+      "properties": {
+        "ink": { "$ref": "common.schema.json#/$defs/hex" },
+        "paper": { "$ref": "common.schema.json#/$defs/hex" }
+      },
+      "required": ["ink", "paper"],
+      "additionalProperties": false
+    },
+    "palettes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "$ref": "common.schema.json#/$defs/id" },
+          "name": { "$ref": "common.schema.json#/$defs/label" },
+          "colors": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 256,
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": { "$ref": "common.schema.json#/$defs/label" },
+                "hex": { "$ref": "common.schema.json#/$defs/hex" }
+              },
+              "required": ["name", "hex"],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": ["id", "name", "colors"],
+        "additionalProperties": false
+      }
+    },
+    "fonts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "properties": {
+          "family": { "type": "string", "minLength": 1 },
+          "usage": { "type": "string", "enum": ["display", "text", "pixel", "mono"] },
+          "license": { "const": "OFL-1.1" },
+          "files": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "properties": {
+                "file": { "$ref": "common.schema.json#/$defs/relPath" },
+                "weight": { "type": "integer", "minimum": 100, "maximum": 900, "multipleOf": 100 },
+                "style": { "type": "string", "enum": ["normal", "italic"] }
+              },
+              "required": ["file", "weight", "style"],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": ["family", "usage", "license", "files"],
+        "additionalProperties": false
+      }
+    },
+    "logos": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "$ref": "common.schema.json#/$defs/id" },
+          "variant": { "type": "string", "enum": ["light", "dark"] },
+          "file": { "$ref": "common.schema.json#/$defs/relPath" }
+        },
+        "required": ["id", "variant", "file"],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": ["collections", "garmentColors", "palettes", "fonts", "logos"],
+  "additionalProperties": false
+}

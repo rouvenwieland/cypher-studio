@@ -1,0 +1,121 @@
+{
+  "formatVersion": 1,
+  "comment": "Eine Quelle für alle Maße der Vorlagen (Krita, Inkscape, Kdenlive, Projekt- und Social-Vorlagen). Zahlen aus docs/research/vorgaben.md (Stand 16.10.2026): Shirtigo-Produktdaten Creator 2.0 (Shirt) und Cruiser 2.0 (Hoodie), Instagram/Meta-Angaben. Mit assumption=true markierte Werte sind Annahmen, bis ein Testdruck sie bestätigt.",
+  "dpi": 300,
+  "pxPerMmRounding": "Pixel = round(mm / 25,4 × 300); Vergleich mit ±1 px Toleranz (ARCHITEKTUR 4.7)",
+  "print": [
+    {
+      "id": "shirt-front", "garment": "tee", "position": "front", "label": "Shirt vorne", "profileId": "shirtigo-tee-front",
+      "widthMm": 330, "heightMm": 450, "widthPx": 3898, "heightPx": 5315,
+      "safeMm": { "width": 280, "height": 360, "anchor": "top-center", "assumption": true },
+      "guidesMm": {
+        "vertical": [
+          { "name": "Mitte", "at": 165 },
+          { "name": "Ideale Breite 300 mm links", "at": 15 },
+          { "name": "Sichere Fläche links", "at": 25 },
+          { "name": "Sichere Fläche rechts", "at": 305 },
+          { "name": "Ideale Breite 300 mm rechts", "at": 315 }
+        ],
+        "horizontal": [{ "name": "Sichere Fläche unten (360 mm)", "at": 360 }]
+      },
+      "tags": ["shirt", "druck", "vorne"]
+    },
+    {
+      "id": "shirt-back", "garment": "tee", "position": "back", "label": "Shirt hinten", "profileId": "shirtigo-tee-back",
+      "widthMm": 330, "heightMm": 450, "widthPx": 3898, "heightPx": 5315,
+      "safeMm": { "width": 280, "height": 360, "anchor": "top-center", "assumption": true },
+      "guidesMm": {
+        "vertical": [
+          { "name": "Mitte", "at": 165 },
+          { "name": "Ideale Breite 300 mm links", "at": 15 },
+          { "name": "Sichere Fläche links", "at": 25 },
+          { "name": "Sichere Fläche rechts", "at": 305 },
+          { "name": "Ideale Breite 300 mm rechts", "at": 315 }
+        ],
+        "horizontal": [{ "name": "Sichere Fläche unten (360 mm)", "at": 360 }]
+      },
+      "tags": ["shirt", "druck", "hinten"]
+    },
+    {
+      "id": "hoodie-front", "garment": "hoodie", "position": "front", "label": "Hoodie vorne", "profileId": "shirtigo-hoodie-front",
+      "widthMm": 330, "heightMm": 280, "widthPx": 3898, "heightPx": 3307,
+      "safeMm": { "width": 280, "height": 240, "anchor": "top-center", "assumption": true },
+      "guidesMm": {
+        "vertical": [
+          { "name": "Mitte", "at": 165 },
+          { "name": "Ideale Breite 300 mm links", "at": 15 },
+          { "name": "Breite 280 mm links", "at": 25 },
+          { "name": "Breite 280 mm rechts", "at": 305 },
+          { "name": "Ideale Breite 300 mm rechts", "at": 315 }
+        ],
+        "horizontal": [{ "name": "Richtwert Höhe 240 mm (DTG-Richtlinie)", "at": 240 }]
+      },
+      "tags": ["hoodie", "druck", "vorne"]
+    },
+    {
+      "id": "hoodie-back", "garment": "hoodie", "position": "back", "label": "Hoodie hinten", "profileId": "shirtigo-hoodie-back",
+      "widthMm": 330, "heightMm": 390, "widthPx": 3898, "heightPx": 4606,
+      "safeMm": null,
+      "guidesMm": {
+        "vertical": [
+          { "name": "Mitte", "at": 165 },
+          { "name": "Ideale Breite 300 mm links", "at": 15 },
+          { "name": "Ideale Breite 300 mm rechts", "at": 315 }
+        ],
+        "horizontal": []
+      },
+      "tags": ["hoodie", "druck", "hinten"]
+    }
+  ],
+  "poster": {
+    "id": "poster-a2", "label": "Poster A2", "profileId": null,
+    "trimMm": { "width": 420, "height": 594 }, "bleedMm": 3, "safeInsetMm": 4,
+    "widthMm": 426, "heightMm": 600, "widthPx": 5031, "heightPx": 7087,
+    "tags": ["poster", "druck"]
+  },
+  "sticker": {
+    "id": "sticker-quadrat", "label": "Sticker 1:1", "profileId": null,
+    "widthMm": 80, "heightMm": 80, "widthPx": 945, "heightPx": 945, "assumption": true,
+    "tags": ["sticker"]
+  },
+  "social": [
+    {
+      "id": "post", "format": "post", "label": "Post 4:5", "widthPx": 1080, "heightPx": 1350,
+      "guidesPx": {
+        "vertical": [{ "name": "Profilraster links (34 px)", "at": 34 }, { "name": "Mitte", "at": 540 }, { "name": "Profilraster rechts (1046 px)", "at": 1046 }],
+        "horizontal": []
+      },
+      "safeZones": [{ "x": 34, "y": 0, "width": 1012, "height": 1350 }],
+      "gridCrop": { "x": 34, "y": 0, "width": 1012, "height": 1350 }
+    },
+    {
+      "id": "story", "format": "story", "label": "Story / Reel 9:16", "widthPx": 1080, "heightPx": 1920,
+      "guidesPx": {
+        "vertical": [{ "name": "Rand links (120 px)", "at": 120 }, { "name": "Mitte", "at": 540 }, { "name": "Rand rechts (960 px)", "at": 960 }],
+        "horizontal": [{ "name": "Oben frei (270 px)", "at": 270 }, { "name": "Unten frei (ab 1248 px)", "at": 1248 }]
+      },
+      "safeZones": [{ "x": 120, "y": 270, "width": 840, "height": 978 }],
+      "gridCrop": null
+    },
+    {
+      "id": "reel-cover", "format": "reelCover", "label": "Reel-Cover 9:16", "widthPx": 1080, "heightPx": 1920,
+      "guidesPx": {
+        "vertical": [{ "name": "Rand links (120 px)", "at": 120 }, { "name": "Mitte", "at": 540 }, { "name": "Rand rechts (960 px)", "at": 960 }],
+        "horizontal": [{ "name": "Profilraster oben (240 px)", "at": 240 }, { "name": "Profilraster unten (1680 px)", "at": 1680 }]
+      },
+      "safeZones": [{ "x": 120, "y": 240, "width": 840, "height": 1440 }],
+      "gridCrop": { "x": 0, "y": 240, "width": 1080, "height": 1440 }
+    }
+  ],
+  "video": [
+    { "id": "reel", "label": "Reel 9:16", "widthPx": 1080, "heightPx": 1920, "fps": 30 },
+    { "id": "reel-45", "label": "Reel 4:5", "widthPx": 1080, "heightPx": 1350, "fps": 30 }
+  ],
+  "socialGuides": {
+    "comment": "SOCIAL_GUIDES aus docs/ipc-contract.ts, zusätzlich Instagram-Werte (Meta: 14 % oben, 35 % unten, 6 % seitlich) zur Anzeige.",
+    "verticalConservative": { "top": 270, "bottom": 672, "left": 120, "right": 120 },
+    "instagramVertical": { "top": 269, "bottom": 672, "left": 65, "right": 65 },
+    "reelCoverGridBox": { "x": 0, "y": 240, "width": 1080, "height": 1440 },
+    "postGridKeepX": { "from": 34, "to": 1046 }
+  }
+}
