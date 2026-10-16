@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "social-motiv-vorstellung",
+  "title": "Motiv-Vorstellung",
+  "description": "Ein Motiv groß auf Papier: Bild, Schild „Neues Motiv“, Titel und Unterzeile.",
+  "target": "social",
+  "programId": null,
+  "format": {
+    "label": "1080 × 1350",
+    "widthPx": 1080,
+    "heightPx": 1350,
+    "dpi": null,
+    "widthMm": null,
+    "heightMm": null
+  },
+  "folder": "Social",
+  "fileExtension": ".social.json",
+  "socialTemplateId": "motiv-vorstellung",
+  "printProfileId": null,
+  "preview": "preview.png",
+  "requiresSetup": false,
+  "tags": [
+    "motiv",
+    "post",
+    "vorstellung"
+  ]
+}

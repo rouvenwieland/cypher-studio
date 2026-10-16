@@ -1,0 +1,29 @@
+{
+  "formatVersion": 1,
+  "id": "sticker-inkscape",
+  "title": "Sticker 1:1 (Inkscape)",
+  "description": "Quadratische Fläche 80 × 80 mm (945 × 945 px, 300 dpi); nur als Datei, Shirtigo druckt keine Sticker.",
+  "target": "program",
+  "programId": "inkscape",
+  "format": {
+    "label": "80 × 80 mm",
+    "widthPx": 945,
+    "heightPx": 945,
+    "dpi": 300,
+    "widthMm": 80,
+    "heightMm": 80
+  },
+  "folder": "Motive",
+  "fileExtension": ".svg",
+  "file": "files/sticker.svg",
+  "printProfileId": null,
+  "preview": "preview.png",
+  "requiresSetup": false,
+  "tags": [
+    "sticker",
+    "inkscape"
+  ],
+  "assumptions": [
+    "Die Größe 80 × 80 mm ist eine Annahme (der Shop nennt keine Stickergröße)."
+  ]
+}

@@ -1,0 +1,199 @@
+{
+  "$schema": "../schema/pack.schema.json",
+  "formatVersion": 1,
+  "id": "inkscape",
+  "programId": "inkscape",
+  "version": "1.0.0",
+  "title": "Cypher-Einrichtung für Inkscape",
+  "description": "Paletten, Vorlagen (mit Export-Hinweis 300 dpi) und Schriften des Cypher Kollektivs für Inkscape 1.4.",
+  "programVersions": ">=1.3, <1.5",
+  "requiresPacks": [],
+  "requiresProgramClosed": false,
+  "components": [
+    {
+      "id": "palette",
+      "kind": "palette",
+      "label": "Paletten „Cypher Kollektionen“ (17 Farben) und „Cypher Textil (Druckfarben)“",
+      "optional": false,
+      "files": [
+        "palette-cypher-kollektionen-gpl",
+        "palette-cypher-textil-druck-gpl"
+      ],
+      "preview": {
+        "colors": [
+          "#0d0d0d",
+          "#efeee9",
+          "#ff4f12",
+          "#e4f531",
+          "#00d4d8",
+          "#0b0b0a",
+          "#1f2bd0",
+          "#f3f4f7",
+          "#c9a03f",
+          "#a47c2a",
+          "#0d0a05",
+          "#141210",
+          "#f2efe8",
+          "#8c8a86",
+          "#1d2738",
+          "#cdbb9a",
+          "#efe4cc"
+        ],
+        "formats": [],
+        "fonts": []
+      }
+    },
+    {
+      "id": "templates",
+      "kind": "templates",
+      "label": "Vorlagen mit Hilfslinien: Shirt, Hoodie (in mm, Export 300 dpi), Poster, Sticker, Post, Story, Reel-Cover",
+      "optional": false,
+      "files": [
+        "vorlage-cypher-hoodie-back-svg",
+        "vorlage-cypher-hoodie-front-svg",
+        "vorlage-cypher-post-svg",
+        "vorlage-cypher-poster-a2-svg",
+        "vorlage-cypher-reel-cover-svg",
+        "vorlage-cypher-shirt-back-svg",
+        "vorlage-cypher-shirt-front-svg",
+        "vorlage-cypher-sticker-quadrat-svg",
+        "vorlage-cypher-story-svg"
+      ],
+      "preview": {
+        "colors": [],
+        "formats": [
+          "Shirt vorne 330 × 450 mm",
+          "Shirt hinten 330 × 450 mm",
+          "Hoodie vorne 330 × 280 mm",
+          "Hoodie hinten 330 × 390 mm",
+          "Poster A2 426 × 600 mm",
+          "Post 4:5 1080 × 1350",
+          "Story / Reel 9:16 1080 × 1920",
+          "Reel-Cover 9:16 1080 × 1920"
+        ],
+        "fonts": []
+      }
+    },
+    {
+      "id": "fonts",
+      "kind": "fonts",
+      "label": "Schriften Anybody, Atkinson Hyperlegible Next und Martian Mono",
+      "optional": false,
+      "files": [
+        "schrift-anybody-italic-variable-ttf",
+        "schrift-anybody-variable-ttf",
+        "schrift-atkinsonhyperlegiblenext-italic-variable-ttf",
+        "schrift-atkinsonhyperlegiblenext-variable-ttf",
+        "schrift-martianmono-variable-ttf"
+      ],
+      "preview": {
+        "colors": [],
+        "formats": [],
+        "fonts": [
+          "Anybody",
+          "Atkinson Hyperlegible Next",
+          "Martian Mono"
+        ]
+      }
+    }
+  ],
+  "files": [
+    {
+      "id": "palette-cypher-kollektionen-gpl",
+      "src": "../shared/palettes/cypher-kollektionen.gpl",
+      "root": "inkscapeProfile",
+      "rel": "palettes/cypher-kollektionen.gpl"
+    },
+    {
+      "id": "palette-cypher-textil-druck-gpl",
+      "src": "../shared/palettes/cypher-textil-druck.gpl",
+      "root": "inkscapeProfile",
+      "rel": "palettes/cypher-textil-druck.gpl"
+    },
+    {
+      "id": "vorlage-cypher-hoodie-back-svg",
+      "src": "templates/cypher-hoodie-back.svg",
+      "root": "inkscapeProfile",
+      "rel": "templates/cypher-hoodie-back.svg"
+    },
+    {
+      "id": "vorlage-cypher-hoodie-front-svg",
+      "src": "templates/cypher-hoodie-front.svg",
+      "root": "inkscapeProfile",
+      "rel": "templates/cypher-hoodie-front.svg"
+    },
+    {
+      "id": "vorlage-cypher-post-svg",
+      "src": "templates/cypher-post.svg",
+      "root": "inkscapeProfile",
+      "rel": "templates/cypher-post.svg"
+    },
+    {
+      "id": "vorlage-cypher-poster-a2-svg",
+      "src": "templates/cypher-poster-a2.svg",
+      "root": "inkscapeProfile",
+      "rel": "templates/cypher-poster-a2.svg"
+    },
+    {
+      "id": "vorlage-cypher-reel-cover-svg",
+      "src": "templates/cypher-reel-cover.svg",
+      "root": "inkscapeProfile",
+      "rel": "templates/cypher-reel-cover.svg"
+    },
+    {
+      "id": "vorlage-cypher-shirt-back-svg",
+      "src": "templates/cypher-shirt-back.svg",
+      "root": "inkscapeProfile",
+      "rel": "templates/cypher-shirt-back.svg"
+    },
+    {
+      "id": "vorlage-cypher-shirt-front-svg",
+      "src": "templates/cypher-shirt-front.svg",
+      "root": "inkscapeProfile",
+      "rel": "templates/cypher-shirt-front.svg"
+    },
+    {
+      "id": "vorlage-cypher-sticker-quadrat-svg",
+      "src": "templates/cypher-sticker-quadrat.svg",
+      "root": "inkscapeProfile",
+      "rel": "templates/cypher-sticker-quadrat.svg"
+    },
+    {
+      "id": "vorlage-cypher-story-svg",
+      "src": "templates/cypher-story.svg",
+      "root": "inkscapeProfile",
+      "rel": "templates/cypher-story.svg"
+    },
+    {
+      "id": "schrift-anybody-italic-variable-ttf",
+      "src": "../shared/fonts/anybody/Anybody-Italic-Variable.ttf",
+      "root": "inkscapeProfile",
+      "rel": "fonts/cypher/Anybody-Italic-Variable.ttf"
+    },
+    {
+      "id": "schrift-anybody-variable-ttf",
+      "src": "../shared/fonts/anybody/Anybody-Variable.ttf",
+      "root": "inkscapeProfile",
+      "rel": "fonts/cypher/Anybody-Variable.ttf"
+    },
+    {
+      "id": "schrift-atkinsonhyperlegiblenext-italic-variable-ttf",
+      "src": "../shared/fonts/atkinson-hyperlegible-next/AtkinsonHyperlegibleNext-Italic-Variable.ttf",
+      "root": "inkscapeProfile",
+      "rel": "fonts/cypher/AtkinsonHyperlegibleNext-Italic-Variable.ttf"
+    },
+    {
+      "id": "schrift-atkinsonhyperlegiblenext-variable-ttf",
+      "src": "../shared/fonts/atkinson-hyperlegible-next/AtkinsonHyperlegibleNext-Variable.ttf",
+      "root": "inkscapeProfile",
+      "rel": "fonts/cypher/AtkinsonHyperlegibleNext-Variable.ttf"
+    },
+    {
+      "id": "schrift-martianmono-variable-ttf",
+      "src": "../shared/fonts/martian-mono/MartianMono-Variable.ttf",
+      "root": "inkscapeProfile",
+      "rel": "fonts/cypher/MartianMono-Variable.ttf"
+    }
+  ],
+  "actions": []
+}

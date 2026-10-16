@@ -1,0 +1,176 @@
+{
+  "formatVersion": 1,
+  "id": "drop-ankuendigung",
+  "title": "Drop-Ankündigung",
+  "description": "Neuer Drop: Kennung, große Überschrift, Motivbild, Datum und Unterzeile auf Tinte.",
+  "tags": [
+    "drop",
+    "post",
+    "ankündigung"
+  ],
+  "format": "post",
+  "size": {
+    "width": 1080,
+    "height": 1350
+  },
+  "background": {
+    "type": "solid",
+    "color": "#0d0d0d"
+  },
+  "layers": [
+    {
+      "type": "shape",
+      "id": "balken",
+      "rect": {
+        "x": 72,
+        "y": 72,
+        "width": 120,
+        "height": 12
+      },
+      "fill": {
+        "type": "solid",
+        "color": "#e4f531"
+      },
+      "radiusPx": 0,
+      "opacity": 1
+    },
+    {
+      "type": "text",
+      "id": "kennung",
+      "slot": "kennung",
+      "rect": {
+        "x": 72,
+        "y": 100,
+        "width": 936,
+        "height": 40
+      },
+      "fontFamily": "Martian Mono",
+      "fontWeight": 500,
+      "sizePx": 28,
+      "minSizePx": 28,
+      "lineHeight": 1.2,
+      "letterSpacingEm": 0.06,
+      "color": "#e4f531",
+      "align": "left",
+      "valign": "top",
+      "transform": "uppercase",
+      "maxLines": 1,
+      "defaultText": "Neuer Drop"
+    },
+    {
+      "type": "text",
+      "id": "titel",
+      "slot": "titel",
+      "rect": {
+        "x": 72,
+        "y": 160,
+        "width": 936,
+        "height": 500
+      },
+      "fontFamily": "Anybody",
+      "fontWeight": 800,
+      "sizePx": 160,
+      "minSizePx": 90,
+      "lineHeight": 0.9,
+      "letterSpacingEm": -0.01,
+      "color": "#efeee9",
+      "align": "left",
+      "valign": "top",
+      "transform": "uppercase",
+      "maxLines": 3,
+      "defaultText": "Herbst-Drop 26"
+    },
+    {
+      "type": "image",
+      "id": "motiv",
+      "slot": "motiv",
+      "rect": {
+        "x": 72,
+        "y": 690,
+        "width": 936,
+        "height": 440
+      },
+      "fit": "cover",
+      "radiusPx": 0,
+      "required": false
+    },
+    {
+      "type": "text",
+      "id": "datum",
+      "slot": "datum",
+      "rect": {
+        "x": 72,
+        "y": 1160,
+        "width": 640,
+        "height": 48
+      },
+      "fontFamily": "Martian Mono",
+      "fontWeight": 500,
+      "sizePx": 36,
+      "minSizePx": 36,
+      "lineHeight": 1.2,
+      "letterSpacingEm": 0.06,
+      "color": "#efeee9",
+      "align": "left",
+      "valign": "top",
+      "transform": "uppercase",
+      "maxLines": 1,
+      "defaultText": "22.10.2026 · 18:00"
+    },
+    {
+      "type": "text",
+      "id": "unterzeile",
+      "slot": "unterzeile",
+      "rect": {
+        "x": 72,
+        "y": 1216,
+        "width": 640,
+        "height": 90
+      },
+      "fontFamily": "Atkinson Hyperlegible Next",
+      "fontWeight": 400,
+      "sizePx": 36,
+      "minSizePx": 30,
+      "lineHeight": 1.25,
+      "letterSpacingEm": 0,
+      "color": "#efeee9",
+      "align": "left",
+      "valign": "top",
+      "transform": "none",
+      "maxLines": 2,
+      "defaultText": "Neue Motive, ab 18 Uhr im Shop."
+    },
+    {
+      "type": "logo",
+      "id": "logo",
+      "rect": {
+        "x": 784,
+        "y": 1209,
+        "width": 224,
+        "height": 97
+      },
+      "variant": "light"
+    },
+    {
+      "type": "grain",
+      "id": "korn",
+      "opacity": 0.06,
+      "seed": 7
+    }
+  ],
+  "safeZones": [
+    {
+      "x": 34,
+      "y": 0,
+      "width": 1012,
+      "height": 1350
+    }
+  ],
+  "gridCrop": {
+    "x": 34,
+    "y": 0,
+    "width": 1012,
+    "height": 1350
+  },
+  "preview": "preview.png"
+}

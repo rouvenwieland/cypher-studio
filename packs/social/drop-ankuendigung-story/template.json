@@ -1,0 +1,172 @@
+{
+  "formatVersion": 1,
+  "id": "drop-ankuendigung-story",
+  "title": "Drop-Ankündigung (Story)",
+  "description": "Wie die Post-Vorlage, im Hochformat 9:16; alles innerhalb der Sicherheitszone für Instagram und TikTok.",
+  "tags": [
+    "drop",
+    "story",
+    "reel",
+    "ankündigung"
+  ],
+  "format": "story",
+  "size": {
+    "width": 1080,
+    "height": 1920
+  },
+  "background": {
+    "type": "solid",
+    "color": "#0d0d0d"
+  },
+  "layers": [
+    {
+      "type": "shape",
+      "id": "balken",
+      "rect": {
+        "x": 120,
+        "y": 300,
+        "width": 120,
+        "height": 12
+      },
+      "fill": {
+        "type": "solid",
+        "color": "#e4f531"
+      },
+      "radiusPx": 0,
+      "opacity": 1
+    },
+    {
+      "type": "text",
+      "id": "kennung",
+      "slot": "kennung",
+      "rect": {
+        "x": 120,
+        "y": 330,
+        "width": 840,
+        "height": 40
+      },
+      "fontFamily": "Martian Mono",
+      "fontWeight": 500,
+      "sizePx": 28,
+      "minSizePx": 28,
+      "lineHeight": 1.2,
+      "letterSpacingEm": 0.06,
+      "color": "#e4f531",
+      "align": "left",
+      "valign": "top",
+      "transform": "uppercase",
+      "maxLines": 1,
+      "defaultText": "Neuer Drop"
+    },
+    {
+      "type": "text",
+      "id": "titel",
+      "slot": "titel",
+      "rect": {
+        "x": 120,
+        "y": 390,
+        "width": 840,
+        "height": 420
+      },
+      "fontFamily": "Anybody",
+      "fontWeight": 800,
+      "sizePx": 150,
+      "minSizePx": 80,
+      "lineHeight": 0.9,
+      "letterSpacingEm": -0.01,
+      "color": "#efeee9",
+      "align": "left",
+      "valign": "top",
+      "transform": "uppercase",
+      "maxLines": 3,
+      "defaultText": "Herbst-Drop 26"
+    },
+    {
+      "type": "image",
+      "id": "motiv",
+      "slot": "motiv",
+      "rect": {
+        "x": 120,
+        "y": 830,
+        "width": 840,
+        "height": 250
+      },
+      "fit": "cover",
+      "radiusPx": 0,
+      "required": false
+    },
+    {
+      "type": "text",
+      "id": "datum",
+      "slot": "datum",
+      "rect": {
+        "x": 120,
+        "y": 1100,
+        "width": 840,
+        "height": 48
+      },
+      "fontFamily": "Martian Mono",
+      "fontWeight": 500,
+      "sizePx": 36,
+      "minSizePx": 36,
+      "lineHeight": 1.2,
+      "letterSpacingEm": 0.06,
+      "color": "#efeee9",
+      "align": "left",
+      "valign": "top",
+      "transform": "uppercase",
+      "maxLines": 1,
+      "defaultText": "22.10.2026 · 18:00"
+    },
+    {
+      "type": "text",
+      "id": "unterzeile",
+      "slot": "unterzeile",
+      "rect": {
+        "x": 120,
+        "y": 1156,
+        "width": 580,
+        "height": 90
+      },
+      "fontFamily": "Atkinson Hyperlegible Next",
+      "fontWeight": 400,
+      "sizePx": 36,
+      "minSizePx": 30,
+      "lineHeight": 1.25,
+      "letterSpacingEm": 0,
+      "color": "#efeee9",
+      "align": "left",
+      "valign": "top",
+      "transform": "none",
+      "maxLines": 2,
+      "defaultText": "Neue Motive, ab 18 Uhr im Shop."
+    },
+    {
+      "type": "logo",
+      "id": "logo",
+      "rect": {
+        "x": 736,
+        "y": 1146,
+        "width": 224,
+        "height": 97
+      },
+      "variant": "light"
+    },
+    {
+      "type": "grain",
+      "id": "korn",
+      "opacity": 0.06,
+      "seed": 11
+    }
+  ],
+  "safeZones": [
+    {
+      "x": 120,
+      "y": 270,
+      "width": 840,
+      "height": 978
+    }
+  ],
+  "gridCrop": null,
+  "preview": "preview.png"
+}

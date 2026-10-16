@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Wortmarke des Cypher Kollektivs: zwei Zeilen auf gleicher Breite, Anybody 800 (CYPHER wdth 102,7 · KOLLEKTIV wdth 80, Werte der Startseite für den Desktop).
+     Quelle für build-logos.sh; die Ausgabe (Text zu Pfaden) liegt in packs/shared/brand/logos/. Marke: alle Rechte vorbehalten (LICENSE-BRAND.md). -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+     width="600" height="300" viewBox="0 0 600 300" id="svg-logo">
+  <g id="wortmarke" style="fill:@FILL@">
+    <text x="0" y="110" id="zeile1" style="font-family:Anybody;font-size:112px;font-weight:800;font-variation-settings:'wdth' 102.7,'wght' 800;letter-spacing:-2.2px;line-height:1">CYPHER</text>
+    <text x="0" y="230" id="zeile2" style="font-family:Anybody;font-size:112px;font-weight:800;font-variation-settings:'wdth' 80,'wght' 800;letter-spacing:-2.2px;line-height:1">KOLLEKTIV</text>
+  </g>
+</svg>

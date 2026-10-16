@@ -1,0 +1,140 @@
+{
+  "formatVersion": 1,
+  "id": "reel-cover",
+  "title": "Reel-Cover",
+  "description": "Titelbild für Reels: Bild füllt das Format, Titel und Kennung liegen im 3:4-Ausschnitt des Profilrasters (y 240 bis 1680).",
+  "tags": [
+    "reel",
+    "cover",
+    "titelbild"
+  ],
+  "format": "reelCover",
+  "size": {
+    "width": 1080,
+    "height": 1920
+  },
+  "background": {
+    "type": "solid",
+    "color": "#0d0d0d"
+  },
+  "layers": [
+    {
+      "type": "image",
+      "id": "bild",
+      "slot": "bild",
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "width": 1080,
+        "height": 1920
+      },
+      "fit": "cover",
+      "radiusPx": 0,
+      "required": false
+    },
+    {
+      "type": "shape",
+      "id": "abdunkelung-oben",
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "width": 1080,
+        "height": 420
+      },
+      "fill": {
+        "type": "solid",
+        "color": "#0d0d0d"
+      },
+      "radiusPx": 0,
+      "opacity": 0.55
+    },
+    {
+      "type": "shape",
+      "id": "abdunkelung",
+      "rect": {
+        "x": 0,
+        "y": 900,
+        "width": 1080,
+        "height": 780
+      },
+      "fill": {
+        "type": "solid",
+        "color": "#0d0d0d"
+      },
+      "radiusPx": 0,
+      "opacity": 0.62
+    },
+    {
+      "type": "text",
+      "id": "kennung",
+      "slot": "kennung",
+      "rect": {
+        "x": 120,
+        "y": 300,
+        "width": 840,
+        "height": 40
+      },
+      "fontFamily": "Martian Mono",
+      "fontWeight": 500,
+      "sizePx": 28,
+      "minSizePx": 28,
+      "lineHeight": 1.2,
+      "letterSpacingEm": 0.06,
+      "color": "#e4f531",
+      "align": "left",
+      "valign": "top",
+      "transform": "uppercase",
+      "maxLines": 1,
+      "defaultText": "Reel 07"
+    },
+    {
+      "type": "text",
+      "id": "titel",
+      "slot": "titel",
+      "rect": {
+        "x": 120,
+        "y": 1100,
+        "width": 840,
+        "height": 420
+      },
+      "fontFamily": "Anybody",
+      "fontWeight": 800,
+      "sizePx": 130,
+      "minSizePx": 90,
+      "lineHeight": 0.9,
+      "letterSpacingEm": -0.01,
+      "color": "#efeee9",
+      "align": "left",
+      "valign": "top",
+      "transform": "uppercase",
+      "maxLines": 4,
+      "defaultText": "So entsteht ein Motiv"
+    },
+    {
+      "type": "logo",
+      "id": "logo",
+      "rect": {
+        "x": 736,
+        "y": 1560,
+        "width": 224,
+        "height": 97
+      },
+      "variant": "light"
+    }
+  ],
+  "safeZones": [
+    {
+      "x": 120,
+      "y": 240,
+      "width": 840,
+      "height": 1440
+    }
+  ],
+  "gridCrop": {
+    "x": 0,
+    "y": 240,
+    "width": 1080,
+    "height": 1440
+  },
+  "preview": "preview.png"
+}

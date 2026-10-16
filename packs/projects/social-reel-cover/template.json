@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "social-reel-cover",
+  "title": "Reel-Cover",
+  "description": "Titelbild für Reels: Bild füllt das Format, Titel und Kennung liegen im 3:4-Ausschnitt des Profilrasters (y 240 bis 1680).",
+  "target": "social",
+  "programId": null,
+  "format": {
+    "label": "1080 × 1920",
+    "widthPx": 1080,
+    "heightPx": 1920,
+    "dpi": null,
+    "widthMm": null,
+    "heightMm": null
+  },
+  "folder": "Social",
+  "fileExtension": ".social.json",
+  "socialTemplateId": "reel-cover",
+  "printProfileId": null,
+  "preview": "preview.png",
+  "requiresSetup": false,
+  "tags": [
+    "reel",
+    "cover",
+    "titelbild"
+  ]
+}

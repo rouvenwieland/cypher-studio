@@ -1,10 +1,11 @@
 #!/usr/bin/env node
-// Erzeugt packs/krita/bundles/cypher.bundle (Krita-Ressourcen-Bundle, ZIP) deterministisch aus
-//   packs/shared/palettes/*.kpl   (gen-palettes.mjs)
-//   packs/krita/workspaces/*.kws  (optional, Arbeitsflächen)
+// Erzeugt zwei Krita-Ressourcen-Bundles (ZIP) deterministisch:
+//   packs/krita/bundles/cypher.bundle                  Paletten aus packs/shared/palettes/*.kpl (gen-palettes.mjs)
+//   packs/krita/bundles/cypher-arbeitsflaeche.bundle   Arbeitsflächen aus packs/krita/workspaces/*.kws (gen-krita-workspace.mjs)
+// Getrennt, damit die Arbeitsfläche in der Einrichtung abwählbar bleibt.
 // Format nach Krita 5.3 (KisResourceBundle, Quelltext): mimetype, META-INF/manifest.xml mit md5sum je Ressource, meta.xml, preview.png,
-// je Ressourcentyp ein Ordner. Die Datei wird zusätzlich mit dem echten Krita geladen (Smoke-Test, packs/tools/authoring/krita/verify_bundle.py).
-// `--check` schreibt nichts und prüft, ob die eingecheckte Datei dem Ergebnis entspricht.
+// je Ressourcentyp ein Ordner. Beide Dateien werden zusätzlich mit dem echten Krita geladen (packs/tools/authoring/krita/verify_resources.py).
+// `--check` schreibt nichts und prüft, ob die eingecheckten Dateien dem Ergebnis entsprechen.
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -13,9 +14,14 @@ import { writeZip } from './lib/zip.mjs';
 import { encodePngRgba } from './lib/png.mjs';
 import { PACKS_DIR, hexToRgb, loadBrand, renderKpl } from './gen-palettes.mjs';
 
-export const BUNDLE_PATH = join(PACKS_DIR, 'krita', 'bundles', 'cypher.bundle');
+const BUNDLE_DIR = join(PACKS_DIR, 'krita', 'bundles');
 const WORKSPACE_DIR = join(PACKS_DIR, 'krita', 'workspaces');
 const TAG = 'Cypher';
+
+export const BUNDLES = [
+  { file: 'cypher.bundle', title: 'Cypher', description: 'Paletten „Cypher Kollektionen“ (17 Farben der Marke, Kanäle, Kollektionen und Textilfarben) und „Cypher Textil (Druckfarben)“ des Cypher Kollektivs.' },
+  { file: 'cypher-arbeitsflaeche.bundle', title: 'Cypher Arbeitsfläche', description: 'Arbeitsfläche „Cypher Druck“ des Cypher Kollektivs: Werkzeugleiste, Übersicht, Palette, Ebenen, Pinsel und Werkzeugeinstellungen.' },
+];
 
 const md5 = (buf) => createHash('md5').update(buf).digest('hex');
 const esc = (s) => s.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
@@ -46,17 +52,16 @@ export function renderPreview(brand) {
   return encodePngRgba(size, size, rgba);
 }
 
-/** @returns {{ type: string, path: string, data: Buffer }[]} */
-export function collectResources(brand = loadBrand()) {
+/** @returns {{ type: string, path: string, data: Buffer }[]} Ressourcen des Bundles */
+export function collectResources(file, brand = loadBrand()) {
   const res = [];
-  for (const palette of brand.palettes) {
-    res.push({ type: 'palettes', path: `palettes/${palette.id}.kpl`, data: renderKpl(palette) });
-  }
-  if (existsSync(WORKSPACE_DIR)) {
-    for (const f of readdirSync(WORKSPACE_DIR).filter((n) => n.endsWith('.kws')).sort()) {
+  if (file === 'cypher.bundle') {
+    for (const palette of brand.palettes) res.push({ type: 'palettes', path: `palettes/${palette.id}.kpl`, data: renderKpl(palette) });
+  } else if (file === 'cypher-arbeitsflaeche.bundle') {
+    for (const f of existsSync(WORKSPACE_DIR) ? readdirSync(WORKSPACE_DIR).filter((n) => n.endsWith('.kws')).sort() : []) {
       res.push({ type: 'workspaces', path: `workspaces/${f}`, data: readFileSync(join(WORKSPACE_DIR, f)) });
     }
-  }
+  } else throw new Error(`Unbekanntes Bundle ${file}`);
   return res;
 }
 
@@ -77,15 +82,15 @@ export function renderManifest(resources) {
   return `${lines.join('\n')}\n`;
 }
 
-export function renderMeta() {
+export function renderMeta(spec) {
   return `${[
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<meta:meta>',
     ' <meta:generator>Cypher Studio (packs/tools/gen-krita-bundle.mjs)</meta:generator>',
     ' <meta:bundle-version>1</meta:bundle-version>',
     ' <dc:author>Cypher Kollektiv</dc:author>',
-    ' <dc:title>Cypher</dc:title>',
-    ' <dc:description>Paletten „Cypher Kollektionen“ und „Cypher Textil (Druckfarben)“ sowie die Arbeitsfläche „Cypher Druck“ des Cypher Kollektivs.</dc:description>',
+    ` <dc:title>${esc(spec.title)}</dc:title>`,
+    ` <dc:description>${esc(spec.description)}</dc:description>`,
     ' <meta:initial-creator>Cypher Kollektiv</meta:initial-creator>',
     ' <dc:creator>Cypher Kollektiv</dc:creator>',
     ' <meta:creation-date>2026-10-16T00:00:00Z</meta:creation-date>',
@@ -97,31 +102,37 @@ export function renderMeta() {
   ].join('\n')}\n`;
 }
 
-export function renderBundle(brand = loadBrand()) {
-  const resources = collectResources(brand);
+export function renderBundle(spec, brand = loadBrand()) {
+  const resources = collectResources(spec.file, brand);
+  if (resources.length === 0) throw new Error(`Bundle ${spec.file} hat keine Ressourcen`);
   return writeZip([
     { name: 'mimetype', data: 'application/x-krita-resourcebundle', store: true },
     { name: 'META-INF/manifest.xml', data: renderManifest(resources) },
-    { name: 'meta.xml', data: renderMeta() },
+    { name: 'meta.xml', data: renderMeta(spec) },
     { name: 'preview.png', data: renderPreview(brand) },
     ...resources.map((r) => ({ name: r.path, data: r.data })),
   ]);
 }
 
 function main(argv) {
-  const data = renderBundle();
-  if (argv.includes('--check')) {
-    if (!existsSync(BUNDLE_PATH) || !readFileSync(BUNDLE_PATH).equals(data)) {
-      console.error('ABWEICHUNG packs/krita/bundles/cypher.bundle (gen-krita-bundle.mjs ausführen)');
-      return 1;
+  const check = argv.includes('--check');
+  let bad = 0;
+  for (const spec of BUNDLES) {
+    const target = join(BUNDLE_DIR, spec.file);
+    const data = renderBundle(spec);
+    if (check) {
+      if (!existsSync(target) || !readFileSync(target).equals(data)) {
+        console.error(`ABWEICHUNG packs/krita/bundles/${spec.file} (gen-krita-bundle.mjs ausführen)`);
+        bad++;
+      }
+    } else {
+      mkdirSync(dirname(target), { recursive: true });
+      writeFileSync(target, data);
+      console.log(`geschrieben krita/bundles/${spec.file} (${data.length} Bytes)`);
     }
-    console.log('cypher.bundle stimmt mit den Quellen überein');
-    return 0;
   }
-  mkdirSync(dirname(BUNDLE_PATH), { recursive: true });
-  writeFileSync(BUNDLE_PATH, data);
-  console.log(`geschrieben krita/bundles/cypher.bundle (${data.length} Bytes)`);
-  return 0;
+  if (check) console.log(bad === 0 ? 'Krita-Bundles stimmen mit den Quellen überein' : `${bad} Abweichung(en)`);
+  return bad === 0 ? 0 : 1;
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) process.exit(main(process.argv.slice(2)));

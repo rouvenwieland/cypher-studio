@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "post-inkscape",
+  "title": "Post 4:5 (Inkscape)",
+  "description": "Leinwand 1080 × 1350 px mit Hilfslinien und gesperrter Ebene für die Sicherheitszonen (vor dem Export ausblenden).",
+  "target": "program",
+  "programId": "inkscape",
+  "format": {
+    "label": "1080 × 1350",
+    "widthPx": 1080,
+    "heightPx": 1350,
+    "dpi": null,
+    "widthMm": null,
+    "heightMm": null
+  },
+  "folder": "Social",
+  "fileExtension": ".svg",
+  "file": "files/post.svg",
+  "printProfileId": null,
+  "preview": "preview.png",
+  "requiresSetup": false,
+  "tags": [
+    "social",
+    "post",
+    "inkscape"
+  ]
+}

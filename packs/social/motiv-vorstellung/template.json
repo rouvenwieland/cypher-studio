@@ -1,0 +1,147 @@
+{
+  "formatVersion": 1,
+  "id": "motiv-vorstellung",
+  "title": "Motiv-Vorstellung",
+  "description": "Ein Motiv groß auf Papier: Bild, Schild „Neues Motiv“, Titel und Unterzeile.",
+  "tags": [
+    "motiv",
+    "post",
+    "vorstellung"
+  ],
+  "format": "post",
+  "size": {
+    "width": 1080,
+    "height": 1350
+  },
+  "background": {
+    "type": "solid",
+    "color": "#efeee9"
+  },
+  "layers": [
+    {
+      "type": "image",
+      "id": "motiv",
+      "slot": "motiv",
+      "rect": {
+        "x": 72,
+        "y": 72,
+        "width": 936,
+        "height": 780
+      },
+      "fit": "cover",
+      "radiusPx": 0,
+      "required": false
+    },
+    {
+      "type": "shape",
+      "id": "schild",
+      "rect": {
+        "x": 72,
+        "y": 880,
+        "width": 300,
+        "height": 48
+      },
+      "fill": {
+        "type": "solid",
+        "color": "#e4f531"
+      },
+      "radiusPx": 0,
+      "opacity": 1
+    },
+    {
+      "type": "text",
+      "id": "schildtext",
+      "slot": "schild",
+      "rect": {
+        "x": 88,
+        "y": 886,
+        "width": 268,
+        "height": 36
+      },
+      "fontFamily": "Martian Mono",
+      "fontWeight": 500,
+      "sizePx": 28,
+      "minSizePx": 28,
+      "lineHeight": 1.2,
+      "letterSpacingEm": 0.06,
+      "color": "#0d0d0d",
+      "align": "left",
+      "valign": "top",
+      "transform": "uppercase",
+      "maxLines": 1,
+      "defaultText": "Neues Motiv"
+    },
+    {
+      "type": "text",
+      "id": "titel",
+      "slot": "titel",
+      "rect": {
+        "x": 72,
+        "y": 950,
+        "width": 936,
+        "height": 150
+      },
+      "fontFamily": "Anybody",
+      "fontWeight": 800,
+      "sizePx": 100,
+      "minSizePx": 56,
+      "lineHeight": 0.9,
+      "letterSpacingEm": -0.01,
+      "color": "#0d0d0d",
+      "align": "left",
+      "valign": "top",
+      "transform": "uppercase",
+      "maxLines": 2,
+      "defaultText": "Neon Ratte"
+    },
+    {
+      "type": "text",
+      "id": "unterzeile",
+      "slot": "unterzeile",
+      "rect": {
+        "x": 72,
+        "y": 1110,
+        "width": 700,
+        "height": 90
+      },
+      "fontFamily": "Atkinson Hyperlegible Next",
+      "fontWeight": 400,
+      "sizePx": 36,
+      "minSizePx": 30,
+      "lineHeight": 1.25,
+      "letterSpacingEm": 0,
+      "color": "#5b5a56",
+      "align": "left",
+      "valign": "top",
+      "transform": "none",
+      "maxLines": 2,
+      "defaultText": "Kollektion Rauschen · Druck vorn"
+    },
+    {
+      "type": "logo",
+      "id": "logo",
+      "rect": {
+        "x": 784,
+        "y": 1226,
+        "width": 224,
+        "height": 97
+      },
+      "variant": "dark"
+    }
+  ],
+  "safeZones": [
+    {
+      "x": 34,
+      "y": 0,
+      "width": 1012,
+      "height": 1350
+    }
+  ],
+  "gridCrop": {
+    "x": 34,
+    "y": 0,
+    "width": 1012,
+    "height": 1350
+  },
+  "preview": "preview.png"
+}

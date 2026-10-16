@@ -1,0 +1,125 @@
+{
+  "$schema": "../schema/pack.schema.json",
+  "formatVersion": 1,
+  "id": "kdenlive",
+  "programId": "kdenlive",
+  "version": "1.0.0",
+  "title": "Cypher-Einrichtung für Kdenlive",
+  "description": "Titelvorlagen und Projektprofile (1080 × 1920 und 1080 × 1350 bei 30 fps) des Cypher Kollektivs für Kdenlive. Die Schriften kommen aus dem Paket „fonts“.",
+  "programVersions": ">=26.04, <27",
+  "requiresPacks": [
+    "fonts"
+  ],
+  "requiresProgramClosed": false,
+  "components": [
+    {
+      "id": "titles",
+      "kind": "titles",
+      "label": "Titelvorlagen: Bauchbinde, Titelkarte, Reel-Hook, Untertitel-Stil (9:16 und 4:5)",
+      "optional": false,
+      "files": [
+        "titel-cypher-bauchbinde-4x5-kdenlivetitle",
+        "titel-cypher-bauchbinde-9x16-kdenlivetitle",
+        "titel-cypher-reel-hook-4x5-kdenlivetitle",
+        "titel-cypher-reel-hook-9x16-kdenlivetitle",
+        "titel-cypher-titelkarte-4x5-kdenlivetitle",
+        "titel-cypher-titelkarte-9x16-kdenlivetitle",
+        "titel-cypher-untertitel-stil-4x5-kdenlivetitle",
+        "titel-cypher-untertitel-stil-9x16-kdenlivetitle"
+      ],
+      "preview": {
+        "colors": [],
+        "formats": [
+          "1080 × 1920",
+          "1080 × 1350"
+        ],
+        "fonts": [
+          "Anybody",
+          "Atkinson Hyperlegible Next",
+          "Martian Mono"
+        ]
+      }
+    },
+    {
+      "id": "video-profiles",
+      "kind": "videoProfiles",
+      "label": "Projektprofile „Cypher Reel 9:16“ (1080 × 1920) und „Cypher Reel 4:5“ (1080 × 1350), je 30 fps",
+      "optional": false,
+      "files": [
+        "profil-cypher-reel-1080x1350-30",
+        "profil-cypher-reel-1080x1920-30"
+      ],
+      "preview": {
+        "colors": [],
+        "formats": [
+          "1080 × 1920 · 30 fps",
+          "1080 × 1350 · 30 fps"
+        ],
+        "fonts": []
+      }
+    }
+  ],
+  "files": [
+    {
+      "id": "titel-cypher-bauchbinde-4x5-kdenlivetitle",
+      "src": "titles/Cypher Bauchbinde 4x5.kdenlivetitle",
+      "root": "kdenliveData",
+      "rel": "titles/Cypher Bauchbinde 4x5.kdenlivetitle"
+    },
+    {
+      "id": "titel-cypher-bauchbinde-9x16-kdenlivetitle",
+      "src": "titles/Cypher Bauchbinde 9x16.kdenlivetitle",
+      "root": "kdenliveData",
+      "rel": "titles/Cypher Bauchbinde 9x16.kdenlivetitle"
+    },
+    {
+      "id": "titel-cypher-reel-hook-4x5-kdenlivetitle",
+      "src": "titles/Cypher Reel-Hook 4x5.kdenlivetitle",
+      "root": "kdenliveData",
+      "rel": "titles/Cypher Reel-Hook 4x5.kdenlivetitle"
+    },
+    {
+      "id": "titel-cypher-reel-hook-9x16-kdenlivetitle",
+      "src": "titles/Cypher Reel-Hook 9x16.kdenlivetitle",
+      "root": "kdenliveData",
+      "rel": "titles/Cypher Reel-Hook 9x16.kdenlivetitle"
+    },
+    {
+      "id": "titel-cypher-titelkarte-4x5-kdenlivetitle",
+      "src": "titles/Cypher Titelkarte 4x5.kdenlivetitle",
+      "root": "kdenliveData",
+      "rel": "titles/Cypher Titelkarte 4x5.kdenlivetitle"
+    },
+    {
+      "id": "titel-cypher-titelkarte-9x16-kdenlivetitle",
+      "src": "titles/Cypher Titelkarte 9x16.kdenlivetitle",
+      "root": "kdenliveData",
+      "rel": "titles/Cypher Titelkarte 9x16.kdenlivetitle"
+    },
+    {
+      "id": "titel-cypher-untertitel-stil-4x5-kdenlivetitle",
+      "src": "titles/Cypher Untertitel-Stil 4x5.kdenlivetitle",
+      "root": "kdenliveData",
+      "rel": "titles/Cypher Untertitel-Stil 4x5.kdenlivetitle"
+    },
+    {
+      "id": "titel-cypher-untertitel-stil-9x16-kdenlivetitle",
+      "src": "titles/Cypher Untertitel-Stil 9x16.kdenlivetitle",
+      "root": "kdenliveData",
+      "rel": "titles/Cypher Untertitel-Stil 9x16.kdenlivetitle"
+    },
+    {
+      "id": "profil-cypher-reel-1080x1350-30",
+      "src": "profiles/cypher_reel_1080x1350_30",
+      "root": "kdenliveData",
+      "rel": "profiles/cypher_reel_1080x1350_30"
+    },
+    {
+      "id": "profil-cypher-reel-1080x1920-30",
+      "src": "profiles/cypher_reel_1080x1920_30",
+      "root": "kdenliveData",
+      "rel": "profiles/cypher_reel_1080x1920_30"
+    }
+  ],
+  "actions": []
+}

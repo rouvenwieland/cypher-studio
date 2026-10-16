@@ -1,0 +1,18 @@
+{
+  "name": "cypher-studio-packs-tools",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Werkzeuge für die Einrichtungspakete von Cypher Studio (Prüfen, Bauen, Erzeugen). Keine Laufzeit-Abhängigkeiten; Ajv nur für die Tests.",
+  "license": "MIT",
+  "type": "module",
+  "engines": { "node": ">=24" },
+  "scripts": {
+    "validate": "node validate.mjs",
+    "build": "node build.mjs",
+    "gen": "node gen-palettes.mjs && node gen-krita-workspace.mjs && node gen-krita-bundle.mjs && node gen-inkscape.mjs && node gen-kdenlive-titles.mjs && node gen-kdenlive-project.mjs && node gen-social.mjs && node gen-templates.mjs && node gen-packs.mjs",
+    "test": "node --test \"tests/*.test.mjs\""
+  },
+  "devDependencies": {
+    "ajv": "8.17.1"
+  }
+}

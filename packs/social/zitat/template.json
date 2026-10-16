@@ -1,0 +1,110 @@
+{
+  "formatVersion": 1,
+  "id": "zitat",
+  "title": "Zitat",
+  "description": "Ein Satz groß auf Papier mit Quelle.",
+  "tags": [
+    "zitat",
+    "post",
+    "text"
+  ],
+  "format": "post",
+  "size": {
+    "width": 1080,
+    "height": 1350
+  },
+  "background": {
+    "type": "solid",
+    "color": "#efeee9"
+  },
+  "layers": [
+    {
+      "type": "shape",
+      "id": "balken",
+      "rect": {
+        "x": 72,
+        "y": 72,
+        "width": 936,
+        "height": 16
+      },
+      "fill": {
+        "type": "solid",
+        "color": "#e4f531"
+      },
+      "radiusPx": 0,
+      "opacity": 1
+    },
+    {
+      "type": "text",
+      "id": "zitat",
+      "slot": "zitat",
+      "rect": {
+        "x": 72,
+        "y": 140,
+        "width": 936,
+        "height": 800
+      },
+      "fontFamily": "Anybody",
+      "fontWeight": 800,
+      "sizePx": 112,
+      "minSizePx": 60,
+      "lineHeight": 0.9,
+      "letterSpacingEm": -0.01,
+      "color": "#0d0d0d",
+      "align": "left",
+      "valign": "top",
+      "transform": "uppercase",
+      "maxLines": 6,
+      "defaultText": "Rauschen ist auch eine Antwort."
+    },
+    {
+      "type": "text",
+      "id": "quelle",
+      "slot": "quelle",
+      "rect": {
+        "x": 72,
+        "y": 990,
+        "width": 936,
+        "height": 44
+      },
+      "fontFamily": "Martian Mono",
+      "fontWeight": 500,
+      "sizePx": 30,
+      "minSizePx": 30,
+      "lineHeight": 1.2,
+      "letterSpacingEm": 0.06,
+      "color": "#0d0d0d",
+      "align": "left",
+      "valign": "top",
+      "transform": "uppercase",
+      "maxLines": 1,
+      "defaultText": "— Name, Ort"
+    },
+    {
+      "type": "logo",
+      "id": "logo",
+      "rect": {
+        "x": 784,
+        "y": 1226,
+        "width": 224,
+        "height": 97
+      },
+      "variant": "dark"
+    }
+  ],
+  "safeZones": [
+    {
+      "x": 34,
+      "y": 0,
+      "width": 1012,
+      "height": 1350
+    }
+  ],
+  "gridCrop": {
+    "x": 34,
+    "y": 0,
+    "width": 1012,
+    "height": 1350
+  },
+  "preview": "preview.png"
+}

@@ -1,0 +1,31 @@
+{
+  "formatVersion": 1,
+  "id": "shirt-back-inkscape",
+  "title": "Shirt hinten (Inkscape)",
+  "description": "Leinwand 330 × 450 mm (3898 × 5315 px, 300 dpi), transparent, Seite in mm; Hilfslinien für Mitte, ideale Breite 300 mm und Richtwert der sicheren Fläche 280 × 360 mm.",
+  "target": "program",
+  "programId": "inkscape",
+  "format": {
+    "label": "330 × 450 mm",
+    "widthPx": 3898,
+    "heightPx": 5315,
+    "dpi": 300,
+    "widthMm": 330,
+    "heightMm": 450
+  },
+  "folder": "Motive",
+  "fileExtension": ".svg",
+  "file": "files/shirt-back.svg",
+  "printProfileId": "shirtigo-tee-back",
+  "preview": "preview.png",
+  "requiresSetup": false,
+  "tags": [
+    "shirt",
+    "druck",
+    "hinten",
+    "inkscape"
+  ],
+  "assumptions": [
+    "Lage der sicheren Fläche 280 × 360 mm (oben mittig) ist eine Annahme bis zum Testdruck."
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "social-zitat",
+  "title": "Zitat",
+  "description": "Ein Satz groß auf Papier mit Quelle.",
+  "target": "social",
+  "programId": null,
+  "format": {
+    "label": "1080 × 1350",
+    "widthPx": 1080,
+    "heightPx": 1350,
+    "dpi": null,
+    "widthMm": null,
+    "heightMm": null
+  },
+  "folder": "Social",
+  "fileExtension": ".social.json",
+  "socialTemplateId": "zitat",
+  "printProfileId": null,
+  "preview": "preview.png",
+  "requiresSetup": false,
+  "tags": [
+    "zitat",
+    "post",
+    "text"
+  ]
+}

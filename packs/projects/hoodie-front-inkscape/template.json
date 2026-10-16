@@ -1,0 +1,31 @@
+{
+  "formatVersion": 1,
+  "id": "hoodie-front-inkscape",
+  "title": "Hoodie vorne (Inkscape)",
+  "description": "Leinwand 330 × 280 mm (3898 × 3307 px, 300 dpi), transparent, Seite in mm; Hilfslinien für Mitte, ideale Breite 300 mm und Richtwert der sicheren Fläche 280 × 240 mm.",
+  "target": "program",
+  "programId": "inkscape",
+  "format": {
+    "label": "330 × 280 mm",
+    "widthPx": 3898,
+    "heightPx": 3307,
+    "dpi": 300,
+    "widthMm": 330,
+    "heightMm": 280
+  },
+  "folder": "Motive",
+  "fileExtension": ".svg",
+  "file": "files/hoodie-front.svg",
+  "printProfileId": "shirtigo-hoodie-front",
+  "preview": "preview.png",
+  "requiresSetup": false,
+  "tags": [
+    "hoodie",
+    "druck",
+    "vorne",
+    "inkscape"
+  ],
+  "assumptions": [
+    "Lage der sicheren Fläche 280 × 240 mm (oben mittig) ist eine Annahme bis zum Testdruck."
+  ]
+}

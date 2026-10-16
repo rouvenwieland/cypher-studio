@@ -145,6 +145,9 @@ def add_overlay_layer(doc, width, height, safe_rects, font_family):
 
 
 def save(doc, path):
+    for stale in (path, path + "~"):  # Krita legt beim Überschreiben eine Sicherung "~" an; beides weg, damit die Ausgabe sauber bleibt
+        if os.path.exists(stale):
+            os.remove(stale)
     doc.setBatchmode(True)
     doc.refreshProjection()
     doc.waitForDone()

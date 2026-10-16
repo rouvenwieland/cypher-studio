@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "reel-cover-krita",
+  "title": "Reel-Cover 9:16 (Krita)",
+  "description": "Leinwand 1080 × 1920 px mit Hilfslinien und gesperrter Ebene für die Sicherheitszonen (vor dem Export ausblenden).",
+  "target": "program",
+  "programId": "krita",
+  "format": {
+    "label": "1080 × 1920",
+    "widthPx": 1080,
+    "heightPx": 1920,
+    "dpi": null,
+    "widthMm": null,
+    "heightMm": null
+  },
+  "folder": "Social",
+  "fileExtension": ".kra",
+  "file": "files/reel-cover.kra",
+  "printProfileId": null,
+  "preview": "preview.png",
+  "requiresSetup": false,
+  "tags": [
+    "social",
+    "reel",
+    "krita"
+  ]
+}

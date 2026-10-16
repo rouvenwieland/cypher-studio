@@ -1,0 +1,274 @@
+{
+  "$schema": "../schema/pack.schema.json",
+  "formatVersion": 1,
+  "id": "fonts",
+  "programId": null,
+  "version": "1.0.0",
+  "title": "Cypher-Schriften für das Benutzerprofil",
+  "description": "Anybody, Atkinson Hyperlegible Next und Martian Mono als statische Schnitte im Benutzer-Schriftordner des Betriebssystems (ohne Administratorrechte), für Kdenlive und andere Programme ohne eigenen Schriftordner.",
+  "requiresPacks": [],
+  "requiresProgramClosed": false,
+  "components": [
+    {
+      "id": "fonts",
+      "kind": "fonts",
+      "label": "Schriften Anybody, Atkinson Hyperlegible Next und Martian Mono (statische Schnitte)",
+      "optional": false,
+      "files": [
+        "schrift-anybody-black-ttf",
+        "schrift-anybody-bold-ttf",
+        "schrift-anybody-extrabold-ttf",
+        "schrift-anybody-medium-ttf",
+        "schrift-anybody-regular-ttf",
+        "schrift-anybody-semibold-ttf",
+        "schrift-anybodyextraexpanded-black-ttf",
+        "schrift-anybodyextraexpanded-extrabold-ttf",
+        "schrift-anybodyultracondensed-black-ttf",
+        "schrift-anybodyultracondensed-extrabold-ttf",
+        "schrift-atkinsonhyperlegiblenext-bold-ttf",
+        "schrift-atkinsonhyperlegiblenext-bolditalic-ttf",
+        "schrift-atkinsonhyperlegiblenext-italic-ttf",
+        "schrift-atkinsonhyperlegiblenext-medium-ttf",
+        "schrift-atkinsonhyperlegiblenext-regular-ttf",
+        "schrift-atkinsonhyperlegiblenext-semibold-ttf",
+        "schrift-martianmono-bold-ttf",
+        "schrift-martianmono-medium-ttf",
+        "schrift-martianmono-regular-ttf",
+        "schrift-martianmono-semibold-ttf"
+      ],
+      "preview": {
+        "colors": [],
+        "formats": [],
+        "fonts": [
+          "Anybody",
+          "Atkinson Hyperlegible Next",
+          "Martian Mono"
+        ]
+      }
+    }
+  ],
+  "files": [
+    {
+      "id": "schrift-anybody-black-ttf",
+      "src": "../shared/fonts/anybody/static/Anybody-Black.ttf",
+      "root": "userFonts",
+      "rel": "Anybody-Black.ttf"
+    },
+    {
+      "id": "schrift-anybody-bold-ttf",
+      "src": "../shared/fonts/anybody/static/Anybody-Bold.ttf",
+      "root": "userFonts",
+      "rel": "Anybody-Bold.ttf"
+    },
+    {
+      "id": "schrift-anybody-extrabold-ttf",
+      "src": "../shared/fonts/anybody/static/Anybody-ExtraBold.ttf",
+      "root": "userFonts",
+      "rel": "Anybody-ExtraBold.ttf"
+    },
+    {
+      "id": "schrift-anybody-medium-ttf",
+      "src": "../shared/fonts/anybody/static/Anybody-Medium.ttf",
+      "root": "userFonts",
+      "rel": "Anybody-Medium.ttf"
+    },
+    {
+      "id": "schrift-anybody-regular-ttf",
+      "src": "../shared/fonts/anybody/static/Anybody-Regular.ttf",
+      "root": "userFonts",
+      "rel": "Anybody-Regular.ttf"
+    },
+    {
+      "id": "schrift-anybody-semibold-ttf",
+      "src": "../shared/fonts/anybody/static/Anybody-SemiBold.ttf",
+      "root": "userFonts",
+      "rel": "Anybody-SemiBold.ttf"
+    },
+    {
+      "id": "schrift-anybodyextraexpanded-black-ttf",
+      "src": "../shared/fonts/anybody/static/AnybodyExtraExpanded-Black.ttf",
+      "root": "userFonts",
+      "rel": "AnybodyExtraExpanded-Black.ttf"
+    },
+    {
+      "id": "schrift-anybodyextraexpanded-extrabold-ttf",
+      "src": "../shared/fonts/anybody/static/AnybodyExtraExpanded-ExtraBold.ttf",
+      "root": "userFonts",
+      "rel": "AnybodyExtraExpanded-ExtraBold.ttf"
+    },
+    {
+      "id": "schrift-anybodyultracondensed-black-ttf",
+      "src": "../shared/fonts/anybody/static/AnybodyUltraCondensed-Black.ttf",
+      "root": "userFonts",
+      "rel": "AnybodyUltraCondensed-Black.ttf"
+    },
+    {
+      "id": "schrift-anybodyultracondensed-extrabold-ttf",
+      "src": "../shared/fonts/anybody/static/AnybodyUltraCondensed-ExtraBold.ttf",
+      "root": "userFonts",
+      "rel": "AnybodyUltraCondensed-ExtraBold.ttf"
+    },
+    {
+      "id": "schrift-atkinsonhyperlegiblenext-bold-ttf",
+      "src": "../shared/fonts/atkinson-hyperlegible-next/static/AtkinsonHyperlegibleNext-Bold.ttf",
+      "root": "userFonts",
+      "rel": "AtkinsonHyperlegibleNext-Bold.ttf"
+    },
+    {
+      "id": "schrift-atkinsonhyperlegiblenext-bolditalic-ttf",
+      "src": "../shared/fonts/atkinson-hyperlegible-next/static/AtkinsonHyperlegibleNext-BoldItalic.ttf",
+      "root": "userFonts",
+      "rel": "AtkinsonHyperlegibleNext-BoldItalic.ttf"
+    },
+    {
+      "id": "schrift-atkinsonhyperlegiblenext-italic-ttf",
+      "src": "../shared/fonts/atkinson-hyperlegible-next/static/AtkinsonHyperlegibleNext-Italic.ttf",
+      "root": "userFonts",
+      "rel": "AtkinsonHyperlegibleNext-Italic.ttf"
+    },
+    {
+      "id": "schrift-atkinsonhyperlegiblenext-medium-ttf",
+      "src": "../shared/fonts/atkinson-hyperlegible-next/static/AtkinsonHyperlegibleNext-Medium.ttf",
+      "root": "userFonts",
+      "rel": "AtkinsonHyperlegibleNext-Medium.ttf"
+    },
+    {
+      "id": "schrift-atkinsonhyperlegiblenext-regular-ttf",
+      "src": "../shared/fonts/atkinson-hyperlegible-next/static/AtkinsonHyperlegibleNext-Regular.ttf",
+      "root": "userFonts",
+      "rel": "AtkinsonHyperlegibleNext-Regular.ttf"
+    },
+    {
+      "id": "schrift-atkinsonhyperlegiblenext-semibold-ttf",
+      "src": "../shared/fonts/atkinson-hyperlegible-next/static/AtkinsonHyperlegibleNext-SemiBold.ttf",
+      "root": "userFonts",
+      "rel": "AtkinsonHyperlegibleNext-SemiBold.ttf"
+    },
+    {
+      "id": "schrift-martianmono-bold-ttf",
+      "src": "../shared/fonts/martian-mono/static/MartianMono-Bold.ttf",
+      "root": "userFonts",
+      "rel": "MartianMono-Bold.ttf"
+    },
+    {
+      "id": "schrift-martianmono-medium-ttf",
+      "src": "../shared/fonts/martian-mono/static/MartianMono-Medium.ttf",
+      "root": "userFonts",
+      "rel": "MartianMono-Medium.ttf"
+    },
+    {
+      "id": "schrift-martianmono-regular-ttf",
+      "src": "../shared/fonts/martian-mono/static/MartianMono-Regular.ttf",
+      "root": "userFonts",
+      "rel": "MartianMono-Regular.ttf"
+    },
+    {
+      "id": "schrift-martianmono-semibold-ttf",
+      "src": "../shared/fonts/martian-mono/static/MartianMono-SemiBold.ttf",
+      "root": "userFonts",
+      "rel": "MartianMono-SemiBold.ttf"
+    }
+  ],
+  "actions": [
+    {
+      "type": "installFont",
+      "file": "schrift-anybody-black-ttf",
+      "displayName": "Anybody Black (TrueType)"
+    },
+    {
+      "type": "installFont",
+      "file": "schrift-anybody-bold-ttf",
+      "displayName": "Anybody Bold (TrueType)"
+    },
+    {
+      "type": "installFont",
+      "file": "schrift-anybody-extrabold-ttf",
+      "displayName": "Anybody ExtraBold (TrueType)"
+    },
+    {
+      "type": "installFont",
+      "file": "schrift-anybody-medium-ttf",
+      "displayName": "Anybody Medium (TrueType)"
+    },
+    {
+      "type": "installFont",
+      "file": "schrift-anybody-regular-ttf",
+      "displayName": "Anybody Regular (TrueType)"
+    },
+    {
+      "type": "installFont",
+      "file": "schrift-anybody-semibold-ttf",
+      "displayName": "Anybody SemiBold (TrueType)"
+    },
+    {
+      "type": "installFont",
+      "file": "schrift-anybodyextraexpanded-black-ttf",
+      "displayName": "Anybody ExtraExpanded Black (TrueType)"
+    },
+    {
+      "type": "installFont",
+      "file": "schrift-anybodyextraexpanded-extrabold-ttf",
+      "displayName": "Anybody ExtraExpanded ExtraBold (TrueType)"
+    },
+    {
+      "type": "installFont",
+      "file": "schrift-anybodyultracondensed-black-ttf",
+      "displayName": "Anybody UltraCondensed Black (TrueType)"
+    },
+    {
+      "type": "installFont",
+      "file": "schrift-anybodyultracondensed-extrabold-ttf",
+      "displayName": "Anybody UltraCondensed ExtraBold (TrueType)"
+    },
+    {
+      "type": "installFont",
+      "file": "schrift-atkinsonhyperlegiblenext-bold-ttf",
+      "displayName": "Atkinson Hyperlegible Next Bold (TrueType)"
+    },
+    {
+      "type": "installFont",
+      "file": "schrift-atkinsonhyperlegiblenext-bolditalic-ttf",
+      "displayName": "Atkinson Hyperlegible Next Bold Italic (TrueType)"
+    },
+    {
+      "type": "installFont",
+      "file": "schrift-atkinsonhyperlegiblenext-italic-ttf",
+      "displayName": "Atkinson Hyperlegible Next Italic (TrueType)"
+    },
+    {
+      "type": "installFont",
+      "file": "schrift-atkinsonhyperlegiblenext-medium-ttf",
+      "displayName": "Atkinson Hyperlegible Next Medium (TrueType)"
+    },
+    {
+      "type": "installFont",
+      "file": "schrift-atkinsonhyperlegiblenext-regular-ttf",
+      "displayName": "Atkinson Hyperlegible Next Regular (TrueType)"
+    },
+    {
+      "type": "installFont",
+      "file": "schrift-atkinsonhyperlegiblenext-semibold-ttf",
+      "displayName": "Atkinson Hyperlegible Next SemiBold (TrueType)"
+    },
+    {
+      "type": "installFont",
+      "file": "schrift-martianmono-bold-ttf",
+      "displayName": "Martian Mono Bold (TrueType)"
+    },
+    {
+      "type": "installFont",
+      "file": "schrift-martianmono-medium-ttf",
+      "displayName": "Martian Mono Medium (TrueType)"
+    },
+    {
+      "type": "installFont",
+      "file": "schrift-martianmono-regular-ttf",
+      "displayName": "Martian Mono Regular (TrueType)"
+    },
+    {
+      "type": "installFont",
+      "file": "schrift-martianmono-semibold-ttf",
+      "displayName": "Martian Mono SemiBold (TrueType)"
+    }
+  ]
+}

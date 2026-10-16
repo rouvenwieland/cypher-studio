@@ -1,0 +1,28 @@
+{
+  "formatVersion": 1,
+  "id": "social-event-plakat",
+  "title": "Event-Plakat",
+  "description": "Termin als Plakat im Hochformat: Datum, Titel, Ort, auf Mittelwelle-Kobalt.",
+  "target": "social",
+  "programId": null,
+  "format": {
+    "label": "1080 × 1920",
+    "widthPx": 1080,
+    "heightPx": 1920,
+    "dpi": null,
+    "widthMm": null,
+    "heightMm": null
+  },
+  "folder": "Social",
+  "fileExtension": ".social.json",
+  "socialTemplateId": "event-plakat",
+  "printProfileId": null,
+  "preview": "preview.png",
+  "requiresSetup": false,
+  "tags": [
+    "event",
+    "plakat",
+    "story",
+    "termin"
+  ]
+}

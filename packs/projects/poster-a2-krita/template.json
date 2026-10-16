@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "poster-a2-krita",
+  "title": "Poster A2 (Krita)",
+  "description": "Endformat 420 × 594 mm plus 3 mm Anschnitt (5031 × 7087 px, 300 dpi); Hilfslinien für Endformat und 4 mm Sicherheitsabstand.",
+  "target": "program",
+  "programId": "krita",
+  "format": {
+    "label": "426 × 600 mm",
+    "widthPx": 5031,
+    "heightPx": 7087,
+    "dpi": 300,
+    "widthMm": 426,
+    "heightMm": 600
+  },
+  "folder": "Motive",
+  "fileExtension": ".kra",
+  "file": "files/poster-a2.kra",
+  "printProfileId": null,
+  "preview": "preview.png",
+  "requiresSetup": false,
+  "tags": [
+    "poster",
+    "druck",
+    "krita"
+  ]
+}

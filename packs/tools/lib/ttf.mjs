@@ -6,7 +6,7 @@
  * @typedef {{
  *   copyright: string, family: string, subfamily: string, fullName: string, postScriptName: string,
  *   typographicFamily: string | null, typographicSubfamily: string | null,
- *   weightClass: number | null, isVariable: boolean, axes: string[], hasReservedFontName: boolean
+ *   weightClass: number | null, widthClass: number | null, italicAngle: number, isVariable: boolean, axes: string[], hasReservedFontName: boolean
  * }} FontInfo
  */
 
@@ -52,6 +52,8 @@ export function readFontInfo(bytes) {
     names.set(id, text);
   }
   const weightClass = tables['OS/2'] ? buf.readUInt16BE(tables['OS/2'].offset + 4) : null;
+  const widthClass = tables['OS/2'] ? buf.readUInt16BE(tables['OS/2'].offset + 6) : null;
+  const italicAngle = tables.post ? buf.readInt32BE(tables.post.offset + 4) / 65536 : 0;
   const axes = [];
   if (tables.fvar) {
     const off = tables.fvar.offset;
@@ -70,6 +72,8 @@ export function readFontInfo(bytes) {
     typographicFamily: names.get(16) ?? null,
     typographicSubfamily: names.get(17) ?? null,
     weightClass,
+    widthClass,
+    italicAngle,
     isVariable: Boolean(tables.fvar),
     axes,
     hasReservedFontName: /reserved font name/i.test(copyright),

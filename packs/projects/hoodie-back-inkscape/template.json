@@ -1,0 +1,28 @@
+{
+  "formatVersion": 1,
+  "id": "hoodie-back-inkscape",
+  "title": "Hoodie hinten (Inkscape)",
+  "description": "Leinwand 330 × 390 mm (3898 × 4606 px, 300 dpi), transparent, Seite in mm; Hilfslinien für Mitte, ideale Breite 300 mm.",
+  "target": "program",
+  "programId": "inkscape",
+  "format": {
+    "label": "330 × 390 mm",
+    "widthPx": 3898,
+    "heightPx": 4606,
+    "dpi": 300,
+    "widthMm": 330,
+    "heightMm": 390
+  },
+  "folder": "Motive",
+  "fileExtension": ".svg",
+  "file": "files/hoodie-back.svg",
+  "printProfileId": "shirtigo-hoodie-back",
+  "preview": "preview.png",
+  "requiresSetup": false,
+  "tags": [
+    "hoodie",
+    "druck",
+    "hinten",
+    "inkscape"
+  ]
+}

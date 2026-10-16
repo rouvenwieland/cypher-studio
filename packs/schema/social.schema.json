@@ -5,34 +5,173 @@
   "description": "ARCHITEKTUR.md 4.8, Typ SocialTemplate im IPC-Vertrag, aber mit Dateinamen statt AssetUrl (Rust ersetzt sie durch cyasset-URLs). Schriften nur aus brand.json, Hilfslinien aus SOCIAL_GUIDES. Zusatz gegenüber dem Vertrag: formatVersion, description, tags (optional).",
   "type": "object",
   "properties": {
-    "$schema": { "type": "string" },
-    "formatVersion": { "type": "integer", "const": 1 },
-    "id": { "$ref": "common.schema.json#/$defs/id" },
-    "title": { "$ref": "common.schema.json#/$defs/label" },
-    "description": { "type": "string", "maxLength": 400 },
-    "tags": { "type": "array", "items": { "type": "string", "minLength": 1, "maxLength": 32 }, "uniqueItems": true },
-    "format": { "type": "string", "enum": ["post", "postTall", "story", "reelCover"] },
-    "size": { "$ref": "common.schema.json#/$defs/size" },
-    "background": { "$ref": "#/$defs/fill" },
-    "layers": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/layer" } },
-    "safeZones": { "type": "array", "items": { "$ref": "common.schema.json#/$defs/rect" } },
-    "gridCrop": { "oneOf": [{ "$ref": "common.schema.json#/$defs/rect" }, { "type": "null" }] },
-    "preview": { "$ref": "common.schema.json#/$defs/relPath" }
+    "$schema": {
+      "type": "string"
+    },
+    "formatVersion": {
+      "type": "integer",
+      "const": 1
+    },
+    "id": {
+      "$ref": "common.schema.json#/$defs/id"
+    },
+    "title": {
+      "$ref": "common.schema.json#/$defs/label"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 400
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 32
+      },
+      "uniqueItems": true
+    },
+    "format": {
+      "type": "string",
+      "enum": [
+        "post",
+        "postTall",
+        "story",
+        "reelCover"
+      ]
+    },
+    "size": {
+      "$ref": "common.schema.json#/$defs/size"
+    },
+    "background": {
+      "$ref": "#/$defs/fill"
+    },
+    "layers": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/layer"
+      }
+    },
+    "safeZones": {
+      "type": "array",
+      "items": {
+        "$ref": "common.schema.json#/$defs/rect"
+      }
+    },
+    "gridCrop": {
+      "oneOf": [
+        {
+          "$ref": "common.schema.json#/$defs/rect"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "preview": {
+      "$ref": "common.schema.json#/$defs/relPath"
+    }
   },
-  "required": ["id", "title", "format", "size", "background", "layers", "safeZones", "gridCrop", "preview"],
+  "required": [
+    "id",
+    "title",
+    "format",
+    "size",
+    "background",
+    "layers",
+    "safeZones",
+    "gridCrop",
+    "preview"
+  ],
   "allOf": [
     {
-      "description": "Maße je Format (SOCIAL_FORMAT_SIZES im Vertrag).",
-      "if": { "properties": { "format": { "const": "post" } }, "required": ["format"] },
-      "then": { "properties": { "size": { "properties": { "width": { "const": 1080 }, "height": { "const": 1350 } } } } }
+      "if": {
+        "properties": {
+          "format": {
+            "const": "post"
+          }
+        },
+        "required": [
+          "format"
+        ]
+      },
+      "then": {
+        "type": "object",
+        "properties": {
+          "size": {
+            "type": "object",
+            "properties": {
+              "width": {
+                "const": 1080
+              },
+              "height": {
+                "const": 1350
+              }
+            }
+          }
+        }
+      },
+      "description": "Maße je Format (SOCIAL_FORMAT_SIZES im Vertrag)."
     },
     {
-      "if": { "properties": { "format": { "const": "postTall" } }, "required": ["format"] },
-      "then": { "properties": { "size": { "properties": { "width": { "const": 1080 }, "height": { "const": 1440 } } } } }
+      "if": {
+        "properties": {
+          "format": {
+            "const": "postTall"
+          }
+        },
+        "required": [
+          "format"
+        ]
+      },
+      "then": {
+        "type": "object",
+        "properties": {
+          "size": {
+            "type": "object",
+            "properties": {
+              "width": {
+                "const": 1080
+              },
+              "height": {
+                "const": 1440
+              }
+            }
+          }
+        }
+      }
     },
     {
-      "if": { "properties": { "format": { "enum": ["story", "reelCover"] } }, "required": ["format"] },
-      "then": { "properties": { "size": { "properties": { "width": { "const": 1080 }, "height": { "const": 1920 } } } } }
+      "if": {
+        "properties": {
+          "format": {
+            "enum": [
+              "story",
+              "reelCover"
+            ]
+          }
+        },
+        "required": [
+          "format"
+        ]
+      },
+      "then": {
+        "type": "object",
+        "properties": {
+          "size": {
+            "type": "object",
+            "properties": {
+              "width": {
+                "const": 1080
+              },
+              "height": {
+                "const": 1920
+              }
+            }
+          }
+        }
+      }
     }
   ],
   "additionalProperties": false,
@@ -41,37 +180,83 @@
       "oneOf": [
         {
           "type": "object",
-          "properties": { "type": { "const": "solid" }, "color": { "$ref": "common.schema.json#/$defs/hex" } },
-          "required": ["type", "color"],
+          "properties": {
+            "type": {
+              "const": "solid"
+            },
+            "color": {
+              "$ref": "common.schema.json#/$defs/hex"
+            }
+          },
+          "required": [
+            "type",
+            "color"
+          ],
           "additionalProperties": false
         },
         {
           "type": "object",
           "properties": {
-            "type": { "const": "linearGradient" },
-            "angleDeg": { "type": "number", "minimum": 0, "maximum": 360 },
+            "type": {
+              "const": "linearGradient"
+            },
+            "angleDeg": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 360
+            },
             "stops": {
               "type": "array",
               "minItems": 2,
               "items": {
                 "type": "object",
-                "properties": { "at": { "type": "number", "minimum": 0, "maximum": 1 }, "color": { "$ref": "common.schema.json#/$defs/hex" } },
-                "required": ["at", "color"],
+                "properties": {
+                  "at": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "color": {
+                    "$ref": "common.schema.json#/$defs/hex"
+                  }
+                },
+                "required": [
+                  "at",
+                  "color"
+                ],
                 "additionalProperties": false
               }
             }
           },
-          "required": ["type", "angleDeg", "stops"],
+          "required": [
+            "type",
+            "angleDeg",
+            "stops"
+          ],
           "additionalProperties": false
         },
         {
           "type": "object",
           "properties": {
-            "type": { "const": "image" },
-            "file": { "$ref": "common.schema.json#/$defs/relPath" },
-            "fit": { "type": "string", "enum": ["cover", "contain"] }
+            "type": {
+              "const": "image"
+            },
+            "file": {
+              "$ref": "common.schema.json#/$defs/relPath"
+            },
+            "fit": {
+              "type": "string",
+              "enum": [
+                "cover",
+                "contain"
+              ]
+            }
           },
-          "required": ["type", "file", "fit"],
+          "required": [
+            "type",
+            "file",
+            "fit"
+          ],
           "additionalProperties": false
         }
       ]
@@ -81,87 +266,254 @@
         {
           "type": "object",
           "properties": {
-            "type": { "const": "image" },
-            "id": { "$ref": "common.schema.json#/$defs/id" },
-            "slot": { "$ref": "common.schema.json#/$defs/id" },
-            "rect": { "$ref": "common.schema.json#/$defs/rect" },
-            "fit": { "type": "string", "enum": ["cover", "contain"] },
-            "radiusPx": { "type": "number", "minimum": 0 },
-            "required": { "type": "boolean" }
-          },
-          "required": ["type", "id", "slot", "rect", "fit", "radiusPx", "required"],
-          "additionalProperties": false
-        },
-        {
-          "type": "object",
-          "properties": {
-            "type": { "const": "text" },
-            "id": { "$ref": "common.schema.json#/$defs/id" },
-            "slot": { "$ref": "common.schema.json#/$defs/id" },
-            "rect": { "$ref": "common.schema.json#/$defs/rect" },
-            "fontFamily": { "description": "Muss in brand.json fonts[].family stehen (prüft validate.mjs).", "type": "string", "minLength": 1 },
-            "fontWeight": { "type": "integer", "minimum": 100, "maximum": 900, "multipleOf": 100 },
-            "sizePx": { "type": "number", "exclusiveMinimum": 0 },
-            "minSizePx": { "type": "number", "exclusiveMinimum": 0 },
-            "lineHeight": { "type": "number", "exclusiveMinimum": 0 },
-            "letterSpacingEm": { "type": "number" },
-            "color": { "$ref": "common.schema.json#/$defs/hex" },
-            "align": { "type": "string", "enum": ["left", "center", "right"] },
-            "valign": { "type": "string", "enum": ["top", "middle", "bottom"] },
-            "transform": { "type": "string", "enum": ["none", "uppercase"] },
-            "maxLines": { "type": "integer", "minimum": 1 },
-            "defaultText": { "type": "string", "maxLength": 200 }
+            "type": {
+              "const": "image"
+            },
+            "id": {
+              "$ref": "common.schema.json#/$defs/id"
+            },
+            "slot": {
+              "$ref": "common.schema.json#/$defs/id"
+            },
+            "rect": {
+              "$ref": "common.schema.json#/$defs/rect"
+            },
+            "fit": {
+              "type": "string",
+              "enum": [
+                "cover",
+                "contain"
+              ]
+            },
+            "radiusPx": {
+              "type": "number",
+              "minimum": 0
+            },
+            "required": {
+              "type": "boolean"
+            }
           },
           "required": [
-            "type", "id", "slot", "rect", "fontFamily", "fontWeight", "sizePx", "minSizePx", "lineHeight",
-            "letterSpacingEm", "color", "align", "valign", "transform", "maxLines", "defaultText"
+            "type",
+            "id",
+            "slot",
+            "rect",
+            "fit",
+            "radiusPx",
+            "required"
           ],
           "additionalProperties": false
         },
         {
           "type": "object",
           "properties": {
-            "type": { "const": "shape" },
-            "id": { "$ref": "common.schema.json#/$defs/id" },
-            "rect": { "$ref": "common.schema.json#/$defs/rect" },
-            "fill": { "$ref": "#/$defs/fill" },
-            "radiusPx": { "type": "number", "minimum": 0 },
-            "opacity": { "type": "number", "minimum": 0, "maximum": 1 }
+            "type": {
+              "const": "text"
+            },
+            "id": {
+              "$ref": "common.schema.json#/$defs/id"
+            },
+            "slot": {
+              "$ref": "common.schema.json#/$defs/id"
+            },
+            "rect": {
+              "$ref": "common.schema.json#/$defs/rect"
+            },
+            "fontFamily": {
+              "description": "Muss in brand.json fonts[].family stehen (prüft validate.mjs).",
+              "type": "string",
+              "minLength": 1
+            },
+            "fontWeight": {
+              "type": "integer",
+              "minimum": 100,
+              "maximum": 900,
+              "multipleOf": 100
+            },
+            "sizePx": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "minSizePx": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "lineHeight": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "letterSpacingEm": {
+              "type": "number"
+            },
+            "color": {
+              "$ref": "common.schema.json#/$defs/hex"
+            },
+            "align": {
+              "type": "string",
+              "enum": [
+                "left",
+                "center",
+                "right"
+              ]
+            },
+            "valign": {
+              "type": "string",
+              "enum": [
+                "top",
+                "middle",
+                "bottom"
+              ]
+            },
+            "transform": {
+              "type": "string",
+              "enum": [
+                "none",
+                "uppercase"
+              ]
+            },
+            "maxLines": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "defaultText": {
+              "type": "string",
+              "maxLength": 200
+            }
           },
-          "required": ["type", "id", "rect", "fill", "radiusPx", "opacity"],
+          "required": [
+            "type",
+            "id",
+            "slot",
+            "rect",
+            "fontFamily",
+            "fontWeight",
+            "sizePx",
+            "minSizePx",
+            "lineHeight",
+            "letterSpacingEm",
+            "color",
+            "align",
+            "valign",
+            "transform",
+            "maxLines",
+            "defaultText"
+          ],
           "additionalProperties": false
         },
         {
           "type": "object",
           "properties": {
-            "type": { "const": "logo" },
-            "id": { "$ref": "common.schema.json#/$defs/id" },
-            "rect": { "$ref": "common.schema.json#/$defs/rect" },
-            "variant": { "type": "string", "enum": ["light", "dark"] }
+            "type": {
+              "const": "shape"
+            },
+            "id": {
+              "$ref": "common.schema.json#/$defs/id"
+            },
+            "rect": {
+              "$ref": "common.schema.json#/$defs/rect"
+            },
+            "fill": {
+              "$ref": "#/$defs/fill"
+            },
+            "radiusPx": {
+              "type": "number",
+              "minimum": 0
+            },
+            "opacity": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
           },
-          "required": ["type", "id", "rect", "variant"],
+          "required": [
+            "type",
+            "id",
+            "rect",
+            "fill",
+            "radiusPx",
+            "opacity"
+          ],
           "additionalProperties": false
         },
         {
           "type": "object",
           "properties": {
-            "type": { "const": "grain" },
-            "id": { "$ref": "common.schema.json#/$defs/id" },
-            "opacity": { "type": "number", "minimum": 0, "maximum": 1 },
-            "seed": { "type": "integer" }
+            "type": {
+              "const": "logo"
+            },
+            "id": {
+              "$ref": "common.schema.json#/$defs/id"
+            },
+            "rect": {
+              "$ref": "common.schema.json#/$defs/rect"
+            },
+            "variant": {
+              "type": "string",
+              "enum": [
+                "light",
+                "dark"
+              ]
+            }
           },
-          "required": ["type", "id", "opacity", "seed"],
+          "required": [
+            "type",
+            "id",
+            "rect",
+            "variant"
+          ],
           "additionalProperties": false
         },
         {
           "type": "object",
           "properties": {
-            "type": { "const": "scanlines" },
-            "id": { "$ref": "common.schema.json#/$defs/id" },
-            "opacity": { "type": "number", "minimum": 0, "maximum": 1 },
-            "spacingPx": { "type": "number", "exclusiveMinimum": 0 }
+            "type": {
+              "const": "grain"
+            },
+            "id": {
+              "$ref": "common.schema.json#/$defs/id"
+            },
+            "opacity": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "seed": {
+              "type": "integer"
+            }
           },
-          "required": ["type", "id", "opacity", "spacingPx"],
+          "required": [
+            "type",
+            "id",
+            "opacity",
+            "seed"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "scanlines"
+            },
+            "id": {
+              "$ref": "common.schema.json#/$defs/id"
+            },
+            "opacity": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "spacingPx": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
+          },
+          "required": [
+            "type",
+            "id",
+            "opacity",
+            "spacingPx"
+          ],
           "additionalProperties": false
         }
       ]

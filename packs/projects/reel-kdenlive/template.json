@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "reel-kdenlive",
+  "title": "Reel (Kdenlive)",
+  "description": "Kdenlive-Projekt 1080 × 1920 (9:16), 30 fps, drei Videospuren (Video, Titel, Untertitel) und zwei Tonspuren (Originalton, Musik). Braucht das Cypher-Videoprofil aus der Einrichtung.",
+  "target": "program",
+  "programId": "kdenlive",
+  "format": {
+    "label": "1080 × 1920",
+    "widthPx": 1080,
+    "heightPx": 1920,
+    "dpi": null,
+    "widthMm": null,
+    "heightMm": null
+  },
+  "folder": "Video",
+  "fileExtension": ".kdenlive",
+  "file": "files/reel.kdenlive",
+  "printProfileId": null,
+  "preview": "preview.png",
+  "requiresSetup": true,
+  "tags": [
+    "reel",
+    "video",
+    "kdenlive"
+  ]
+}

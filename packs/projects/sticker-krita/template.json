@@ -1,0 +1,29 @@
+{
+  "formatVersion": 1,
+  "id": "sticker-krita",
+  "title": "Sticker 1:1 (Krita)",
+  "description": "Quadratische Fläche 80 × 80 mm (945 × 945 px, 300 dpi); nur als Datei, Shirtigo druckt keine Sticker.",
+  "target": "program",
+  "programId": "krita",
+  "format": {
+    "label": "80 × 80 mm",
+    "widthPx": 945,
+    "heightPx": 945,
+    "dpi": 300,
+    "widthMm": 80,
+    "heightMm": 80
+  },
+  "folder": "Motive",
+  "fileExtension": ".kra",
+  "file": "files/sticker.kra",
+  "printProfileId": null,
+  "preview": "preview.png",
+  "requiresSetup": false,
+  "tags": [
+    "sticker",
+    "krita"
+  ],
+  "assumptions": [
+    "Die Größe 80 × 80 mm ist eine Annahme (der Shop nennt keine Stickergröße)."
+  ]
+}

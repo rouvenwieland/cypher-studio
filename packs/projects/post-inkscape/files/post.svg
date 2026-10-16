@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="1080" height="1350" viewBox="0 0 1080 1350" version="1.1" id="svg1" sodipodi:docname="cypher-post.svg"
+   inkscape:version="1.4.4" inkscape:export-xdpi="96" inkscape:export-ydpi="96"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg">
+  <inkscape:templateinfo>
+    <inkscape:name>Cypher Post 4:5</inkscape:name>
+    <inkscape:label>1080 × 1350 px</inkscape:label>
+    <inkscape:author>Cypher Kollektiv</inkscape:author>
+    <inkscape:shortdesc>1080 × 1350 px mit Hilfslinien und gesperrter, ausgeblendeter Ebene für die Sicherheitszonen (wird nicht exportiert).</inkscape:shortdesc>
+    <inkscape:date>2026-10-16</inkscape:date>
+    <inkscape:keywords>Cypher Social Instagram TikTok Post 4:5</inkscape:keywords>
+    <inkscape:category>Cypher</inkscape:category>
+    <inkscape:priority>30</inkscape:priority>
+  </inkscape:templateinfo>
+  <sodipodi:namedview id="namedview1" pagecolor="#ffffff" bordercolor="#000000" borderopacity="0.25" inkscape:showpageshadow="2"
+     inkscape:pageopacity="0" inkscape:pagecheckerboard="1" inkscape:deskcolor="#d1d1d1" inkscape:document-units="px" showguides="true"
+     inkscape:current-layer="layer-motiv">
+    <sodipodi:guide position="34,0" orientation="1,0" inkscape:label="Profilraster links (34 px)" inkscape:locked="false" inkscape:color="rgb(0,103,107)" id="guide-v1" />
+    <sodipodi:guide position="540,0" orientation="1,0" inkscape:label="Mitte" inkscape:locked="false" inkscape:color="rgb(0,103,107)" id="guide-v2" />
+    <sodipodi:guide position="1046,0" orientation="1,0" inkscape:label="Profilraster rechts (1046 px)" inkscape:locked="false" inkscape:color="rgb(0,103,107)" id="guide-v3" />
+  </sodipodi:namedview>
+  <defs id="defs1" />
+  <g inkscape:label="Motiv" inkscape:groupmode="layer" id="layer-motiv" />
+  <g inkscape:label="Sicherheitszonen (nicht exportieren)" inkscape:groupmode="layer" id="layer-zonen" sodipodi:insensitive="true" style="display:none">
+    <path d="M0,0 H1080 V1350 H0 Z M34,0 V1350 H1046 V0 Z" fill="#0d0d0d" fill-opacity="0.44" fill-rule="evenodd" id="zone-schatten" />
+    <rect x="36" y="2" width="1008" height="1346" fill="none" stroke="#00d4d8" stroke-width="4" stroke-dasharray="16 8" id="zone-rand-1" />
+    <text x="24" y="38" style="font-family:'Martian Mono';font-weight:500;font-size:20px;fill:#efeee9" id="zone-text">SICHERHEITSZONE - Ebene ausblenden, bevor du exportierst</text>
+  </g>
+</svg>

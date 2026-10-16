@@ -17,7 +17,7 @@ bitte die Marke entfernen oder ersetzen (`brand.json`, `logos/`, Vorlagen).
 **Ausgenommen** (frei nutzbar) sind:
 
 - die technischen Daten: Druckflächen, Maße, Sicherheitszonen und Formate in `packs/shared/formats.json` (Zahlen der Druckerei und der Plattformen),
-- die Schriften unter `packs/shared/fonts/` (SIL Open Font License 1.1, Texte liegen bei, keine Änderung, kein „Reserved Font Name“),
+- die Schriften unter `packs/shared/fonts/` (SIL Open Font License 1.1, Texte liegen bei; Herkunft und Ableitungen siehe `QUELLEN.md`, kein „Reserved Font Name“),
 - die Skripte unter `packs/tools/` (MIT),
 - Farbwerte als reine Zahlenangabe (Hexcodes sind nicht schützbar; geschützt ist nur die Marke als Ganzes).
 

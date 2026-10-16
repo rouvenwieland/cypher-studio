@@ -1,0 +1,28 @@
+{
+  "formatVersion": 1,
+  "id": "hoodie-back-krita",
+  "title": "Hoodie hinten (Krita)",
+  "description": "Leinwand 330 × 390 mm (3898 × 4606 px, 300 dpi), transparent; Hilfslinien für Mitte, ideale Breite 300 mm.",
+  "target": "program",
+  "programId": "krita",
+  "format": {
+    "label": "330 × 390 mm",
+    "widthPx": 3898,
+    "heightPx": 4606,
+    "dpi": 300,
+    "widthMm": 330,
+    "heightMm": 390
+  },
+  "folder": "Motive",
+  "fileExtension": ".kra",
+  "file": "files/hoodie-back.kra",
+  "printProfileId": "shirtigo-hoodie-back",
+  "preview": "preview.png",
+  "requiresSetup": false,
+  "tags": [
+    "hoodie",
+    "druck",
+    "hinten",
+    "krita"
+  ]
+}

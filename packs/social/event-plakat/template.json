@@ -1,0 +1,158 @@
+{
+  "formatVersion": 1,
+  "id": "event-plakat",
+  "title": "Event-Plakat",
+  "description": "Termin als Plakat im Hochformat: Datum, Titel, Ort, auf Mittelwelle-Kobalt.",
+  "tags": [
+    "event",
+    "plakat",
+    "story",
+    "termin"
+  ],
+  "format": "story",
+  "size": {
+    "width": 1080,
+    "height": 1920
+  },
+  "background": {
+    "type": "solid",
+    "color": "#1f2bd0"
+  },
+  "layers": [
+    {
+      "type": "text",
+      "id": "kennung",
+      "slot": "kennung",
+      "rect": {
+        "x": 120,
+        "y": 300,
+        "width": 840,
+        "height": 40
+      },
+      "fontFamily": "Martian Mono",
+      "fontWeight": 500,
+      "sizePx": 28,
+      "minSizePx": 28,
+      "lineHeight": 1.2,
+      "letterSpacingEm": 0.06,
+      "color": "#f3f4f7",
+      "align": "left",
+      "valign": "top",
+      "transform": "uppercase",
+      "maxLines": 1,
+      "defaultText": "Live · Mittelwelle"
+    },
+    {
+      "type": "text",
+      "id": "datum",
+      "slot": "datum",
+      "rect": {
+        "x": 120,
+        "y": 360,
+        "width": 840,
+        "height": 250
+      },
+      "fontFamily": "Anybody",
+      "fontWeight": 800,
+      "sizePx": 230,
+      "minSizePx": 120,
+      "lineHeight": 0.9,
+      "letterSpacingEm": -0.01,
+      "color": "#f3f4f7",
+      "align": "left",
+      "valign": "top",
+      "transform": "uppercase",
+      "maxLines": 1,
+      "defaultText": "22.10."
+    },
+    {
+      "type": "shape",
+      "id": "linie",
+      "rect": {
+        "x": 120,
+        "y": 640,
+        "width": 840,
+        "height": 8
+      },
+      "fill": {
+        "type": "solid",
+        "color": "#f3f4f7"
+      },
+      "radiusPx": 0,
+      "opacity": 1
+    },
+    {
+      "type": "text",
+      "id": "titel",
+      "slot": "titel",
+      "rect": {
+        "x": 120,
+        "y": 680,
+        "width": 840,
+        "height": 330
+      },
+      "fontFamily": "Anybody",
+      "fontWeight": 800,
+      "sizePx": 100,
+      "minSizePx": 64,
+      "lineHeight": 0.9,
+      "letterSpacingEm": -0.01,
+      "color": "#f3f4f7",
+      "align": "left",
+      "valign": "top",
+      "transform": "uppercase",
+      "maxLines": 3,
+      "defaultText": "Elternabend der Kollektion"
+    },
+    {
+      "type": "text",
+      "id": "ort",
+      "slot": "ort",
+      "rect": {
+        "x": 120,
+        "y": 1040,
+        "width": 560,
+        "height": 120
+      },
+      "fontFamily": "Atkinson Hyperlegible Next",
+      "fontWeight": 400,
+      "sizePx": 44,
+      "minSizePx": 32,
+      "lineHeight": 1.25,
+      "letterSpacingEm": 0,
+      "color": "#f3f4f7",
+      "align": "left",
+      "valign": "top",
+      "transform": "none",
+      "maxLines": 2,
+      "defaultText": "Hinterhof 7 · Einlass 19:00"
+    },
+    {
+      "type": "logo",
+      "id": "logo",
+      "rect": {
+        "x": 736,
+        "y": 1146,
+        "width": 224,
+        "height": 97
+      },
+      "variant": "light"
+    },
+    {
+      "type": "grain",
+      "id": "korn",
+      "opacity": 0.05,
+      "seed": 23
+    }
+  ],
+  "safeZones": [
+    {
+      "x": 120,
+      "y": 270,
+      "width": 840,
+      "height": 978
+    }
+  ],
+  "gridCrop": null,
+  "preview": "preview.png"
+}

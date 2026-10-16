@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "social-drop-ankuendigung",
+  "title": "Drop-Ankündigung",
+  "description": "Neuer Drop: Kennung, große Überschrift, Motivbild, Datum und Unterzeile auf Tinte.",
+  "target": "social",
+  "programId": null,
+  "format": {
+    "label": "1080 × 1350",
+    "widthPx": 1080,
+    "heightPx": 1350,
+    "dpi": null,
+    "widthMm": null,
+    "heightMm": null
+  },
+  "folder": "Social",
+  "fileExtension": ".social.json",
+  "socialTemplateId": "drop-ankuendigung",
+  "printProfileId": null,
+  "preview": "preview.png",
+  "requiresSetup": false,
+  "tags": [
+    "drop",
+    "post",
+    "ankündigung"
+  ]
+}

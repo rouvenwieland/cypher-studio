@@ -1,0 +1,415 @@
+{
+  "$schema": "../schema/pack.schema.json",
+  "formatVersion": 1,
+  "id": "krita",
+  "programId": "krita",
+  "version": "1.0.0",
+  "title": "Cypher-Einrichtung für Krita",
+  "description": "Paletten, Arbeitsfläche, Vorlagen und Schriften des Cypher Kollektivs für Krita 5.",
+  "programVersions": ">=5.2, <6",
+  "requiresPacks": [],
+  "requiresProgramClosed": false,
+  "components": [
+    {
+      "id": "palette",
+      "kind": "bundle",
+      "label": "Paletten „Cypher Kollektionen“ (17 Farben) und „Cypher Textil (Druckfarben)“",
+      "optional": false,
+      "files": [
+        "bundle-cypher-bundle"
+      ],
+      "preview": {
+        "colors": [
+          "#0d0d0d",
+          "#efeee9",
+          "#ff4f12",
+          "#e4f531",
+          "#00d4d8",
+          "#0b0b0a",
+          "#1f2bd0",
+          "#f3f4f7",
+          "#c9a03f",
+          "#a47c2a",
+          "#0d0a05",
+          "#141210",
+          "#f2efe8",
+          "#8c8a86",
+          "#1d2738",
+          "#cdbb9a",
+          "#efe4cc"
+        ],
+        "formats": [],
+        "fonts": []
+      }
+    },
+    {
+      "id": "templates",
+      "kind": "templates",
+      "label": "Vorlagen: Shirt, Hoodie, Poster, Sticker, Post, Story, Reel-Cover",
+      "optional": false,
+      "files": [
+        "vorlage-directory",
+        "vorlage-cypher-hoodie-back-desktop",
+        "vorlage-cypher-hoodie-front-desktop",
+        "vorlage-cypher-post-desktop",
+        "vorlage-cypher-poster-a2-desktop",
+        "vorlage-cypher-reel-cover-desktop",
+        "vorlage-cypher-shirt-back-desktop",
+        "vorlage-cypher-shirt-front-desktop",
+        "vorlage-cypher-sticker-quadrat-desktop",
+        "vorlage-cypher-story-desktop",
+        "vorlage-cypher-hoodie-back-kra",
+        "vorlage-cypher-hoodie-front-kra",
+        "vorlage-cypher-post-kra",
+        "vorlage-cypher-poster-a2-kra",
+        "vorlage-cypher-reel-cover-kra",
+        "vorlage-cypher-shirt-back-kra",
+        "vorlage-cypher-shirt-front-kra",
+        "vorlage-cypher-sticker-quadrat-kra",
+        "vorlage-cypher-story-kra",
+        "vorlage-cypher-hoodie-back-png",
+        "vorlage-cypher-hoodie-front-png",
+        "vorlage-cypher-post-png",
+        "vorlage-cypher-poster-a2-png",
+        "vorlage-cypher-reel-cover-png",
+        "vorlage-cypher-shirt-back-png",
+        "vorlage-cypher-shirt-front-png",
+        "vorlage-cypher-sticker-quadrat-png",
+        "vorlage-cypher-story-png"
+      ],
+      "preview": {
+        "colors": [],
+        "formats": [
+          "Shirt vorne 330 × 450 mm",
+          "Shirt hinten 330 × 450 mm",
+          "Hoodie vorne 330 × 280 mm",
+          "Hoodie hinten 330 × 390 mm",
+          "Poster A2 426 × 600 mm",
+          "Post 4:5 1080 × 1350",
+          "Story / Reel 9:16 1080 × 1920",
+          "Reel-Cover 9:16 1080 × 1920"
+        ],
+        "fonts": []
+      }
+    },
+    {
+      "id": "fonts",
+      "kind": "fonts",
+      "label": "Schriften Anybody, Atkinson Hyperlegible Next und Martian Mono",
+      "optional": false,
+      "files": [
+        "schrift-anybody-italic-variable-ttf",
+        "schrift-anybody-variable-ttf",
+        "schrift-atkinsonhyperlegiblenext-italic-variable-ttf",
+        "schrift-atkinsonhyperlegiblenext-variable-ttf",
+        "schrift-martianmono-variable-ttf"
+      ],
+      "preview": {
+        "colors": [],
+        "formats": [],
+        "fonts": [
+          "Anybody",
+          "Atkinson Hyperlegible Next",
+          "Martian Mono"
+        ]
+      }
+    },
+    {
+      "id": "workspace",
+      "kind": "workspace",
+      "label": "Arbeitsfläche „Cypher Druck“",
+      "optional": true,
+      "defaultSelected": false,
+      "files": [
+        "bundle-cypher-arbeitsflaeche-bundle"
+      ],
+      "preview": {
+        "colors": [],
+        "formats": [],
+        "fonts": []
+      }
+    },
+    {
+      "id": "palette-lose",
+      "kind": "palette",
+      "label": "Paletten als lose Dateien (Ausweichweg, falls das Bundle nicht erscheint)",
+      "optional": true,
+      "defaultSelected": false,
+      "fallbackFor": "palette",
+      "files": [
+        "lose-cypher-kollektionen-kpl",
+        "lose-cypher-textil-druck-kpl"
+      ],
+      "preview": {
+        "colors": [
+          "#0d0d0d",
+          "#efeee9",
+          "#ff4f12",
+          "#e4f531",
+          "#00d4d8",
+          "#0b0b0a",
+          "#1f2bd0",
+          "#f3f4f7",
+          "#c9a03f",
+          "#a47c2a",
+          "#0d0a05",
+          "#141210",
+          "#f2efe8",
+          "#8c8a86",
+          "#1d2738",
+          "#cdbb9a",
+          "#efe4cc"
+        ],
+        "formats": [],
+        "fonts": []
+      }
+    },
+    {
+      "id": "workspace-lose",
+      "kind": "workspace",
+      "label": "Arbeitsfläche als lose Datei (Ausweichweg)",
+      "optional": true,
+      "defaultSelected": false,
+      "fallbackFor": "workspace",
+      "files": [
+        "lose-cypher-druck-kws"
+      ],
+      "preview": {
+        "colors": [],
+        "formats": [],
+        "fonts": []
+      }
+    }
+  ],
+  "files": [
+    {
+      "id": "bundle-cypher-bundle",
+      "src": "bundles/cypher.bundle",
+      "root": "kritaResources",
+      "rel": "bundles/cypher.bundle"
+    },
+    {
+      "id": "vorlage-directory",
+      "src": "templates/Cypher/.directory",
+      "root": "kritaResources",
+      "rel": "templates/Cypher/.directory"
+    },
+    {
+      "id": "vorlage-cypher-hoodie-back-desktop",
+      "src": "templates/Cypher/cypher-hoodie-back.desktop",
+      "root": "kritaResources",
+      "rel": "templates/Cypher/cypher-hoodie-back.desktop"
+    },
+    {
+      "id": "vorlage-cypher-hoodie-front-desktop",
+      "src": "templates/Cypher/cypher-hoodie-front.desktop",
+      "root": "kritaResources",
+      "rel": "templates/Cypher/cypher-hoodie-front.desktop"
+    },
+    {
+      "id": "vorlage-cypher-post-desktop",
+      "src": "templates/Cypher/cypher-post.desktop",
+      "root": "kritaResources",
+      "rel": "templates/Cypher/cypher-post.desktop"
+    },
+    {
+      "id": "vorlage-cypher-poster-a2-desktop",
+      "src": "templates/Cypher/cypher-poster-a2.desktop",
+      "root": "kritaResources",
+      "rel": "templates/Cypher/cypher-poster-a2.desktop"
+    },
+    {
+      "id": "vorlage-cypher-reel-cover-desktop",
+      "src": "templates/Cypher/cypher-reel-cover.desktop",
+      "root": "kritaResources",
+      "rel": "templates/Cypher/cypher-reel-cover.desktop"
+    },
+    {
+      "id": "vorlage-cypher-shirt-back-desktop",
+      "src": "templates/Cypher/cypher-shirt-back.desktop",
+      "root": "kritaResources",
+      "rel": "templates/Cypher/cypher-shirt-back.desktop"
+    },
+    {
+      "id": "vorlage-cypher-shirt-front-desktop",
+      "src": "templates/Cypher/cypher-shirt-front.desktop",
+      "root": "kritaResources",
+      "rel": "templates/Cypher/cypher-shirt-front.desktop"
+    },
+    {
+      "id": "vorlage-cypher-sticker-quadrat-desktop",
+      "src": "templates/Cypher/cypher-sticker-quadrat.desktop",
+      "root": "kritaResources",
+      "rel": "templates/Cypher/cypher-sticker-quadrat.desktop"
+    },
+    {
+      "id": "vorlage-cypher-story-desktop",
+      "src": "templates/Cypher/cypher-story.desktop",
+      "root": "kritaResources",
+      "rel": "templates/Cypher/cypher-story.desktop"
+    },
+    {
+      "id": "vorlage-cypher-hoodie-back-kra",
+      "src": "templates/Cypher/.source/cypher-hoodie-back.kra",
+      "root": "kritaResources",
+      "rel": "templates/Cypher/.source/cypher-hoodie-back.kra"
+    },
+    {
+      "id": "vorlage-cypher-hoodie-front-kra",
+      "src": "templates/Cypher/.source/cypher-hoodie-front.kra",
+      "root": "kritaResources",
+      "rel": "templates/Cypher/.source/cypher-hoodie-front.kra"
+    },
+    {
+      "id": "vorlage-cypher-post-kra",
+      "src": "templates/Cypher/.source/cypher-post.kra",
+      "root": "kritaResources",
+      "rel": "templates/Cypher/.source/cypher-post.kra"
+    },
+    {
+      "id": "vorlage-cypher-poster-a2-kra",
+      "src": "templates/Cypher/.source/cypher-poster-a2.kra",
+      "root": "kritaResources",
+      "rel": "templates/Cypher/.source/cypher-poster-a2.kra"
+    },
+    {
+      "id": "vorlage-cypher-reel-cover-kra",
+      "src": "templates/Cypher/.source/cypher-reel-cover.kra",
+      "root": "kritaResources",
+      "rel": "templates/Cypher/.source/cypher-reel-cover.kra"
+    },
+    {
+      "id": "vorlage-cypher-shirt-back-kra",
+      "src": "templates/Cypher/.source/cypher-shirt-back.kra",
+      "root": "kritaResources",
+      "rel": "templates/Cypher/.source/cypher-shirt-back.kra"
+    },
+    {
+      "id": "vorlage-cypher-shirt-front-kra",
+      "src": "templates/Cypher/.source/cypher-shirt-front.kra",
+      "root": "kritaResources",
+      "rel": "templates/Cypher/.source/cypher-shirt-front.kra"
+    },
+    {
+      "id": "vorlage-cypher-sticker-quadrat-kra",
+      "src": "templates/Cypher/.source/cypher-sticker-quadrat.kra",
+      "root": "kritaResources",
+      "rel": "templates/Cypher/.source/cypher-sticker-quadrat.kra"
+    },
+    {
+      "id": "vorlage-cypher-story-kra",
+      "src": "templates/Cypher/.source/cypher-story.kra",
+      "root": "kritaResources",
+      "rel": "templates/Cypher/.source/cypher-story.kra"
+    },
+    {
+      "id": "vorlage-cypher-hoodie-back-png",
+      "src": "templates/Cypher/.icon/cypher-hoodie-back.png",
+      "root": "kritaResources",
+      "rel": "templates/Cypher/.icon/cypher-hoodie-back.png"
+    },
+    {
+      "id": "vorlage-cypher-hoodie-front-png",
+      "src": "templates/Cypher/.icon/cypher-hoodie-front.png",
+      "root": "kritaResources",
+      "rel": "templates/Cypher/.icon/cypher-hoodie-front.png"
+    },
+    {
+      "id": "vorlage-cypher-post-png",
+      "src": "templates/Cypher/.icon/cypher-post.png",
+      "root": "kritaResources",
+      "rel": "templates/Cypher/.icon/cypher-post.png"
+    },
+    {
+      "id": "vorlage-cypher-poster-a2-png",
+      "src": "templates/Cypher/.icon/cypher-poster-a2.png",
+      "root": "kritaResources",
+      "rel": "templates/Cypher/.icon/cypher-poster-a2.png"
+    },
+    {
+      "id": "vorlage-cypher-reel-cover-png",
+      "src": "templates/Cypher/.icon/cypher-reel-cover.png",
+      "root": "kritaResources",
+      "rel": "templates/Cypher/.icon/cypher-reel-cover.png"
+    },
+    {
+      "id": "vorlage-cypher-shirt-back-png",
+      "src": "templates/Cypher/.icon/cypher-shirt-back.png",
+      "root": "kritaResources",
+      "rel": "templates/Cypher/.icon/cypher-shirt-back.png"
+    },
+    {
+      "id": "vorlage-cypher-shirt-front-png",
+      "src": "templates/Cypher/.icon/cypher-shirt-front.png",
+      "root": "kritaResources",
+      "rel": "templates/Cypher/.icon/cypher-shirt-front.png"
+    },
+    {
+      "id": "vorlage-cypher-sticker-quadrat-png",
+      "src": "templates/Cypher/.icon/cypher-sticker-quadrat.png",
+      "root": "kritaResources",
+      "rel": "templates/Cypher/.icon/cypher-sticker-quadrat.png"
+    },
+    {
+      "id": "vorlage-cypher-story-png",
+      "src": "templates/Cypher/.icon/cypher-story.png",
+      "root": "kritaResources",
+      "rel": "templates/Cypher/.icon/cypher-story.png"
+    },
+    {
+      "id": "schrift-anybody-italic-variable-ttf",
+      "src": "../shared/fonts/anybody/Anybody-Italic-Variable.ttf",
+      "root": "kritaResources",
+      "rel": "fonts/cypher/Anybody-Italic-Variable.ttf"
+    },
+    {
+      "id": "schrift-anybody-variable-ttf",
+      "src": "../shared/fonts/anybody/Anybody-Variable.ttf",
+      "root": "kritaResources",
+      "rel": "fonts/cypher/Anybody-Variable.ttf"
+    },
+    {
+      "id": "schrift-atkinsonhyperlegiblenext-italic-variable-ttf",
+      "src": "../shared/fonts/atkinson-hyperlegible-next/AtkinsonHyperlegibleNext-Italic-Variable.ttf",
+      "root": "kritaResources",
+      "rel": "fonts/cypher/AtkinsonHyperlegibleNext-Italic-Variable.ttf"
+    },
+    {
+      "id": "schrift-atkinsonhyperlegiblenext-variable-ttf",
+      "src": "../shared/fonts/atkinson-hyperlegible-next/AtkinsonHyperlegibleNext-Variable.ttf",
+      "root": "kritaResources",
+      "rel": "fonts/cypher/AtkinsonHyperlegibleNext-Variable.ttf"
+    },
+    {
+      "id": "schrift-martianmono-variable-ttf",
+      "src": "../shared/fonts/martian-mono/MartianMono-Variable.ttf",
+      "root": "kritaResources",
+      "rel": "fonts/cypher/MartianMono-Variable.ttf"
+    },
+    {
+      "id": "bundle-cypher-arbeitsflaeche-bundle",
+      "src": "bundles/cypher-arbeitsflaeche.bundle",
+      "root": "kritaResources",
+      "rel": "bundles/cypher-arbeitsflaeche.bundle"
+    },
+    {
+      "id": "lose-cypher-kollektionen-kpl",
+      "src": "../shared/palettes/cypher-kollektionen.kpl",
+      "root": "kritaResources",
+      "rel": "palettes/cypher-kollektionen.kpl"
+    },
+    {
+      "id": "lose-cypher-textil-druck-kpl",
+      "src": "../shared/palettes/cypher-textil-druck.kpl",
+      "root": "kritaResources",
+      "rel": "palettes/cypher-textil-druck.kpl"
+    },
+    {
+      "id": "lose-cypher-druck-kws",
+      "src": "workspaces/cypher-druck.kws",
+      "root": "kritaResources",
+      "rel": "workspaces/cypher-druck.kws"
+    }
+  ],
+  "actions": []
+}

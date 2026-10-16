@@ -1,0 +1,31 @@
+{
+  "formatVersion": 1,
+  "id": "shirt-front-krita",
+  "title": "Shirt vorne (Krita)",
+  "description": "Leinwand 330 × 450 mm (3898 × 5315 px, 300 dpi), transparent; Hilfslinien für Mitte, ideale Breite 300 mm und Richtwert der sicheren Fläche 280 × 360 mm.",
+  "target": "program",
+  "programId": "krita",
+  "format": {
+    "label": "330 × 450 mm",
+    "widthPx": 3898,
+    "heightPx": 5315,
+    "dpi": 300,
+    "widthMm": 330,
+    "heightMm": 450
+  },
+  "folder": "Motive",
+  "fileExtension": ".kra",
+  "file": "files/shirt-front.kra",
+  "printProfileId": "shirtigo-tee-front",
+  "preview": "preview.png",
+  "requiresSetup": false,
+  "tags": [
+    "shirt",
+    "druck",
+    "vorne",
+    "krita"
+  ],
+  "assumptions": [
+    "Lage der sicheren Fläche 280 × 360 mm (oben mittig) ist eine Annahme bis zum Testdruck."
+  ]
+}

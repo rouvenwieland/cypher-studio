@@ -1,0 +1,28 @@
+{
+  "formatVersion": 1,
+  "id": "social-drop-ankuendigung-story",
+  "title": "Drop-Ankündigung (Story)",
+  "description": "Wie die Post-Vorlage, im Hochformat 9:16; alles innerhalb der Sicherheitszone für Instagram und TikTok.",
+  "target": "social",
+  "programId": null,
+  "format": {
+    "label": "1080 × 1920",
+    "widthPx": 1080,
+    "heightPx": 1920,
+    "dpi": null,
+    "widthMm": null,
+    "heightMm": null
+  },
+  "folder": "Social",
+  "fileExtension": ".social.json",
+  "socialTemplateId": "drop-ankuendigung-story",
+  "printProfileId": null,
+  "preview": "preview.png",
+  "requiresSetup": false,
+  "tags": [
+    "drop",
+    "story",
+    "reel",
+    "ankündigung"
+  ]
+}
