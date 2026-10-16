@@ -1,7 +1,8 @@
 /**
  * Cypher Studio – IPC-Vertrag zwischen Rust-Kern (Team A) und Frontend (Team B)
  * ============================================================================
- * Stand 16.10.2026 · Vertragsversion 0.1.0 · gehört zu docs/ARCHITEKTUR.md, Abschnitt 3
+ * Stand 16.10.2026 · Vertragsversion 0.2.0 · gehört zu docs/ARCHITEKTUR.md, Abschnitt 3
+ * Bildschirme und Abläufe: docs/CONCEPT.md, Gestaltung: docs/DESIGN.md + docs/tokens.css
  *
  * Diese Datei ist die KANONISCHE Quelle für alle Typen, die über die Tauri-IPC-Grenze gehen.
  * Änderungen nur per Vertragsänderungs-PR (Zone I, siehe ARCHITEKTUR.md 1.3); beide Teams reviewen.
@@ -28,7 +29,7 @@
  *   (src/i18n/de.ts). Ausnahme: Katalogtexte (Programmbeschreibungen) und Vorlagentitel sind bereits deutsch.
  */
 
-export const IPC_CONTRACT_VERSION = "0.1.0" as const;
+export const IPC_CONTRACT_VERSION = "0.2.0" as const;
 
 /* ========================================================================== */
 /* 0. Grundtypen                                                              */
@@ -36,7 +37,8 @@ export const IPC_CONTRACT_VERSION = "0.1.0" as const;
 
 export type IsoDateTime = string; // RFC 3339, UTC, z. B. "2026-10-16T18:30:00Z"
 export type Sha256Hex = string; // 64 Zeichen, Kleinbuchstaben
-export type SemVer = string; // "4.5.3", "0.1.0-beta.2"
+export type SemVer = string; // App- und Paketversionen: "0.1.0-beta.2"
+export type ProgramVersion = string; // Programmversionen, punktnumerisch: "5.2.2", "5.3.4.1", "26.08.2"
 export type SpdxId = string; // "GPL-3.0-or-later"
 export type DisplayPath = string; // nur Anzeige, nie zurück an Rust
 export type AssetUrl = string; // von Rust gebaute URL für <img>/Canvas (cyfile:, cythumb:, cyasset:, unter Windows http://<schema>.localhost/…)
@@ -50,7 +52,7 @@ export type FileHandleId = string; // undurchsichtig, gilt nur in der laufenden 
 export type LibraryEntryId = string; // UUID aus der Sidecar-Datei
 export type ProjectId = string; // UUID aus cypher-project.json
 export type TemplateId = string; // "builtin:shirt-krita", "library:<entryId>"
-export type PrintProfileId = string; // "shirtigo-dtg-front"
+export type PrintProfileId = string; // "shirtigo-tee-front"
 export type GarmentColorId = string; // "schwarz", "weiss", "grau-meliert", "navy", "sand", "creme"
 export type SetupScopeId = string; // Hash über die aufgelösten Zielwurzeln
 export type SetupId = string; // UUID je angewendeter Einrichtung
@@ -157,7 +159,7 @@ export type AppError =
 export type AppErrorKind = AppError["kind"];
 
 /* ========================================================================== */
-/* 2. App, Einstellungen, Diagnose                                            */
+/* 2. App, Einstellungen, Netzwerk, Diagnose                                  */
 /* ========================================================================== */
 
 export interface AppInfo {
@@ -181,32 +183,60 @@ export type ExternalTarget =
 export type RevealTarget =
   | { kind: "installation"; installationId: InstallationId }
   | { kind: "project"; projectId: ProjectId }
+  | { kind: "projectFile"; projectId: ProjectId; relPath: string }
   | { kind: "libraryEntry"; entryId: LibraryEntryId }
   | { kind: "libraryRoot" }
   | { kind: "fileHandle"; handleId: FileHandleId }
   | { kind: "logs" }
-  | { kind: "setupBackups"; programId: ProgramId };
+  | { kind: "printProfiles" }
+  | { kind: "setupBackups"; packId: PackId };
+
+export type UpdateFrequency = "daily" | "weekly" | "never";
+
+/** Vom Frontend verwaltete Oberflächen-Einstellungen (CONCEPT.md 6.9). Rust speichert sie geprüft (≤ 64 KB). */
+export interface UiPreferences {
+  theme: "system" | "paper" | "ink";
+  density: "compact" | "normal" | "large";
+  motion: "system" | "reduced" | "full";
+  zoomPercent: number; // 50..200
+  measureColor: "cyan" | "magenta" | "ink" | "paper";
+  surround: { paper: "light" | "mid" | "dark"; ink: "light" | "mid" | "dark" };
+  calibrationPxPerMm: number | null; // "Echtgröße kalibrieren"
+  singleKeyShortcuts: boolean;
+  shortcutOverrides: Record<string, string>; // Befehls-ID → Tastenkombination
+}
+
+/** Erststart „In 30 Minuten startklar“ (CONCEPT.md 6.10): Stand bleibt erhalten. */
+export interface OnboardingState {
+  status: "notStarted" | "inProgress" | "done" | "skipped";
+  step: number; // 0..6
+  selectedPrograms: ProgramId[];
+  applySetup: boolean;
+  updatedAt: IsoDateTime | null;
+}
 
 export interface Settings {
   schemaVersion: 1;
-  updates: { autoCheck: boolean };
+  updates: { frequency: UpdateFrequency; lastCheckAt: IsoDateTime | null };
   catalog: { autoRefresh: boolean };
   programsDir: DisplayPath; // Ziel für portable Installationen (ändern über settings_choose_dir)
-  projectsDir: DisplayPath; // Standard: <Dokumente>/Cypher Studio/Projekte
-  libraryRoot: DisplayPath | null; // ändern über library_choose_root
+  projectsDir: DisplayPath; // Standard: <Bibliothek>/Projekte, ohne Bibliothek <Dokumente>/Cypher Studio/Projekte
+  libraryRoot: DisplayPath | null; // ändern über library_choose_root + library_use_root
   downloads: { keepCache: boolean; maxParallel: 1 | 2 | 3 };
-  linux: { appImageMode: "auto" | "extract" | "direct" };
-  appearance: { theme: "system" | "light" | "dark"; reducedMotion: "system" | "on" | "off" };
+  linux: { appImageMode: "auto" | "extract" | "direct"; graphicsCompat: boolean };
   profile: { displayName: string }; // nur lokal; Autorenfeld in Bibliothek/Austauschpaketen
+  ui: UiPreferences;
+  onboarding: OnboardingState;
 }
 
 export interface SettingsPatch {
-  updates?: { autoCheck?: boolean };
+  updates?: { frequency?: UpdateFrequency };
   catalog?: { autoRefresh?: boolean };
   downloads?: { keepCache?: boolean; maxParallel?: 1 | 2 | 3 };
-  linux?: { appImageMode?: "auto" | "extract" | "direct" };
-  appearance?: { theme?: "system" | "light" | "dark"; reducedMotion?: "system" | "on" | "off" };
+  linux?: { appImageMode?: "auto" | "extract" | "direct"; graphicsCompat?: boolean };
   profile?: { displayName?: string };
+  ui?: Partial<UiPreferences>;
+  onboarding?: Partial<OnboardingState>;
 }
 
 export interface SettingsChooseDirReq {
@@ -220,11 +250,37 @@ export interface RevealReq {
   target: RevealTarget;
 }
 
+/** Einstellungen → „Netzwerk und Daten“: alle Adressen, die Studio anfragt (DESIGN.md Vertrag „Datenschutz“). */
+export type NetworkPurpose = "catalog" | "appUpdate" | "programDownload" | "modelDownload";
+
+export interface NetworkEndpoint {
+  purpose: NetworkPurpose;
+  host: string;
+  urlPattern: string; // z. B. "https://download.blender.org/release/…"
+  when: "onStart" | "onDemand" | "afterConsent";
+  enabled: boolean; // abschaltbar über Einstellungen (Katalog, Updates)
+}
+
+export interface NetworkRequestLog {
+  at: IsoDateTime;
+  host: string;
+  purpose: NetworkPurpose;
+  status: number | null; // HTTP-Status, null bei Netzwerkfehler
+  bytes: number;
+}
+
+export interface NetworkInfo {
+  endpoints: NetworkEndpoint[];
+  recent: NetworkRequestLog[]; // letzte 200 Anfragen dieser und der letzten Sitzung (lokal)
+  telemetry: false;
+}
+
 /* ========================================================================== */
 /* 3. Katalog                                                                 */
 /* ========================================================================== */
 
 export interface CatalogStatus {
+  sourceUrl: string | null; // Manifest-Quelle (nur lesen), null bei eingebettetem Katalog
   schemaVersion: number;
   sequence: number;
   generatedAt: IsoDateTime;
@@ -267,7 +323,8 @@ export type InstallationProblem =
   | { kind: "notNotarized" } // macOS: spctl lehnt ab
   | { kind: "versionUnknown" }
   | { kind: "setupNotSupported"; reason: SetupUnsupportedReason }
-  | { kind: "staleCatalogVersion"; latest: SemVer }; // nur Hinweis "Update verfügbar"
+  | { kind: "staleCatalogVersion"; latest: ProgramVersion } // nur Hinweis "Update verfügbar"
+  | { kind: "endOfSupportSoon"; until: string }; // z. B. Blender 4.5 LTS auf Intel-Macs
 
 export interface Installation {
   id: InstallationId;
@@ -284,9 +341,11 @@ export interface Installation {
   setupScopeId: SetupScopeId | null; // null = Einrichtung für diese Installation nicht möglich
 }
 
+export type ReleaseChannel = "stable" | "lts" | "preview";
+
 export interface ProgramRelease {
-  version: SemVer;
-  channel: "stable" | "lts";
+  version: ProgramVersion;
+  channel: ReleaseChannel;
   releasedAt: IsoDateTime | null;
   downloadSize: number;
   availableForThisPlatform: boolean;
@@ -298,6 +357,7 @@ export interface SetupScope {
   scopeId: SetupScopeId;
   /** userProfile = Benutzerprofil, gilt für alle System-Installationen; portableInstall = Konfiguration im Programmordner */
   scopeKind: "userProfile" | "portableInstall" | "flatpakProfile" | "snapProfile" | "userFonts";
+  componentsApplied: string[];
   targetRoots: DisplayPath[]; // aufgelöste Zielordner (Anzeige in der Vorschau)
   installationIds: InstallationId[];
   status: SetupStatus;
@@ -340,21 +400,23 @@ export type ArtifactKind = "zip" | "7z" | "tarXz" | "tarGz" | "dmg" | "appImage"
 
 export interface SignatureInfo {
   type: "pgp" | "minisign";
+  enforced: boolean; // false = schwache Upstream-Signatur, nur protokolliert
   url: string; // Anzeige
   signerFingerprints: string[]; // PGP: 40 Hex-Zeichen; minisign: Key-ID
 }
 
 export interface InstallPreviewReq {
   programId: ProgramId;
-  version?: SemVer; // fehlt = neueste für diese Plattform
+  version?: ProgramVersion; // fehlt = neueste für diese Plattform im Kanal
+  channel?: ReleaseChannel; // Standard: lts, sonst stable
 }
 
 export interface InstallPlan {
   planId: PlanId;
   programId: ProgramId;
   programName: string;
-  version: SemVer;
-  channel: "stable" | "lts";
+  version: ProgramVersion;
+  channel: ReleaseChannel;
   source: {
     label: string; // "download.blender.org (offizielle Quelle)"
     host: string;
@@ -367,6 +429,7 @@ export interface InstallPlan {
     size: number;
     sha256: Sha256Hex;
     checksumSource: string; // URL der offiziellen Prüfsummendatei (Anzeige)
+    checksumOrigin: "upstream" | "cypherPinned"; // cypherPinned = keine offizielle Summe, von der Katalog-Pflege festgeschrieben
     signature: SignatureInfo | null;
   };
   license: LicenseInfo;
@@ -386,6 +449,8 @@ export interface InstallPlan {
 
 export type InstallNote =
   | { kind: "macosNotarizationCheck" }
+  | { kind: "macosNotNotarized" } // z. B. Kdenlive: Start nur nach Bestätigung
+  | { kind: "intelMacOldRelease"; version: ProgramVersion }
   | { kind: "linuxFuseMissing"; fallback: "extractAndRun" | "extracted" }
   | { kind: "windowsSmartScreenNotExpected" }
   | { kind: "largeDownload"; bytes: number }
@@ -452,7 +517,7 @@ export interface LaunchResult {
 }
 
 /* ========================================================================== */
-/* 6. Cypher-Einrichtung                                                      */
+/* 6. Cypher-Einrichtung (Bausteine je Paket, CONCEPT.md 6.3)                 */
 /* ========================================================================== */
 
 export interface SetupPreviewReq {
@@ -460,19 +525,55 @@ export interface SetupPreviewReq {
   scopeId: SetupScopeId;
 }
 
+export type SetupComponentKind =
+  | "palette"
+  | "fonts"
+  | "templates"
+  | "workspace"
+  | "bundle" // Krita-Ressourcenbundle
+  | "appTemplate" // Blender-App-Vorlage cypher_ps2
+  | "extension" // Blender-Extension cypher_export
+  | "assetLibrary" // Blender-Asset-Bibliothek → <Bibliothek>/3D
+  | "titles" // Kdenlive-Titelvorlagen
+  | "videoProfiles" // Kdenlive-Projektprofile
+  | "renderPreset";
+
+export type SetupComponentStatus = "current" | "new" | "outdated" | "userModified" | "partial";
+
 export type SetupOperationKind =
   | "create" // Datei neu
-  | "update" // eigene Datei aus früherer Einrichtung, wird ersetzt
+  | "update" // eigene Datei aus früherer Einrichtung, unverändert → wird ersetzt
   | "skip" // identisch vorhanden
-  | "backupAndReplace" // fremde/geänderte Datei: wird gesichert und ersetzt
+  | "conflict" // fremde oder vom Nutzer geänderte Datei: Nutzer entscheidet (SetupConflict)
   | "installFont"
-  | "blenderExtension"; // blender --command extension install-file …
+  | "blenderExtension" // blender --command extension install-file …
+  | "writeConfig"; // kleine eigene Konfigurationsdatei (z. B. Pfad der Asset-Bibliothek für das Add-on)
 
 export interface SetupOperation {
   kind: SetupOperationKind;
   target: DisplayPath;
   sourceId: string; // Datei-ID im Paket-Manifest
   bytes: number;
+  conflictId: string | null;
+}
+
+export interface SetupComponent {
+  id: string; // aus pack.json, z. B. "palette"
+  kind: SetupComponentKind;
+  label: string; // deutsch, aus pack.json: „Palette „Cypher Kollektionen““
+  optional: boolean;
+  defaultSelected: boolean;
+  status: SetupComponentStatus;
+  preview: { colors: HexColor[]; formats: string[]; fonts: string[] };
+  operations: SetupOperation[];
+}
+
+export interface SetupConflict {
+  conflictId: string;
+  componentId: string;
+  target: DisplayPath;
+  reason: "userModified" | "foreignFile";
+  keepBothName: string; // Vorschlag für „Daneben ablegen“, z. B. "cypher-2026-10.kpl"
 }
 
 export interface SetupPlan {
@@ -481,22 +582,27 @@ export interface SetupPlan {
   programId: ProgramId | null;
   scopeId: SetupScopeId;
   packVersion: SemVer;
+  packLabel: string; // „Cypher-Paket 2026.10“
   previous: SetupRecord | null;
-  operations: SetupOperation[];
-  counts: { create: number; update: number; skip: number; backupAndReplace: number };
-  requiresProgramClosed: boolean; // Programm läuft gerade → Hinweis "bitte schließen"
-  programRunning: boolean;
+  components: SetupComponent[];
+  conflicts: SetupConflict[];
+  programRunning: boolean; // Hinweis, kein Abbruch („Neue Paletten erscheinen nach einem Neustart“)
+  restartHint: boolean;
   createdAt: IsoDateTime;
   expiresAt: IsoDateTime;
 }
 
+export type ConflictResolution = "overwrite" | "keepBoth" | "skip"; // overwrite legt IMMER eine Sicherung an
+
 export interface SetupApplyReq {
   planId: PlanId;
+  components: string[]; // gewählte Baustein-IDs
+  resolutions: Record<string, ConflictResolution>; // conflictId → Entscheidung; fehlende = "skip"
 }
 
 export type SetupEvent =
   | { type: "started"; jobId: JobId; total: number }
-  | { type: "step"; index: number; total: number; operation: SetupOperation }
+  | { type: "step"; index: number; total: number; componentId: string; operation: SetupOperation }
   | { type: "finished"; record: SetupRecord };
 
 export interface SetupRecord {
@@ -505,10 +611,13 @@ export interface SetupRecord {
   programId: ProgramId | null;
   scopeId: SetupScopeId;
   packVersion: SemVer;
+  components: string[];
   appliedAt: IsoDateTime;
   status: "applied" | "partial" | "undone";
   filesWritten: number;
   backupsTaken: number;
+  undoAvailable: boolean; // bis zur nächsten Anwendung im selben Scope
+  failures: { target: DisplayPath; error: AppError }[]; // z. B. gesperrte Dateien, je Zeile gemeldet
 }
 
 export interface SetupUndoReq {
@@ -527,11 +636,16 @@ export interface SetupStatusReq {
   packId: PackId;
 }
 
+export interface SetupHistoryReq {
+  packId: PackId;
+  scopeId: SetupScopeId;
+}
+
 /* ========================================================================== */
 /* 7. Dateien (Handles statt Pfade)                                           */
 /* ========================================================================== */
 
-export type FilePurpose = "printcheck" | "mockupDesign" | "socialImage" | "libraryImport" | "packImport" | "openInProgram";
+export type FilePurpose = "printcheck" | "mockupDesign" | "socialImage" | "bgremove" | "libraryImport" | "packImport" | "openAny";
 
 export interface FilePickReq {
   purpose: FilePurpose; // bestimmt Dateifilter des nativen Dialogs
@@ -545,7 +659,7 @@ export interface FileHandleInfo {
   size: number;
   mime: string; // per Inhalt erkannt, nicht per Endung
   url: AssetUrl | null; // nur für Bilder (png, jpeg, webp, tiff → PNG-Vorschau)
-  source: "dialog" | "drop" | "library" | "project" | "export";
+  source: "dialog" | "drop" | "library" | "project" | "export" | "sample";
 }
 
 /**
@@ -557,7 +671,7 @@ export interface FileHandleInfo {
 export interface ExportImageMeta {
   fileName: string; // Vorschlag, ohne Pfad
   format: "png" | "jpeg";
-  destination: { kind: "dialog" } | { kind: "project"; projectId: ProjectId } | { kind: "library"; libraryKind: LibraryKind };
+  destination: { kind: "dialog" } | { kind: "project"; projectId: ProjectId; folder: ProjectFolder } | { kind: "library"; subfolder: string };
   dpi?: number; // nur PNG: pHYs wird gesetzt
 }
 export const EXPORT_IMAGE_HEADERS = {
@@ -566,100 +680,175 @@ export const EXPORT_IMAGE_HEADERS = {
 export const EXPORT_IMAGE_MAX_BYTES = 64 * 1024 * 1024;
 
 /* ========================================================================== */
-/* 8. Projekte und Vorlagen                                                   */
+/* 8. Projekte und Vorlagen (Projekt = Ordner im gemeinsamen Ordner)          */
 /* ========================================================================== */
 
-export type ProjectKind = "shirtMotif" | "socialPost" | "socialStory" | "reel" | "reelCover" | "model3d" | "mockup";
+/** Unterordner eines Projekts (CONCEPT.md 4 „Objekte“, ergänzt um Social/, Video/, 3D/). */
+export type ProjectFolder = "Motive" | "Mockups" | "Social" | "Video" | "3D" | "Export/Druck" | "Export/Social";
 
 export interface TemplateInfo {
   id: TemplateId;
-  kind: ProjectKind;
-  title: string; // deutsch
+  title: string; // „Shirt vorne“
   description: string;
-  programId: ProgramId | null; // null = eigenes Modul
-  module: "mockup" | "social" | null;
-  previewUrl: AssetUrl | null;
-  source: "builtin" | "library";
-  tags: string[];
+  target: "program" | "mockup" | "social";
+  programId: ProgramId | null; // bei target "program"
+  format: {
+    label: string; // „330 × 450 mm“, „1080 × 1350“
+    widthPx: number;
+    heightPx: number;
+    dpi: number | null;
+    widthMm: number | null;
+    heightMm: number | null;
+  };
+  aspect: number; // Breite / Höhe, für die Formatleiste
+  folder: ProjectFolder; // wohin die neue Datei kommt
+  fileExtension: string; // ".kra", ".svg", ".blend", ".kdenlive", ".mockup.json", ".social.json"
   printProfileId: PrintProfileId | null;
-  format: { widthPx: number; heightPx: number; dpi: number | null } | null;
-  requiresSetup: boolean; // z. B. Blender-App-Template braucht Einrichtung
+  previewUrl: AssetUrl | null;
+  source: "builtin" | "library"; // library = <Bibliothek>/Vorlagen
+  requiresSetup: boolean; // z. B. Blender-App-Vorlage braucht Einrichtung
+  tags: string[];
+}
+
+export interface ProjectFileRef {
+  relPath: string; // relativ zum Projektordner, "/" als Trenner
+  modifiedAt: IsoDateTime;
+  programId: ProgramId | null; // passendes Programm nach Dateityp
+  module: "mockup" | "social" | null; // eigenes Modul-Dokument
 }
 
 export interface Project {
   id: ProjectId;
   name: string;
-  kind: ProjectKind;
-  templateId: TemplateId | null;
-  programId: ProgramId | null;
+  collection: string | null; // Collection.id
   dir: DisplayPath;
-  mainFile: string; // relativ zum Projektordner
+  inLibrary: boolean; // liegt im gemeinsamen Ordner
+  fileCount: number;
+  lastFile: ProjectFileRef | null; // „zuletzt: rauschen_signal_v3.kra“
   createdAt: IsoDateTime;
   updatedAt: IsoDateTime;
-  lastOpenedAt: IsoDateTime | null;
-  thumbnailUrl: AssetUrl | null;
   missing: boolean; // Ordner nicht mehr vorhanden
 }
 
 export interface ProjectCreateReq {
-  templateId: TemplateId;
   name: string; // 1–80 Zeichen; Rust bildet daraus einen sicheren Ordnernamen
+  collection?: string;
 }
 
 export interface ProjectRef {
   projectId: ProjectId;
 }
 
-export interface ProjectOpenResult {
-  /** "launched" = Programm gestartet; "module" = Frontend öffnet eigenes Modul (route). */
-  outcome: { kind: "launched"; launch: LaunchResult } | { kind: "module"; module: "mockup" | "social"; projectId: ProjectId };
+export interface ProjectFileReq {
+  projectId: ProjectId;
+  relPath: string; // wird in Rust mit safe_join gegen den Projektordner geprüft
 }
 
-/** Projektdokument der eigenen Module (Mockup/Social). Rust speichert es als JSON, prüft Größe (≤ 1 MB) und schemaVersion. */
+export interface ProjectNewFileReq {
+  projectId: ProjectId;
+  templateId: TemplateId;
+  fileName: string; // ohne Endung, z. B. "herbst-drop_signal"
+}
+
+export interface ProjectFile {
+  projectId: ProjectId;
+  ref: ProjectFileRef;
+  handle: FileHandleInfo;
+}
+
+export interface ProjectSetCollectionReq {
+  projectId: ProjectId;
+  collection: string | null;
+}
+
+export interface ProjectOpenResult {
+  /** "launched" = Programm gestartet; "module" = Frontend öffnet eigenes Modul. */
+  outcome:
+    | { kind: "launched"; launch: LaunchResult }
+    | { kind: "module"; module: "mockup" | "social"; projectId: ProjectId; relPath: string }
+    | { kind: "programMissing"; programId: ProgramId }; // Frontend bietet Installation an
+}
+
+/** Dokument der eigenen Module (Mockup/Social), Datei im Projekt (*.mockup.json, *.social.json). ≤ 1 MB. */
 export interface ProjectDocument {
   schemaVersion: 1;
   module: "mockup" | "social";
   data: MockupDocument | SocialDocument;
 }
 
+export interface ProjectReadDocumentReq {
+  projectId: ProjectId;
+  relPath: string;
+}
+
 export interface ProjectWriteDocumentReq {
   projectId: ProjectId;
+  relPath: string;
   document: ProjectDocument;
 }
 
 export interface ProjectAddAssetReq {
   projectId: ProjectId;
-  handleId: FileHandleId; // Datei wird in <projekt>/assets/ kopiert
+  handleId: FileHandleId; // Datei wird in <projekt>/<folder>/ kopiert
+  folder?: ProjectFolder; // Standard "Motive"
 }
 
 export interface ProjectAsset {
-  relPath: string; // "assets/motiv-01.png"
+  relPath: string; // "Motive/motiv-01.png"
   handle: FileHandleInfo;
 }
 
 /* ========================================================================== */
-/* 9. Bibliothek                                                              */
+/* 9. Bibliothek (gemeinsamer Ordner, ohne Konten)                            */
 /* ========================================================================== */
 
-export type LibraryKind = "motif" | "template" | "mockup" | "palette" | "font" | "model" | "video" | "audio" | "other";
+/** „Art“ in der Filterspalte, aus dem Dateityp abgeleitet. */
+export type LibraryKind = "image" | "vector" | "model3d" | "video" | "audio" | "font" | "palette" | "document" | "other";
 export type LibraryEntryStatus = "draft" | "approved" | "archived";
 export type SyncTool = "syncthing" | "nextcloud" | "dropbox" | "googleDrive" | "oneDrive" | "iCloud" | "unknown";
+
+export interface Collection {
+  id: string; // "rauschen"
+  name: string; // "Rauschen"
+  hex: HexColor; // Farbquadrat in Listen
+}
+
+/** Ergebnis des Ordnerdialogs: Zusammenfassung vor der Bestätigung („3.104 Dateien · 41 GB · 12 Projekte“). */
+export interface LibraryRootCandidate {
+  candidateId: string;
+  path: DisplayPath;
+  fileCount: number;
+  totalBytes: number;
+  projectCount: number;
+  initialized: boolean; // .cypher/library.json vorhanden
+  syncTool: SyncTool | null;
+  problems: ("notWritable" | "insideAppData" | "systemDirectory" | "veryLarge")[];
+}
+
+export interface LibraryUseRootReq {
+  candidateId: string;
+  initialize: boolean; // .cypher/ und Standardordner anlegen, falls nicht vorhanden
+}
 
 export interface LibraryStatus {
   configured: boolean;
   root: DisplayPath | null;
-  initialized: boolean; // .cypher/library.json vorhanden
+  initialized: boolean;
   formatVersion: number | null;
   entryCount: number;
+  totalBytes: number;
+  projectCount: number;
   conflictCount: number; // Konfliktkopien des Sync-Werkzeugs
   lastScanAt: IsoDateTime | null;
   syncTool: SyncTool | null; // erkannt anhand von Markerdateien, nur Anzeige
   watching: boolean;
+  collections: Collection[]; // aus .cypher/library.json, Standard aus brand.json
 }
 
 export interface SidecarMeta {
   title: string;
   tags: string[];
+  collection: string | null;
   author: string; // freier Text, kein Konto
   status: LibraryEntryStatus;
   notes: string;
@@ -680,27 +869,39 @@ export interface LibraryEntry {
   modifiedAt: IsoDateTime;
   widthPx: number | null;
   heightPx: number | null;
+  projectId: ProjectId | null; // liegt in Projekte/<Name>/
+  openWith: ProgramId | null; // passendes Programm nach Dateityp
   meta: SidecarMeta;
-  thumbnailUrl: AssetUrl | null;
+  thumbnailUrl: AssetUrl | null; // auch für .kra, .svg, .blend (eingebettete Vorschau)
   conflict: { kind: "syncConflictCopy"; originalRelPath: string | null } | null;
-  sidecarMissing: boolean; // noch keine Sidecar-Datei (wird beim ersten Bearbeiten angelegt)
+  sidecarMissing: boolean; // noch keine Begleitdatei in .cypher/meta (wird beim ersten Bearbeiten angelegt)
 }
 
 export interface LibraryQuery {
-  text?: string;
+  text?: string; // Name, Tags, Projekt
   kinds?: LibraryKind[];
+  collections?: string[];
   tags?: string[];
   status?: LibraryEntryStatus[];
+  projectId?: ProjectId;
+  modifiedAfter?: IsoDateTime;
   onlyConflicts?: boolean;
-  sort?: "modifiedDesc" | "nameAsc" | "kind";
+  sort?: "modifiedDesc" | "nameAsc" | "kind" | "sizeDesc";
   offset?: number;
-  limit?: number; // Standard 60, max. 500
+  limit?: number; // Standard 200, max. 1000 (Raster ist virtualisiert)
+}
+
+export interface LibraryFacets {
+  kinds: Partial<Record<LibraryKind, number>>;
+  collections: Record<string, number>;
+  tags: Record<string, number>;
 }
 
 export interface LibraryPage {
   entries: LibraryEntry[];
   total: number;
   offset: number;
+  facets: LibraryFacets; // Zahlen der Filterspalte für die aktuelle Abfrage
 }
 
 export interface LibraryGetReq {
@@ -712,6 +913,7 @@ export interface LibraryMetaPatchReq {
   patch: {
     title?: string;
     tags?: string[];
+    collection?: string | null;
     author?: string;
     status?: LibraryEntryStatus;
     notes?: string;
@@ -721,11 +923,22 @@ export interface LibraryMetaPatchReq {
   };
 }
 
+/** Mehrfachauswahl: „Tags setzen“, „Kollektion“. */
+export interface LibraryBulkMetaReq {
+  entryIds: LibraryEntryId[];
+  addTags?: string[];
+  removeTags?: string[];
+  collection?: string | null;
+}
+
 export interface LibraryImportReq {
   handleIds: FileHandleId[];
-  kind: LibraryKind;
-  subfolder?: string; // relativ, wird validiert
-  meta?: { tags?: string[]; author?: string; status?: LibraryEntryStatus };
+  subfolder?: string; // relativ zur Wurzel, wird validiert
+  meta?: { tags?: string[]; author?: string; collection?: string; status?: LibraryEntryStatus };
+}
+
+export interface LibrarySetCollectionsReq {
+  collections: Collection[];
 }
 
 export type ScanEvent =
@@ -781,51 +994,90 @@ export interface PackImportReport {
 }
 
 /* ========================================================================== */
-/* 10. Druckprüfer                                                            */
+/* 10. Druckprüfer (Werte: docs/research/vorgaben.md, Abschnitte 0, 1, 5)     */
 /* ========================================================================== */
 
 export type Severity = "info" | "warning" | "error";
 
-export interface PrintProfile {
-  id: PrintProfileId;
-  provider: "shirtigo";
-  title: string; // "Shirtigo DTG – Brust/Front"
-  technique: "dtg" | "dtf" | "embroidery";
-  placement: "front" | "back" | "leftChest" | "sleeveLeft" | "sleeveRight" | "neck";
-  printAreaMm: { width: number; height: number };
-  targetDpi: number; // 300
-  warnBelowDpi: number; // z. B. 250
-  errorBelowDpi: number; // z. B. 150
-  semiTransparency: { warnShare: number; errorShare: number }; // Anteil an sichtbaren Pixeln, 0..1
-  minEdgeMarginPx: number; // Motiv sollte nicht am Rand kleben
-  maxFileBytes: number | null;
-  acceptedFormats: ("png" | "tiff")[];
-  colorSpace: "srgb";
-  defaultAlign: "topCenter" | "center";
-  source: { url: string | null; checkedAt: IsoDateTime | null };
-  assumption: boolean; // true = Werte nicht offiziell bestätigt (UI zeigt Hinweis)
+/** Entspricht Shirtigo `processingarea_type` (front, back, sleeve-left, sleeve-right, back-inside). */
+export type PrintPlacement = "front" | "back" | "sleeveLeft" | "sleeveRight" | "backInside";
+export type PrintTechnique = "dtg" | "dtf";
+export type ColorProfileKind = "srgb" | "adobeRgb" | "displayP3" | "gray" | "cmyk" | "other" | "none";
+/** Fachbegriffe der Farbräume; Shirtigo empfiehlt Adobe RGB (1998), akzeptiert sRGB. */
+export type ExportColorProfile = "adobeRgb" | "srgb";
+
+export interface PrintWidthPreset {
+  id: string; // "chestEmblem", "chestCentered", "backShoulder"
+  label: string; // "Brust zentriert"
+  widthMm: number; // 280
+  maxWidthMm: number | null; // 150 beim Brustemblem
 }
 
-export type ColorProfileKind = "srgb" | "displayP3" | "adobeRgb" | "gray" | "cmyk" | "other" | "none";
+export interface PrintProfile {
+  id: PrintProfileId; // "shirtigo-tee-front"
+  provider: "shirtigo";
+  product: { id: "tee" | "hoodie"; providerProductId: string; label: string }; // "organic-shirt", "Organic Shirt (Creator 2.0, STTU169)"
+  placement: PrintPlacement;
+  techniques: PrintTechnique[]; // Ärmel/Nacken nur ["dtf"]
+  title: string; // "T-Shirt Vorderseite"
+  printAreaMm: { width: number; height: number }; // 330 × 450 (Maximum der Fläche)
+  safeAreaMm: { width: number; height: number } | null; // 280 × 360: keine Verkleinerung auf kleinen Größen
+  topMarginHintMm: number | null; // nur Hinweis, nicht prüfen
+  widthPresets: PrintWidthPreset[];
+  defaultWidthMm: number;
+  targetDpi: number; // 300 (darunter Warnung)
+  errorBelowDpi: number; // 150
+  minPxPerSide: number; // 1000, gemessen nach Zuschnitt auf sichtbare Pixel
+  maxPxPerSide: number; // 10500
+  warnFileBytes: number; // 48 MB
+  maxFileBytes: number; // 64 MB
+  acceptedUploadFormats: ("png" | "jpeg")[];
+  color: { exportProfile: ExportColorProfile; acceptedProfiles: ExportColorProfile[] };
+  alpha: {
+    semiMin: number; // 13  (5 %)
+    semiMax: number; // 252 (99 %)
+    ghostMax: number; // 12: Alpha 1..12 außerhalb des Motivrahmens = Geisterpixel
+    edgeRadiusPx: number; // 2: Anti-Aliasing-Saum zählt nicht als Halbtransparenz
+    warnShare: number; // 0.001 (Anteil flächiger Halbtransparenz an sichtbaren Pixeln)
+    errorShare: number; // 0.01
+    severityOnLightGarment: Severity; // "info" (weißes Textil, keine Unterlage)
+    severityForDtf: Severity; // "error"
+  };
+  strokes: { warnBelowPx: number; criticalBelowPx: number }; // 10 px (0,8 mm), 5 px (0,4 mm)
+  source: { urls: string[]; checkedAt: IsoDateTime | null };
+  assumption: boolean; // true, solange Teilwerte unbelegt sind (Testdruck ausstehend) → UI-Hinweis
+}
 
 export type PrintRuleId =
-  | "format.unsupported"
+  | "format.unreadable"
+  | "format.notUploadable" // TIFF/WebP: Export wandelt in PNG
+  | "format.jpegNoAlpha"
+  | "format.animated" // APNG
+  | "format.interlaced"
   | "format.bitDepth16"
   | "format.indexed"
-  | "color.cmyk"
-  | "color.notSrgb"
-  | "color.noProfile"
+  | "size.belowMinPixels" // beide Seiten < min → error, eine Seite → warning
+  | "size.aboveMaxPixels"
+  | "file.tooLarge" // > warnFileBytes → warning, > maxFileBytes → error
   | "resolution.tooLow"
   | "resolution.belowTarget"
-  | "resolution.metadataMissing"
+  | "resolution.metadataMismatch" // pHYs fehlt oder ≠ 11811 px/m
   | "resolution.upscaleNeeded"
-  | "alpha.missing"
+  | "layout.empty"
+  | "layout.exceedsPrintArea"
+  | "layout.exceedsSafeArea"
+  | "layout.touchesEdge"
+  | "color.cmyk"
+  | "color.noProfile"
+  | "color.unsupportedProfile"
+  | "color.profileDiffers" // z. B. sRGB, Export rechnet in Adobe RGB um
+  | "color.grayscale"
+  | "color.nearBlack" // fast Schwarz bekommt Unterlage, nur #000000 nicht
+  | "alpha.missing" // kein Alphakanal → Rechteck wird gedruckt
   | "alpha.opaqueBackground"
   | "alpha.semiTransparent"
-  | "layout.empty"
-  | "layout.touchesEdge"
-  | "layout.aspectMismatch"
-  | "file.tooLarge"
+  | "alpha.ghostPixels"
+  | "detail.thinLines"
   | "contrast.lowOnGarment";
 
 export interface Finding {
@@ -834,10 +1086,11 @@ export interface Finding {
   /** Zahlen/Texte für den deutschen Text im Frontend, z. B. { effectiveDpi: 212, targetDpi: 300 } */
   params: Record<string, number | string | boolean>;
   region: Rect | null; // betroffener Bereich in Bildpixeln (für Overlay)
+  fix: "cleanGhostPixels" | "semiTransparency" | "nearBlackToPureBlack" | "colorProfile" | null; // passende Export-Korrektur
 }
 
 export interface PrintReport {
-  engineVersion: string; // printcheck-Regelwerk, z. B. "1.0.0"
+  engineVersion: string; // Regelwerk, z. B. "1.0.0"
   analyzedAt: IsoDateTime;
   file: {
     name: string;
@@ -846,28 +1099,36 @@ export interface PrintReport {
     heightPx: number;
     bitDepth: 8 | 16 | 32;
     channels: "gray" | "grayAlpha" | "rgb" | "rgba" | "cmyk" | "indexed";
+    interlaced: boolean;
+    animated: boolean;
     fileBytes: number;
   };
-  dpi: { x: number; y: number; source: "pHYs" | "tiffTags" | "jfif" | "none" };
-  color: { profile: ColorProfileKind; iccDescription: string | null };
+  dpi: { x: number; y: number; source: "pHYs" | "tiffTags" | "jfif" | "exif" | "none" };
+  color: { profile: ColorProfileKind; iccDescription: string | null; srgbChunk: boolean };
   alpha: {
     present: boolean;
-    transparentShare: number; // a = 0
+    transparentShare: number; // a = 0, Anteil an allen Pixeln
     opaqueShare: number; // a = 255
-    semiShare: number; // 0 < a < 255, Anteil an allen Pixeln
-    semiShareOfVisible: number; // Anteil an Pixeln mit a > 0
+    semiShareOfVisible: number; // semiMin ≤ a ≤ semiMax, roh (inkl. Kantensaum), Anteil an a > 0
+    semiAreaShareOfVisible: number; // nach Abzug des Kantensaums (vorgaben.md 5.4) – maßgeblich
+    ghostPixelCount: number;
   };
-  bounds: Rect | null; // Hüllrechteck aller Pixel mit a > Schwelle; null = leer
+  bounds: Rect | null; // Hüllrechteck aller Pixel mit a ≥ semiMin; null = leer
   marginsPx: { top: number; right: number; bottom: number; left: number } | null;
+  trimmedPx: Size | null; // Größe nach Zuschnitt (so misst Shirtigo)
   profileId: PrintProfileId;
-  garmentColorId: GarmentColorId | null;
+  technique: PrintTechnique;
+  garment: { colorId: GarmentColorId; underbase: boolean } | null;
   placement: {
-    printWidthMm: number;
-    printHeightMm: number;
-    scale: number; // Faktor Bildpixel → Zielpixel bei targetDpi
-    effectiveDpi: number; // bei Einpassen in die Druckfläche
-    targetPx: Size; // Zielgröße der Exportdatei
+    plannedWidthMm: number;
+    plannedHeightMm: number; // aus Seitenverhältnis
+    effectiveDpi: number; // trimmedPx.width / (plannedWidthMm / 25.4)
+    maxWidthMmAtTargetDpi: number; // größte Druckbreite ohne Unterschreiten von targetDpi
+    targetPx: Size; // Ausgabegröße bei targetDpi (zugeschnitten)
+    fitsPrintArea: boolean;
+    fitsSafeArea: boolean | null;
   };
+  minStrokePx: number | null; // dünnste gefundene Linie (Phase 3), null = nicht geprüft
   findings: Finding[];
   verdict: "ok" | "warning" | "error";
 }
@@ -876,39 +1137,57 @@ export interface PrintAnalyzeReq {
   handleId: FileHandleId;
   profileId: PrintProfileId;
   garmentColorId?: GarmentColorId;
+  technique?: PrintTechnique; // Standard: erstes Verfahren des Profils
+  plannedWidthMm?: number; // Standard: profile.defaultWidthMm
 }
 
+export type SemiTransparencyFix = "keep" | "threshold" | "blendWithGarment" | "halftone";
+
 export interface PrintExportOptions {
-  trim: boolean; // auf Hüllrechteck zuschneiden
-  fit: "contain" | "width" | "height" | "none";
-  align: "topCenter" | "center";
-  offsetTopMm: number; // nur bei topCenter
-  allowUpscale: boolean; // Standard false; true erzeugt Warnung resolution.upscaleNeeded
-  destination: { kind: "dialog" } | { kind: "besideSource" } | { kind: "library" } | { kind: "project"; projectId: ProjectId };
+  /** trimmed = Motiv ohne Rand + Begleitdatei (Breite/Versatz in mm);
+   *  fullArea = Leinwand in Größe der Druckfläche (z. B. 3898 × 5315), für extract_size_and_position. */
+  mode: "trimmed" | "fullArea";
+  plannedWidthMm: number;
+  offsetTopMm: number; // fullArea: Lage in der Leinwand; trimmed: nur Begleitdatei
+  offsetCenterMm: number; // Versatz von der Mitte (negativ = links)
+  allowUpscale: boolean; // Standard false
+  colorProfile: ExportColorProfile; // Standard aus Profil (Shirtigo: adobeRgb)
+  fixes: {
+    cleanGhostPixels: boolean;
+    semiTransparency: SemiTransparencyFix; // halftone ab Phase 3+
+    nearBlackToPureBlack: boolean;
+  };
+  writePlacementJson: boolean; // <name>.shirtigo.json neben der PNG
+  destination: { kind: "dialog" } | { kind: "besideSource" } | { kind: "library" } | { kind: "project"; projectId: ProjectId }; // project → Export/Druck
 }
 
 export interface PrintExportReq {
   handleId: FileHandleId;
   profileId: PrintProfileId;
+  garmentColorId?: GarmentColorId; // nötig für blendWithGarment
+  technique?: PrintTechnique;
   options: PrintExportOptions;
 }
 
 export type PrintExportEvent =
   | { type: "started"; jobId: JobId }
-  | { type: "stage"; stage: "decode" | "analyze" | "resample" | "encode" | "verify" }
+  | { type: "stage"; stage: "decode" | "analyze" | "fix" | "resample" | "colorConvert" | "encode" | "verify" }
   | { type: "finished" };
 
 export interface PrintExportResult {
   output: FileHandleInfo;
+  placementJson: FileHandleInfo | null;
   widthPx: number;
   heightPx: number;
   dpi: number;
+  colorProfile: ExportColorProfile;
   report: PrintReport; // erneute Prüfung der erzeugten Datei
 }
 
 export interface PrintOverlayReq {
   handleId: FileHandleId;
-  overlay: "semiTransparent" | "bounds" | "alphaOnly";
+  profileId: PrintProfileId;
+  overlay: "semiTransparent" | "ghostPixels" | "bounds" | "thinLines" | "alphaOnly";
 }
 
 /* ========================================================================== */
@@ -918,9 +1197,12 @@ export interface PrintOverlayReq {
 export interface GarmentColor {
   id: GarmentColorId;
   name: string; // "Schwarz"
-  hex: HexColor; // "#141210"
+  hex: HexColor; // Kollektionsfarbe (Marke), z. B. "#141210"
+  textileHex: HexColor; // reale Produktfarbe beim Druckanbieter, für Mockups (vorgaben.md 1.10)
+  providerColorName: string | null; // "Black", "French Navy" …
   heather: boolean; // meliert → Strukturebene
-  textOnGarment: HexColor; // empfohlene Kontrastfarbe für Hinweise
+  underbase: boolean; // false nur bei weißem Textil (keine weiße Unterlage)
+  textOnGarment: HexColor; // Kontrastfarbe für Hinweise in der UI
 }
 
 export interface PaletteColor {
@@ -942,50 +1224,64 @@ export interface BrandFont {
 }
 
 export interface Brand {
+  collections: Collection[]; // Standard-Kollektionen (Rauschen, Mittelwelle, Gold-Lounge …)
   garmentColors: GarmentColor[];
   palettes: Palette[];
   fonts: BrandFont[];
   logos: { id: string; variant: "light" | "dark"; url: AssetUrl }[];
 }
 
-/** Viereck der Druckfläche im Vorlagenbild: oben links, oben rechts, unten rechts, unten links. */
+/** Viereck der Druckfläche im Vorlagenbild: oben links, oben rechts, unten rechts, unten links (Parallelogramm). */
 export type Quad = [Point, Point, Point, Point];
+
+export interface MockupLayerSet {
+  mask: AssetUrl; // Alpha = Textilfläche
+  shade: AssetUrl; // Graustufen aus eigenem Foto, multiply (Falten/Schatten)
+  light: AssetUrl; // Graustufen auf Schwarz, screen (Glanzlichter)
+  displace: AssetUrl | null; // R = dx, G = dy (128 = 0)
+  texture: AssetUrl | null; // optionale CC0-Stoffstruktur (z. B. Poly Haven cotton_jersey)
+  heather: AssetUrl | null; // Melange-Struktur für heather-Farben
+  background: AssetUrl | null;
+}
 
 export interface MockupTemplate {
   id: MockupTemplateId;
   title: string;
-  garment: "tshirt" | "hoodie";
+  product: "tee" | "hoodie";
   view: "front" | "back";
   canvas: Size; // z. B. 2400 × 3000
-  layers: {
-    mask: AssetUrl; // Alpha = Textilfläche
-    shade: AssetUrl; // Graustufen, multiply (Falten/Schatten)
-    light: AssetUrl; // Graustufen, screen (Glanzlichter)
-    displace: AssetUrl | null; // R = dx, G = dy (128 = 0)
-    heather: AssetUrl | null; // Melange-Struktur, nur für heather-Farben
-    background: AssetUrl | null;
-  };
-  printArea: { quad: Quad; widthMm: number; heightMm: number };
+  printProfileId: PrintProfileId; // liefert die Druckfläche in mm
+  printArea: { quad: Quad }; // Druckfläche in Pixeln der Vorlage
   displaceStrengthPx: number;
-  colorIds: GarmentColorId[];
+  /** "light" = Aufnahme eines hellen Shirts, "dark" = eigene Aufnahme eines dunklen (reines Multiplizieren wirkt bei Schwarz flach). */
+  variants: { exposure: "light" | "dark"; layers: MockupLayerSet; colorIds: GarmentColorId[] }[];
 }
 
 export interface MockupDocument {
   templateId: MockupTemplateId;
   colorId: GarmentColorId;
   design: { relPath: string } | null; // Projekt-Asset
-  placement: { scale: number; offsetMm: Point }; // relativ zur Druckfläche
+  placement: { widthMm: number; offsetTopMm: number; offsetCenterMm: number }; // wie Shirtigo
   background: { kind: "transparent" } | { kind: "color"; hex: HexColor } | { kind: "template" };
   exportSizePx: Size;
 }
 
-export type SocialFormat = "post" | "story" | "reelCover";
+export type SocialFormat = "post" | "postTall" | "story" | "reelCover";
 
 export const SOCIAL_FORMAT_SIZES: Record<SocialFormat, Size> = {
-  post: { width: 1080, height: 1350 },
-  story: { width: 1080, height: 1920 },
+  post: { width: 1080, height: 1350 }, // 4:5
+  postTall: { width: 1080, height: 1440 }, // 3:4, füllt das hohe Profilraster
+  story: { width: 1080, height: 1920 }, // auch Reel-Videoformat (Kdenlive)
   reelCover: { width: 1080, height: 1920 },
 };
+
+/** Hilfslinien (vorgaben.md 2.1/2.2). Nur Anzeige im Editor, nie exportiert. */
+export const SOCIAL_GUIDES = {
+  verticalConservative: { top: 270, bottom: 672, left: 120, right: 120 }, // Instagram + TikTok gemeinsam
+  instagramVertical: { top: 269, bottom: 672, left: 65, right: 65 }, // Meta: 14 % / 35 % / 6 %
+  reelCoverGridBox: { x: 0, y: 240, width: 1080, height: 1440 }, // 3:4-Ausschnitt im Profilraster
+  postGridKeepX: { from: 34, to: 1046 }, // 4:5-Post im 3:4-Raster
+} as const;
 
 export type Fill =
   | { type: "solid"; color: HexColor }
@@ -1024,10 +1320,8 @@ export interface SocialTemplate {
   size: Size;
   background: Fill;
   layers: SocialLayer[];
-  /** Bereiche, die Instagram-Oberfläche verdeckt (nur Hilfslinien, nicht exportiert). */
-  safeZones: Rect[];
-  /** Reel-Cover: Ausschnitt im Profilraster (3:4), nur Hilfslinie. */
-  gridCrop: Rect | null;
+  safeZones: Rect[]; // aus SOCIAL_GUIDES abgeleitet, je Vorlage überschreibbar
+  gridCrop: Rect | null; // Reel-Cover/Post: Ausschnitt im Profilraster
   previewUrl: AssetUrl | null;
 }
 
@@ -1037,11 +1331,11 @@ export interface SocialDocument {
   texts: Record<string, string>; // slot → Text
   images: Record<string, { relPath: string; focal: Point } | null>; // slot → Projekt-Asset
   colorOverrides: Record<string, HexColor>; // layerId → Farbe
-  exportFormat: "png" | "jpeg";
+  exportFormat: "png" | "jpeg"; // JPEG-Qualität 0,90
 }
 
 /* ========================================================================== */
-/* 12. App-Update, Jobs, Fenster schließen                                    */
+/* 12. App-Update, Aufträge (Jobs), Beispieldateien, Fenster schließen        */
 /* ========================================================================== */
 
 export interface UpdateCheck {
@@ -1050,6 +1344,7 @@ export interface UpdateCheck {
   version: SemVer | null;
   date: IsoDateTime | null;
   notes: string | null; // Markdown aus dem Release, im Frontend als reiner Text dargestellt
+  checkedAt: IsoDateTime;
 }
 
 export type UpdateEvent =
@@ -1069,12 +1364,29 @@ export type JobKind =
   | "bgremoveModel"
   | "bgremoveRun";
 
+/** Ein laufender Auftrag (Popover „Aufträge“, Strg+J). Fortschritt kommt über jobs:changed (≤ 2/s). */
 export interface JobInfo {
   id: JobId;
   kind: JobKind;
-  subject: string; // z. B. Programm-ID oder Dateiname
+  subject: string; // z. B. Programmname oder Dateiname
   startedAt: IsoDateTime;
   cancellable: boolean;
+  progress: number | null; // 0..1, null = unbestimmt
+  phase: string | null; // Code, z. B. "download", "extract" (Text im Frontend)
+  needsAttention: boolean; // Bernstein-Lampe: wartet auf den Nutzer (z. B. Konflikt)
+}
+
+/** Abgeschlossener Auftrag; die letzten 24 h werden lokal gespeichert (max. 200). */
+export interface JobRecord {
+  info: JobInfo;
+  finishedAt: IsoDateTime;
+  outcome: "succeeded" | "failed" | "cancelled";
+  error: AppError | null;
+  result:
+    | { kind: "file"; handle: FileHandleInfo }
+    | { kind: "installation"; installationId: InstallationId }
+    | { kind: "setup"; setupId: SetupId }
+    | { kind: "none" };
 }
 
 export interface JobCancelReq {
@@ -1086,18 +1398,45 @@ export interface AppCloseReq {
   force: boolean;
 }
 
+/** Mitgelieferte Beispieldateien, z. B. Probe-Motiv für den Probelauf im Erststart. */
+export interface SampleInfo {
+  id: string; // "probe-motiv"
+  title: string;
+  description: string;
+  handle: FileHandleInfo;
+}
+
 /* ========================================================================== */
-/* 13. Hintergrundentfernung (Phase 5, Vertrag reserviert)                    */
+/* 13. Hintergrundentfernung (Farbschlüssel ab Phase 3, Modell Phase 5)       */
 /* ========================================================================== */
 
+export interface BgRemoveModelInfo {
+  id: string; // "isnet-general-use"
+  name: string;
+  license: LicenseInfo; // Apache-2.0
+  size: number;
+  installed: boolean;
+  notice: string | null; // z. B. Hinweis zu Trainingsdaten (vorgaben.md 3.2)
+}
+
 export interface BgRemoveStatus {
-  available: boolean; // Feature im Build aktiv
-  model: { id: string; name: string; license: LicenseInfo; size: number; installed: boolean } | null;
+  colorKeyAvailable: boolean; // ohne KI, für flächige Grafiken (immer true ab Phase 3)
+  modelFeature: boolean; // Build mit Cargo-Feature "bgremove"
+  runtimeInstalled: boolean; // ONNX-Runtime-Bibliothek (load-dynamic) geladen
+  models: BgRemoveModelInfo[];
+}
+
+export type BgRemoveMethod =
+  | { kind: "colorKey"; tolerance: number; sample: "corners" | "border" } // tolerance 0..100
+  | { kind: "model"; modelId: string; refineEdges: boolean };
+
+export interface BgRemoveModelReq {
+  modelId: string;
 }
 
 export interface BgRemoveRunReq {
   handleId: FileHandleId;
-  refineEdges?: boolean;
+  method: BgRemoveMethod;
 }
 
 export type BgRemoveEvent =
@@ -1116,7 +1455,7 @@ type Ch<E> = { onEvent: IpcChannel<E> };
 
 /** Alle JSON-Commands. Schlüssel = Command-Name, args = zweites Argument von invoke(). */
 export interface Commands {
-  // --- app / settings / diagnostics
+  // --- app / settings / network / diagnostics
   app_info: { args: NoArgs; result: AppInfo };
   app_open_external: { args: Req<OpenExternalReq>; result: null };
   app_reveal: { args: Req<RevealReq>; result: null };
@@ -1124,6 +1463,7 @@ export interface Commands {
   settings_get: { args: NoArgs; result: Settings };
   settings_update: { args: Req<SettingsPatch>; result: Settings };
   settings_choose_dir: { args: Req<SettingsChooseDirReq>; result: Settings | null };
+  network_info: { args: NoArgs; result: NetworkInfo };
   diagnostics_export: { args: NoArgs; result: FileHandleInfo | null };
 
   // --- catalog
@@ -1146,31 +1486,39 @@ export interface Commands {
   setup_preview: { args: Req<SetupPreviewReq>; result: SetupPlan };
   setup_apply: { args: ReqCh<SetupApplyReq, SetupEvent>; result: SetupRecord };
   setup_undo: { args: Req<SetupUndoReq>; result: UndoReport };
+  setup_history: { args: Req<SetupHistoryReq>; result: SetupRecord[] };
 
-  // --- files
+  // --- files / samples
   file_pick: { args: Req<FilePickReq>; result: FileHandleInfo[] };
+  samples_list: { args: NoArgs; result: SampleInfo[] };
 
   // --- projects / templates
   templates_list: { args: NoArgs; result: TemplateInfo[] };
   projects_list: { args: NoArgs; result: Project[] };
   project_create: { args: Req<ProjectCreateReq>; result: Project };
-  project_open: { args: Req<ProjectRef>; result: ProjectOpenResult };
+  project_new_file: { args: Req<ProjectNewFileReq>; result: ProjectFile };
+  project_open_file: { args: Req<ProjectFileReq>; result: ProjectOpenResult };
+  project_open_last: { args: Req<ProjectRef>; result: ProjectOpenResult };
+  project_file_handle: { args: Req<ProjectFileReq>; result: FileHandleInfo };
+  project_set_collection: { args: Req<ProjectSetCollectionReq>; result: Project };
   project_forget: { args: Req<ProjectRef>; result: null };
-  project_read_document: { args: Req<ProjectRef>; result: ProjectDocument | null };
-  project_write_document: { args: Req<ProjectWriteDocumentReq>; result: Project };
+  project_read_document: { args: Req<ProjectReadDocumentReq>; result: ProjectDocument | null };
+  project_write_document: { args: Req<ProjectWriteDocumentReq>; result: ProjectFileRef };
   project_add_asset: { args: Req<ProjectAddAssetReq>; result: ProjectAsset };
-  project_assets: { args: Req<ProjectRef>; result: ProjectAsset[] };
 
   // --- library
   library_status: { args: NoArgs; result: LibraryStatus };
-  library_choose_root: { args: NoArgs; result: LibraryStatus | null };
-  library_init: { args: NoArgs; result: LibraryStatus };
+  library_choose_root: { args: NoArgs; result: LibraryRootCandidate | null };
+  library_use_root: { args: Req<LibraryUseRootReq>; result: LibraryStatus };
   library_scan: { args: Ch<ScanEvent>; result: LibraryStatus };
   library_query: { args: Req<LibraryQuery>; result: LibraryPage };
   library_get: { args: Req<LibraryGetReq>; result: LibraryEntry };
   library_update_meta: { args: Req<LibraryMetaPatchReq>; result: LibraryEntry };
+  library_bulk_meta: { args: Req<LibraryBulkMetaReq>; result: number };
   library_import: { args: Req<LibraryImportReq>; result: LibraryEntry[] };
   library_entry_handle: { args: Req<LibraryGetReq>; result: FileHandleInfo };
+  library_set_collections: { args: Req<LibrarySetCollectionsReq>; result: LibraryStatus };
+  library_thumbnails_clear: { args: NoArgs; result: null };
   library_pack_export: { args: ReqCh<PackExportReq, PackEvent>; result: FileHandleInfo | null };
   library_pack_inspect: { args: Req<PackInspectReq>; result: PackPreview };
   library_pack_import: { args: ReqCh<PackImportReq, PackEvent>; result: PackImportReport };
@@ -1192,11 +1540,12 @@ export interface Commands {
 
   // --- jobs
   jobs_active: { args: NoArgs; result: JobInfo[] };
+  jobs_recent: { args: NoArgs; result: JobRecord[] };
   job_cancel: { args: Req<JobCancelReq>; result: boolean };
 
-  // --- bgremove (Phase 5; Commands existieren erst mit Cargo-Feature "bgremove")
+  // --- bgremove (colorKey ab Phase 3; Modell-Commands ab Phase 5 mit Cargo-Feature "bgremove")
   bgremove_status: { args: NoArgs; result: BgRemoveStatus };
-  bgremove_model_preview: { args: NoArgs; result: InstallPlan };
+  bgremove_model_preview: { args: Req<BgRemoveModelReq>; result: InstallPlan };
   bgremove_model_install: { args: ReqCh<InstallStartReq, InstallEvent>; result: BgRemoveStatus };
   bgremove_run: { args: ReqCh<BgRemoveRunReq, BgRemoveEvent>; result: FileHandleInfo };
 }
@@ -1221,11 +1570,12 @@ export type TypedInvoke = <K extends CommandName>(cmd: K, args: CommandArgs<K>) 
 export interface EventMap {
   "catalog:updated": CatalogStatus;
   "programs:changed": { reason: "installed" | "removed" | "rescanned" | "setupChanged" | "preferredChanged" | "catalogChanged" };
-  "library:changed": { reason: "watcher" | "import" | "scan" | "meta" | "packImport"; changedCount: number };
+  "library:changed": { reason: "watcher" | "import" | "scan" | "meta" | "packImport" | "rootChanged"; changedCount: number };
+  "projects:changed": { projectId: ProjectId | null };
   "files:dropped": { handles: FileHandleInfo[]; position: Point };
   "update:available": UpdateCheck;
   "app:closeRequested": { activeJobs: JobInfo[] };
-  "jobs:changed": { active: JobInfo[] };
+  "jobs:changed": { active: JobInfo[]; finished: JobRecord | null };
 }
 
 export type EventName = keyof EventMap;
@@ -1242,6 +1592,7 @@ export const COMMAND_NAMES = [
   "settings_get",
   "settings_update",
   "settings_choose_dir",
+  "network_info",
   "diagnostics_export",
   "catalog_status",
   "catalog_refresh",
@@ -1258,25 +1609,33 @@ export const COMMAND_NAMES = [
   "setup_preview",
   "setup_apply",
   "setup_undo",
+  "setup_history",
   "file_pick",
+  "samples_list",
   "templates_list",
   "projects_list",
   "project_create",
-  "project_open",
+  "project_new_file",
+  "project_open_file",
+  "project_open_last",
+  "project_file_handle",
+  "project_set_collection",
   "project_forget",
   "project_read_document",
   "project_write_document",
   "project_add_asset",
-  "project_assets",
   "library_status",
   "library_choose_root",
-  "library_init",
+  "library_use_root",
   "library_scan",
   "library_query",
   "library_get",
   "library_update_meta",
+  "library_bulk_meta",
   "library_import",
   "library_entry_handle",
+  "library_set_collections",
+  "library_thumbnails_clear",
   "library_pack_export",
   "library_pack_inspect",
   "library_pack_import",
@@ -1290,6 +1649,7 @@ export const COMMAND_NAMES = [
   "app_update_check",
   "app_update_install",
   "jobs_active",
+  "jobs_recent",
   "job_cancel",
   "bgremove_status",
   "bgremove_model_preview",
@@ -1303,6 +1663,7 @@ export const EVENT_NAMES = [
   "catalog:updated",
   "programs:changed",
   "library:changed",
+  "projects:changed",
   "files:dropped",
   "update:available",
   "app:closeRequested",

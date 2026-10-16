@@ -1,0 +1,726 @@
+{
+  "$comment": "Entwurf (Stand 16.10.2026) fuer den Cypher-Studio-Katalog. Alle Werte stammen aus offiziellen Quellen, siehe docs/research/programme.md. Felder mit \"verified\": false oder \"assumed\": true wurden NICHT durch Download geprueft und muessen im Smoke-Test bestaetigt werden.",
+  "schemaVersion": "0.1-draft",
+  "generated": "2026-10-16",
+  "tokens": {
+    "{version}": "volle Version, z. B. 5.2.2 oder 5.3.4.1 oder 26.08.2",
+    "{series}": "Serie, z. B. 5.2 (Blender), 5.3 (Krita), 26.08 (Kdenlive)",
+    "{arch}": "x86_64 | arm64",
+    "{file}": "Pfad der zu oeffnenden Datei",
+    "{resourceDir}": "siehe configDirs.<os>.resources",
+    "{extractRoot}": "Zielordner, in den Cypher das Archiv entpackt hat"
+  },
+  "pathVars": {
+    "windows": { "APPDATA": "%APPDATA%", "LOCALAPPDATA": "%LOCALAPPDATA%" },
+    "macos": { "HOME": "~" },
+    "linux": { "XDG_CONFIG_HOME": "${XDG_CONFIG_HOME:-~/.config}", "XDG_DATA_HOME": "${XDG_DATA_HOME:-~/.local/share}" }
+  },
+  "programs": [
+    {
+      "id": "blender",
+      "name": "Blender",
+      "category": "3d",
+      "license": "GPL-3.0-or-later",
+      "homepage": "https://www.blender.org/",
+      "channel": "lts",
+      "series": "5.2",
+      "version": "5.2.2",
+      "releasedAt": "2026-09-15",
+      "versionDiscovery": {
+        "type": "html-directory-listing",
+        "url": "https://download.blender.org/release/Blender{series}/",
+        "regex": "blender-({series}\\.\\d+)-windows-x64\\.zip",
+        "select": "max-semver",
+        "seriesList": {
+          "url": "https://download.blender.org/release/",
+          "regex": "Blender(\\d+\\.\\d+)/",
+          "note": "Serie (LTS) wird im Katalog fest gepinnt; LTS-Status steht nur als Text auf https://www.blender.org/download/lts/. Neue Serie nur nach manueller Pruefung uebernehmen."
+        }
+      },
+      "platformSupport": {
+        "windows-x64": "ab Windows 8.1 (Win 11 empfohlen)",
+        "macos-arm64": "ab macOS 13",
+        "macos-x86_64": "nur Blender 4.5 LTS (letzte Intel-Version)",
+        "linux-x86_64": "glibc >= 2.28"
+      },
+      "artifacts": {
+        "windows-x64": [
+          {
+            "kind": "portable-zip",
+            "preferred": true,
+            "urlTemplate": "https://download.blender.org/release/Blender{series}/blender-{version}-windows-x64.zip",
+            "sizeApprox": 404453484,
+            "checksum": {
+              "type": "sha256",
+              "urlTemplate": "https://download.blender.org/release/Blender{series}/blender-{version}.sha256",
+              "format": "sha256sum-multi",
+              "matchFilename": "blender-{version}-windows-x64.zip",
+              "host": "download.blender.org",
+              "inline": { "version": "5.2.2", "sha256": "3849d17a682cba006075aaa3f3597ecb5c9c30ec31035b2e092c53e40679b535" }
+            },
+            "signature": { "type": "none", "keyFingerprints": [], "note": "Blender veroeffentlicht keine GPG-Signaturen fuer Release-Dateien (nur .md5/.sha256)." }
+          },
+          {
+            "kind": "installer",
+            "subtype": "msi",
+            "adminRequired": true,
+            "urlTemplate": "https://download.blender.org/release/Blender{series}/blender-{version}-windows-x64.msi",
+            "sizeApprox": 364822528,
+            "silentInstall": "msiexec /i <datei>.msi /qn INSTALL_ROOT=\"<Zielordner>\"",
+            "silentInstallVerified": false,
+            "checksum": { "type": "sha256", "urlTemplate": "https://download.blender.org/release/Blender{series}/blender-{version}.sha256", "format": "sha256sum-multi", "matchFilename": "blender-{version}-windows-x64.msi" },
+            "signature": { "type": "none", "keyFingerprints": [] }
+          }
+        ],
+        "macos-arm64": [
+          {
+            "kind": "dmg",
+            "preferred": true,
+            "urlTemplate": "https://download.blender.org/release/Blender{series}/blender-{version}-macos-arm64.dmg",
+            "sizeApprox": 346286611,
+            "checksum": {
+              "type": "sha256",
+              "urlTemplate": "https://download.blender.org/release/Blender{series}/blender-{version}.sha256",
+              "format": "sha256sum-multi",
+              "matchFilename": "blender-{version}-macos-arm64.dmg",
+              "host": "download.blender.org",
+              "inline": { "version": "5.2.2", "sha256": "dc4125399b8bfefe283cc1624d6cfc7809d1cac20ace51072127eb371f31f210" }
+            },
+            "signature": { "type": "none", "keyFingerprints": [], "note": "Kein GPG. Apple-Signatur/Notarisierung des .app per codesign/spctl pruefbar (Annahme, nicht verifiziert)." },
+            "extract": { "method": "hdiutil-attach-copy-app", "appName": "Blender.app" }
+          }
+        ],
+        "macos-x86_64": [
+          {
+            "kind": "dmg",
+            "preferred": true,
+            "series": "4.5",
+            "versionOverride": "4.5.14",
+            "versionDiscoveryOverride": {
+              "type": "html-directory-listing",
+              "url": "https://download.blender.org/release/Blender4.5/",
+              "regex": "blender-(4\\.5\\.\\d+)-macos-x64\\.dmg",
+              "select": "max-semver"
+            },
+            "urlTemplate": "https://download.blender.org/release/Blender4.5/blender-{version}-macos-x64.dmg",
+            "sizeApprox": 340090796,
+            "checksum": {
+              "type": "sha256",
+              "urlTemplate": "https://download.blender.org/release/Blender4.5/blender-{version}.sha256",
+              "format": "sha256sum-multi",
+              "matchFilename": "blender-{version}-macos-x64.dmg",
+              "host": "download.blender.org",
+              "inline": { "version": "4.5.14", "sha256": "613e73339e97bd113adeeb28d9155beeacf2df7119ee4dbd6bdce234843645f6" }
+            },
+            "signature": { "type": "none", "keyFingerprints": [] },
+            "note": "Blender 5.x hat KEINEN Intel-Mac-Build. 4.5 LTS ist laut Blender die letzte Intel-Version; Support ca. bis Juli 2027 (2 Jahre LTS, Datum abgeleitet). Die Datei heisst macos-x64, nicht macos-x86_64.",
+            "extract": { "method": "hdiutil-attach-copy-app", "appName": "Blender.app" }
+          }
+        ],
+        "linux-x86_64": [
+          {
+            "kind": "tar.xz",
+            "preferred": true,
+            "urlTemplate": "https://download.blender.org/release/Blender{series}/blender-{version}-linux-x64.tar.xz",
+            "sizeApprox": 383295504,
+            "checksum": {
+              "type": "sha256",
+              "urlTemplate": "https://download.blender.org/release/Blender{series}/blender-{version}.sha256",
+              "format": "sha256sum-multi",
+              "matchFilename": "blender-{version}-linux-x64.tar.xz",
+              "host": "download.blender.org",
+              "inline": { "version": "5.2.2", "sha256": "84098912789dc450e95697c4184fb8a90acbe5111c2ba4aede3fecb57806a168" }
+            },
+            "signature": { "type": "none", "keyFingerprints": [] },
+            "note": "Kein AppImage. Kein libfuse2 noetig."
+          }
+        ]
+      },
+      "launch": {
+        "windows": { "exeRelPath": "blender-{version}-windows-x64/blender.exe", "exeGlob": "**/blender.exe", "verified": false },
+        "macos": { "exeRelPath": "Blender.app/Contents/MacOS/Blender", "verified": true, "source": "https://docs.blender.org/manual/en/latest/advanced/command_line/launch/macos.html" },
+        "linux": { "exeRelPath": "blender-{version}-linux-x64/blender", "exeGlob": "**/blender", "verified": false },
+        "args": {
+          "openFile": ["{file}"],
+          "factoryStartup": ["--factory-startup"],
+          "appTemplate": ["--app-template", "CypherStudio"],
+          "pythonScript": ["--python", "{script}"],
+          "pythonExpr": ["--python-expr", "{expr}"],
+          "offline": ["--offline-mode"],
+          "background": ["--background"],
+          "extensionInstallFile": ["--command", "extension", "install-file", "-r", "user_default", "-e", "{zip}"],
+          "extensionList": ["--command", "extension", "list"],
+          "version": ["--version"]
+        },
+        "argOrderNote": "Argumente werden in der angegebenen Reihenfolge ausgefuehrt (z. B. Datei laden ueberschreibt vorher gesetzte Render-Optionen)."
+      },
+      "configDirs": {
+        "windows": {
+          "userRoot": "%APPDATA%\\Blender Foundation\\Blender\\{series}",
+          "config": "%APPDATA%\\Blender Foundation\\Blender\\{series}\\config",
+          "scripts": "%APPDATA%\\Blender Foundation\\Blender\\{series}\\scripts",
+          "appTemplates": "%APPDATA%\\Blender Foundation\\Blender\\{series}\\scripts\\startup\\bl_app_templates_user",
+          "addonsLegacy": "%APPDATA%\\Blender Foundation\\Blender\\{series}\\scripts\\addons",
+          "extensionsUserDefault": "%APPDATA%\\Blender Foundation\\Blender\\{series}\\extensions\\user_default",
+          "portableMarker": "<Ordner mit blender.exe>\\portable"
+        },
+        "macos": {
+          "userRoot": "~/Library/Application Support/Blender/{series}",
+          "config": "~/Library/Application Support/Blender/{series}/config",
+          "appTemplates": "~/Library/Application Support/Blender/{series}/scripts/startup/bl_app_templates_user",
+          "extensionsUserDefault": "~/Library/Application Support/Blender/{series}/extensions/user_default",
+          "portableMarker": "Blender.app/Contents/Resources/portable (veraendert das App-Bundle, bricht die Code-Signatur)"
+        },
+        "linux": {
+          "userRoot": "${XDG_CONFIG_HOME:-~/.config}/blender/{series}",
+          "config": "${XDG_CONFIG_HOME:-~/.config}/blender/{series}/config",
+          "appTemplates": "${XDG_CONFIG_HOME:-~/.config}/blender/{series}/scripts/startup/bl_app_templates_user",
+          "extensionsUserDefault": "${XDG_CONFIG_HOME:-~/.config}/blender/{series}/extensions/user_default",
+          "portableMarker": "<Ordner mit blender>/portable"
+        },
+        "env": {
+          "BLENDER_USER_RESOURCES": "ersetzt das gesamte Benutzerverzeichnis (versionsunabhaengig steuerbar)",
+          "BLENDER_USER_CONFIG": "nur config/",
+          "BLENDER_USER_SCRIPTS": "nur scripts/",
+          "BLENDER_USER_EXTENSIONS": "nur extensions/",
+          "BLENDER_SYSTEM_SCRIPTS": "zusaetzliches Skriptverzeichnis (lesend, z. B. fuer bl_app_templates_system)",
+          "BLENDER_SYSTEM_EXTENSIONS": "System-Repo, Pakete nach $BLENDER_SYSTEM_EXTENSIONS/system/<id>/blender_manifest.toml",
+          "BLENDER_CUSTOM_SPLASH": "Pfad zu eigenem Splash-Bild"
+        },
+        "versionLogic": "Konfigurationsordner haengt an Major.Minor ({series}, also 5.2 fuer 5.2.0 bis 5.2.x). Neue Serie = leerer neuer Ordner, Cypher muss Voreinstellungen neu ausliefern."
+      },
+      "resources": {
+        "appTemplate": { "format": "Ordner CypherStudio/ mit __init__.py (register/unregister), optional startup.blend, userpref.blend, splash.png (1000x500)", "dest": "configDirs.<os>.appTemplates/CypherStudio/", "start": "blender --app-template CypherStudio" },
+        "extensions": { "format": "ZIP mit blender_manifest.toml (schema_version 1.0.0)", "install": "blender --command extension install-file -r user_default -e <zip>", "repoIdVerified": "user_default laut Blender-Quellcode (preferences.cc)" },
+        "palettes": { "format": "Blender kennt keine .gpl-Palettendatei; Paint-Paletten per Python (bpy.data.palettes) im App-Template anlegen" },
+        "fonts": { "note": "Blender liest Systemschriften nicht automatisch fuer Text-Objekte; Schriftpfad in den Einstellungen (Dateipfade/Fonts) oder per bpy.data.fonts.load(). Nicht im Detail geprueft." }
+      },
+      "detect": {
+        "windows": { "paths": ["%ProgramFiles%\\Blender Foundation\\Blender *\\blender.exe", "%ProgramFiles%\\WindowsApps\\BlenderFoundation.Blender*\\Blender\\blender.exe"], "registryUninstallDisplayName": "Blender *", "verified": false },
+        "macos": { "paths": ["/Applications/Blender.app", "~/Applications/Blender.app"] },
+        "linux": { "path": ["blender"], "flatpak": "org.blender.Blender", "snap": "blender", "paths": ["/usr/bin/blender", "/snap/bin/blender"] }
+      },
+      "notes": [
+        "Download und Pruefsumme kommen beide von download.blender.org (Cloudflare). www.blender.org/download/release/... leitet auf mirror.blender.org und dann auf Mirror (z. B. mirror.dotsrc.org) um: NICHT verwenden, direkt von download.blender.org laden.",
+        "Keine GPG-Signatur: Integritaet nur via SHA-256 ueber TLS. Zusatzpruefungen: Windows Get-AuthenticodeSignature (Signatur nicht verifiziert), macOS codesign --verify / spctl.",
+        "Unbeaufsichtigter Windows-MSI braucht Admin; portable ZIP bevorzugen.",
+        "Download ca. 350-405 MB je OS.",
+        "Blender 5.2 ist LTS (2 Jahre Support) laut https://www.blender.org/download/lts/."
+      ]
+    },
+    {
+      "id": "krita",
+      "name": "Krita",
+      "category": "raster-painting",
+      "license": "GPL-3.0-or-later",
+      "homepage": "https://krita.org/",
+      "channel": "stable-qt5",
+      "series": "5.3",
+      "version": "5.3.4.1",
+      "releasedAt": "2026-10-07",
+      "alternativeChannel": { "id": "experimental-qt6", "series": "6.0", "version": "6.0.4.1", "note": "Krita nennt 5.3.4 'suitable for productive work', 6.0.4 'more experimental' (Qt6)." },
+      "versionDiscovery": {
+        "type": "html-directory-listing",
+        "url": "https://download.kde.org/stable/krita/",
+        "regex": "href=\"({series}\\.\\d+(?:\\.\\d+)?)/\"",
+        "select": "max-semver-4-part",
+        "note": "Versionsnummern koennen 4-stellig sein (5.3.4.1 > 5.3.4). Verzeichnis enthaelt Windows-ZIP, setup.exe, AppImage, dmg."
+      },
+      "platformSupport": { "windows-x64": "ab Windows 8.1", "macos": "ab macOS 10.15", "linux-x86_64": "AppImage 64 Bit" },
+      "artifacts": {
+        "windows-x64": [
+          {
+            "kind": "portable-zip",
+            "preferred": true,
+            "urlTemplate": "https://download.kde.org/stable/krita/{version}/krita-x64-{version}.zip",
+            "sizeApprox": 227787916,
+            "checksum": {
+              "type": "sha256",
+              "urlTemplate": "https://download.kde.org/stable/krita/{version}/krita-x64-{version}.zip.sha256",
+              "format": "sha256sum",
+              "host": "download.kde.org",
+              "inline": { "version": "5.3.4.1", "sha256": "eda810059a120171d30d4661c7684c73a8feb72b01ad5709531cbebe6b84d032" }
+            },
+            "signature": { "type": "none", "keyFingerprints": [], "note": "Krita signiert nur AppImage und Quell-Tarballs." },
+            "note": "Portable ZIP teilt Einstellungen und Ressourcen mit einer installierten Krita-Version (liest %LOCALAPPDATA%\\kritarc und %APPDATA%\\krita)."
+          },
+          {
+            "kind": "installer",
+            "subtype": "nsis",
+            "adminRequired": true,
+            "urlTemplate": "https://download.kde.org/stable/krita/{version}/krita-x64-{version}-setup.exe",
+            "sizeApprox": 165471576,
+            "silentInstall": "krita-x64-{version}-setup.exe /S /D=<Zielordner>",
+            "silentInstallVerified": false,
+            "installDirDefault": "%ProgramFiles%\\Krita (x64)",
+            "checksum": { "type": "sha256", "urlTemplate": "https://download.kde.org/stable/krita/{version}/krita-x64-{version}-setup.exe.sha256", "format": "sha256sum", "host": "download.kde.org" },
+            "signature": { "type": "none", "keyFingerprints": [] }
+          }
+        ],
+        "macos-arm64": [
+          {
+            "kind": "dmg",
+            "preferred": true,
+            "urlTemplate": "https://download.kde.org/stable/krita/{version}/krita-{version}-signed.dmg",
+            "sizeApprox": 392023759,
+            "universalBinary": "wahrscheinlich (seit 4.4.3 universal, fuer 5.3 nur ueber Drittseiten belegt)",
+            "checksum": { "type": "sha256", "urlTemplate": "https://download.kde.org/stable/krita/{version}/krita-{version}-signed.dmg.sha256", "format": "sha256sum", "host": "download.kde.org", "inline": { "version": "5.3.4.1", "sha256": "531e261da1fd8d5c468cfcd4eebd16e9edf6ab320e89406d2875f2e43c1148de" } },
+            "signature": { "type": "none", "keyFingerprints": [] },
+            "extract": { "method": "hdiutil-attach-copy-app", "appName": "krita.app", "appNameVerified": false }
+          }
+        ],
+        "macos-x86_64": [
+          {
+            "kind": "dmg",
+            "preferred": true,
+            "sameFileAs": "macos-arm64",
+            "urlTemplate": "https://download.kde.org/stable/krita/{version}/krita-{version}-signed.dmg",
+            "sizeApprox": 392023759,
+            "checksum": { "type": "sha256", "urlTemplate": "https://download.kde.org/stable/krita/{version}/krita-{version}-signed.dmg.sha256", "format": "sha256sum", "host": "download.kde.org" },
+            "signature": { "type": "none", "keyFingerprints": [] },
+            "note": "Gleiche Datei fuer beide Mac-Architekturen (Universal-Binary, per 'lipo -archs' im Smoke-Test pruefen)."
+          }
+        ],
+        "linux-x86_64": [
+          {
+            "kind": "appimage",
+            "preferred": true,
+            "urlTemplate": "https://download.kde.org/stable/krita/{version}/krita-{version}-x86_64.AppImage",
+            "sizeApprox": 381635064,
+            "checksum": {
+              "type": "sha256",
+              "urlTemplate": "https://download.kde.org/stable/krita/{version}/krita-{version}-x86_64.AppImage.sha256",
+              "format": "sha256sum",
+              "host": "download.kde.org",
+              "inline": { "version": "5.3.4.1", "sha256": "e315dfb3da81cdb8bddc4bb3fcd4d9bacd0630fc7065d8ed07de758b267573f0" }
+            },
+            "signature": {
+              "type": "gpg",
+              "urlTemplate": "https://download.kde.org/stable/krita/{version}/krita-{version}-x86_64.AppImage.sig",
+              "format": "openpgp-detached-binary",
+              "keyFingerprints": ["E9FB29E74ADEACC5E3035B8AB69EB4CF7468332F"],
+              "keyUid": "Dmitry Kazakov (main key) <dimula73@gmail.com>",
+              "keyAlgo": "RSA-2048, Signatur mit SHA-512",
+              "keyExpires": "2028-08-14",
+              "keyUrl": "https://files.kde.org/krita/dmitry_kazakov.gpg",
+              "keyShouldBeEmbeddedInApp": true,
+              "alsoPublished": { "fingerprint": "064182440C674D9F8D0F6F8B4DA79EDA231C852B", "uid": "Stichting Krita Foundation <foundation@krita.org>", "url": "https://files.kde.org/krita/4DA79EDA231C852B", "note": "Liegt neben dem Dmitry-Key, hat die aktuellen Releases (5.2.16, 5.3.4.1, 6.0.3, 6.0.4.1) aber NICHT signiert." }
+            },
+            "runNote": "Ubuntu 24.04: libfuse2t64 noetig, sonst --appimage-extract-and-run."
+          }
+        ]
+      },
+      "launch": {
+        "windows": { "exeRelPath": "krita-x64-{version}/bin/krita.exe", "exeGlob": "**/bin/krita.exe", "verified": "bin/krita.exe nur fuer den Installer belegt ($INSTDIR\\bin\\krita.exe), ZIP-Layout nicht geprueft" },
+        "macos": { "exeRelPath": "krita.app/Contents/MacOS/krita", "verified": false },
+        "linux": { "exeRelPath": "krita-{version}-x86_64.AppImage", "chmod": "+x", "verified": true },
+        "args": {
+          "openFile": ["{file}"],
+          "template": ["--template", "{file}.kra"],
+          "workspace": ["--workspace", "{name}"],
+          "noSplash": ["--nosplash"],
+          "canvasOnly": ["--canvasonly"],
+          "newImage": ["--new-image", "RGBA,U8,{w},{h}"],
+          "export": ["{file}", "--export", "--export-filename", "{out}"],
+          "exportSequence": ["--export-sequence", "--export-filename", "{out}", "{file}.kra"]
+        }
+      },
+      "configDirs": {
+        "windows": {
+          "resources": "%APPDATA%\\krita",
+          "kritarc": "%LOCALAPPDATA%\\kritarc",
+          "shortcuts": "%LOCALAPPDATA%\\kritashortcutsrc",
+          "bundles": "%APPDATA%\\krita\\bundles",
+          "palettes": "%APPDATA%\\krita\\palettes",
+          "workspaces": "%APPDATA%\\krita\\workspaces",
+          "templates": "%APPDATA%\\krita\\templates",
+          "fonts": "%APPDATA%\\krita\\fonts",
+          "windowsStore": "%LOCALAPPDATA%\\Packages\\49800Krita_<ZUFALL>\\LocalCache\\Roaming\\krita"
+        },
+        "macos": {
+          "resources": "~/Library/Application Support/Krita",
+          "kritarc": "~/Library/Preferences/kritarc",
+          "bundles": "~/Library/Application Support/Krita/bundles",
+          "palettes": "~/Library/Application Support/Krita/palettes",
+          "workspaces": "~/Library/Application Support/Krita/workspaces",
+          "templates": "~/Library/Application Support/Krita/templates",
+          "fonts": "~/Library/Application Support/Krita/fonts"
+        },
+        "linux": {
+          "resources": "${XDG_DATA_HOME:-~/.local/share}/krita",
+          "kritarc": "${XDG_CONFIG_HOME:-~/.config}/kritarc",
+          "bundles": "${XDG_DATA_HOME:-~/.local/share}/krita/bundles",
+          "palettes": "${XDG_DATA_HOME:-~/.local/share}/krita/palettes",
+          "workspaces": "${XDG_DATA_HOME:-~/.local/share}/krita/workspaces",
+          "templates": "${XDG_DATA_HOME:-~/.local/share}/krita/templates",
+          "fonts": "${XDG_DATA_HOME:-~/.local/share}/krita/fonts",
+          "flatpak": "~/.var/app/org.kde.krita/ (unverifiziert)",
+          "snap": "~/snap/krita/ (unverifiziert)"
+        },
+        "resourceDirOverride": "kritarc Schluessel ResourceDirectory (Abschnitt General): verlegt den Ressourcenordner"
+      },
+      "resources": {
+        "bundle": {
+          "format": "ZIP (Mime application/x-krita-resourcebundle), Dateiendung .bundle",
+          "layout": ["mimetype", "META-INF/manifest.xml", "meta.xml", "preview.png", "<typ>/<datei>  (typ: palettes, workspaces, paintoppresets, brushes, gradients, patterns, gamutmasks, layerstyles, seexpr_scripts, ...)"],
+          "manifestRoot": "manifest:manifest (xmlns:manifest, manifest:version 1.2) mit manifest:file-entry (media-type, full-path, md5sum, optionale manifest:tags)",
+          "installWithoutGui": "Datei in <resources>/bundles/ kopieren; Krita registriert beim naechsten Start alle *.bundle, *.abr, *.asl unterhalb des Ressourcenordners automatisch (KisResourceLocator::findStorages)",
+          "note": "Bundle sollte einmal in Krita (Einstellungen > Ressourcen verwalten > Bundle erstellen) erzeugt und dann im Repo abgelegt werden; md5sum-Pflichtfelder."
+        },
+        "palettes": { "formats": [".kpl (nativ, ZIP mit colorset.xml)", ".gpl", ".aco", ".act", ".ase", ".xml", ".sbz"], "dest": "configDirs.<os>.palettes", "recommended": ".gpl (gleiche Datei fuer Krita, Inkscape, GIMP)" },
+        "templates": {
+          "format": "Ordnerstruktur <templates>/<Gruppe>/.directory (Desktop Entry: Name, X-KDE-DefaultTab) + <Gruppe>/<Name>.desktop (Type=Link, Name, Icon, URL=.source/<Name>.kra, X-KDE-Hidden=false) + <Gruppe>/.source/<Name>.kra",
+          "dest": "configDirs.<os>.templates",
+          "note": ".kra-Dateien in Krita erzeugen (Datei > Vorlage aus Bild erstellen); Symbol optional als PNG."
+        },
+        "workspaces": { "format": ".kws", "dest": "configDirs.<os>.workspaces", "note": "Nur ueber die GUI erzeugbar (Docker-Layout), danach als Datei ausliefern oder im Bundle." },
+        "fonts": { "dest": "configDirs.<os>.fonts", "note": "Krita nutzt Systemschriften und den Ordner fonts/ im Ressourcenordner (neue Schriften werden dynamisch erkannt, geaenderte erst nach Neustart)." },
+        "exportPresets": "Krita hat keine eigenen Export-Voreinstellungen als Datei; Standard-Exportparameter in kritarc oder pro Dokument."
+      },
+      "detect": {
+        "windows": { "registryUninstall": ["HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Krita_x64"], "registryApp": ["HKLM\\Software\\Krita"], "paths": ["%ProgramFiles%\\Krita (x64)\\bin\\krita.exe"], "verified": "aus NSIS-Skript" },
+        "macos": { "paths": ["/Applications/krita.app", "~/Applications/krita.app"] },
+        "linux": { "path": ["krita"], "flatpak": "org.kde.krita", "snap": "krita" }
+      },
+      "notes": [
+        "download.kde.org leitet Artefakte per HTTP 302 (Mirrorbits) auf Mirror-Server um. .sha256 wird direkt von download.kde.org (HTTP 200) geliefert, .sig ebenfalls von der Hauptquelle.",
+        "Windows-ZIP und dmg haben keine GPG-Signatur, nur SHA-256 von der Hauptquelle.",
+        "Windows-Installer/ZIP: ZIP ist ohne Admin nutzbar; kein 32-Bit mehr.",
+        "5.3.4 hob das macOS-Minimum von 10.14 auf 10.15 an.",
+        "Qt6-Version 6.0.x vorerst nur als optionaler Kanal anbieten."
+      ]
+    },
+    {
+      "id": "inkscape",
+      "name": "Inkscape",
+      "category": "vector",
+      "license": "GPL-2.0-or-later (Quelldateien; Gesamtwerk GPL, Einzeldateien teils abweichend)",
+      "homepage": "https://inkscape.org/",
+      "channel": "stable",
+      "series": "1.4",
+      "version": "1.4.4",
+      "releasedAt": "2026-05-05",
+      "buildTag": "2026-05-05_dcaf3e7",
+      "versionDiscovery": {
+        "type": "http-redirect-or-html",
+        "url": "https://inkscape.org/release/",
+        "regex": "/release/inkscape-(\\d+\\.\\d+(?:\\.\\d+)?)/",
+        "note": "GET https://inkscape.org/release/ leitet auf /release/inkscape-<version>/ (final-URL auswerten). Das ist die einzige maschinenlesbare Quelle; Inkscape bietet keine JSON-API und kein offenes Verzeichnis."
+      },
+      "platformSupport": { "windows-x64": "ab Windows 8.1 (laut Download-Seite fuer 1.3.x; fuer 1.4 nicht eigens geprueft)", "macos": "dmg x86_64 und arm64", "linux-x86_64": "AppImage" },
+      "artifacts": {
+        "windows-x64": [
+          {
+            "kind": "7z",
+            "preferred": true,
+            "portable": true,
+            "resolve": {
+              "type": "html-scrape",
+              "pageUrl": "https://inkscape.org/release/inkscape-{version}/windows/64-bit/compressed-7z/dl/",
+              "fileRegex": "Refresh\" content=\"2; url=(/gallery/item/\\d+/[^\"]+)\"",
+              "fileBase": "https://inkscape.org",
+              "checksumRegex": "(https://media\\.inkscape\\.org/media/resources/sigs/[^\"]+\\.sha256)",
+              "note": "Dateiname enthaelt Datum, Git-Hash und teils zufaelligen Suffix (z. B. inkscape-1.4.4_2026-05-05_dcaf3e7-x64_mHK170m.7z), daher nicht per Template bildbar."
+            },
+            "exampleResolved": {
+              "url": "https://inkscape.org/gallery/item/59503/inkscape-1.4.4_2026-05-05_dcaf3e7-x64_mHK170m.7z",
+              "redirectsTo": "https://media.inkscape.org/dl/resources/file/inkscape-1.4.4_2026-05-05_dcaf3e7-x64_mHK170m.7z"
+            },
+            "sizeApprox": 110359970,
+            "checksum": {
+              "type": "sha256",
+              "format": "sha256sum",
+              "host": "media.inkscape.org",
+              "inline": { "version": "1.4.4", "sha256": "c4dbd64a92628abe7d7316c43f9325396e4d48417866027ee3d993d4f5b54c6a" }
+            },
+            "signature": { "type": "none", "keyFingerprints": [], "note": "Die als 'sig' verlinkte Datei ist nur eine .sha256-Textdatei." }
+          },
+          {
+            "kind": "installer",
+            "subtype": "exe-signed",
+            "adminRequired": "wahrscheinlich (nicht geprueft)",
+            "resolve": { "type": "html-scrape", "pageUrl": "https://inkscape.org/release/inkscape-{version}/windows/64-bit/exe/dl/", "fileRegex": "Refresh\" content=\"2; url=(/gallery/item/\\d+/[^\"]+)\"", "fileBase": "https://inkscape.org" },
+            "exampleResolved": { "url": "https://inkscape.org/gallery/item/59502/inkscape-1.4.4_2026-05-05_dcaf3e7-x64.signed.exe" },
+            "sizeApprox": 118507928,
+            "checksum": { "type": "sha256", "format": "sha256sum", "host": "media.inkscape.org", "inline": { "version": "1.4.4", "sha256": "fa21d25e56dbfe41e9b014a4f37689edda4bb41d5a3597fe2787dff6c10e651f" } },
+            "signature": { "type": "none", "keyFingerprints": [] }
+          },
+          {
+            "kind": "installer",
+            "subtype": "msi-signed",
+            "adminRequired": "wahrscheinlich (nicht geprueft)",
+            "resolve": { "type": "html-scrape", "pageUrl": "https://inkscape.org/release/inkscape-{version}/windows/64-bit/msi/dl/", "fileRegex": "Refresh\" content=\"2; url=(/gallery/item/\\d+/[^\"]+)\"", "fileBase": "https://inkscape.org" },
+            "exampleResolved": { "url": "https://inkscape.org/gallery/item/59504/inkscape-1.4.4_2026-05-05_dcaf3e7-x64.signed_xMx7DJV.msi" },
+            "sizeApprox": 170323968,
+            "checksum": { "type": "sha256", "format": "sha256sum", "host": "media.inkscape.org", "inline": { "version": "1.4.4", "sha256": "2fa033e95113ae83d6430b2479e7e63e4266d0632a5b03f99ee3db9360e3b8b8" } },
+            "signature": { "type": "none", "keyFingerprints": [] }
+          }
+        ],
+        "macos-arm64": [
+          {
+            "kind": "dmg",
+            "preferred": true,
+            "urlTemplate": "https://media.inkscape.org/dl/resources/file/Inkscape-{version}_arm64.dmg",
+            "sizeApprox": 156920591,
+            "checksum": { "type": "sha256", "urlTemplate": "https://media.inkscape.org/media/resources/sigs/Inkscape-{version}_arm64.dmg.sha256", "format": "sha256sum", "host": "media.inkscape.org", "inline": { "version": "1.4.4", "sha256": "eacca94ab01e59467cdd5452a2867c3734450f9a4cfb3346956cc9b07f34f3f1" } },
+            "signature": { "type": "none", "keyFingerprints": [] },
+            "extract": { "method": "hdiutil-attach-copy-app", "appName": "Inkscape.app", "appNameVerified": false }
+          }
+        ],
+        "macos-x86_64": [
+          {
+            "kind": "dmg",
+            "preferred": true,
+            "urlTemplate": "https://media.inkscape.org/dl/resources/file/Inkscape-{version}_x86_64.dmg",
+            "sizeApprox": 160146603,
+            "checksum": { "type": "sha256", "urlTemplate": "https://media.inkscape.org/media/resources/sigs/Inkscape-{version}_x86_64.dmg.sha256", "format": "sha256sum", "host": "media.inkscape.org", "inline": { "version": "1.4.4", "sha256": "17ff9f49b60115237cad9b60605950e26b11b04600e726a4513224aa373aee11" } },
+            "signature": { "type": "none", "keyFingerprints": [] },
+            "extract": { "method": "hdiutil-attach-copy-app", "appName": "Inkscape.app", "appNameVerified": false }
+          }
+        ],
+        "linux-x86_64": [
+          {
+            "kind": "appimage",
+            "preferred": true,
+            "urlTemplate": "https://media.inkscape.org/dl/resources/file/Inkscape-{version}.AppImage",
+            "resolveAlt": { "pageUrl": "https://inkscape.org/release/inkscape-{version}/gnulinux/appimage/dl/", "fileRegex": "Refresh\" content=\"2; url=(/gallery/item/\\d+/[^\"]+)\"", "sigRegex": "(https://media\\.inkscape\\.org/media/resources/sigs/[^\"]+\\.AppImage\\.sig)" },
+            "sizeApprox": 120236536,
+            "checksum": { "type": "none", "note": "Fuer das AppImage wird KEINE .sha256 verlinkt, nur die .sig." },
+            "signature": {
+              "type": "gpg",
+              "exampleUrl": "https://media.inkscape.org/media/resources/sigs/Inkscape-dcaf3e7-x86_64.AppImage.sig",
+              "format": "openpgp-detached-binary",
+              "keyFingerprints": ["74E8DA1398055A8120B276EB5FCB204EF882B07A"],
+              "keyUid": "Marc Jeanmougin <marc@jeanmougin.fr>",
+              "keyAlgo": "DSA-1024 (Signatur mit SHA-1)",
+              "keyExpires": "2028-05-22",
+              "keyUrl": "https://inkscape.org/~MarcJeanmougin/gpg/",
+              "policyWarning": "DSA-1024/SHA-1 wird von modernen OpenPGP-Bibliotheken (Sequoia, rPGP) standardmaessig abgelehnt; Policy lockern oder gpg/gpgv verwenden. Es ist der Schluessel des Uploaders, nicht eines Projekt-Release-Keys."
+            },
+            "runNote": "Ubuntu 24.04: libfuse2t64 noetig, sonst --appimage-extract-and-run."
+          }
+        ]
+      },
+      "launch": {
+        "windows": { "exeRelPath": "inkscape/bin/inkscape.exe", "exeGlob": "**/bin/inkscape.exe", "verified": false },
+        "macos": { "exeRelPath": "Inkscape.app/Contents/MacOS/inkscape", "verified": false, "warning": "Inkscape 1.4.3/1.4.4 (offizielle dmg): Wird Inkscape von der Kommandozeile gestartet, funktionieren Extensions nicht (Sicherheitsfeature zu CVE-2025-15523). Start ueber LaunchServices (open -a) im Smoke-Test pruefen." },
+        "linux": { "exeRelPath": "Inkscape-{version}.AppImage", "chmod": "+x", "verified": true },
+        "args": {
+          "openFile": ["{file}"],
+          "exportPng": ["{file}", "--export-type=png", "--export-filename={out}", "--export-dpi={dpi}"],
+          "exportPdf": ["{file}", "--export-type=pdf", "--export-filename={out}", "--export-text-to-path"],
+          "printUserDir": ["--user-data-directory"],
+          "printSystemDir": ["--system-data-directory"],
+          "version": ["--version"]
+        }
+      },
+      "configDirs": {
+        "windows": {
+          "profile": "%APPDATA%\\inkscape",
+          "preferences": "%APPDATA%\\inkscape\\preferences.xml",
+          "palettes": "%APPDATA%\\inkscape\\palettes",
+          "templates": "%APPDATA%\\inkscape\\templates",
+          "fonts": "%APPDATA%\\inkscape\\fonts",
+          "extensions": "%APPDATA%\\inkscape\\extensions",
+          "symbols": "%APPDATA%\\inkscape\\symbols",
+          "keys": "%APPDATA%\\inkscape\\keys",
+          "ui": "%APPDATA%\\inkscape\\ui",
+          "fontcollections": "%APPDATA%\\inkscape\\fontcollections"
+        },
+        "macos": {
+          "profile": "~/Library/Application Support/org.inkscape.Inkscape/config/inkscape",
+          "profileVerified": "nur ueber Forenbeitrag belegt; per 'inkscape --user-data-directory' bestaetigen"
+        },
+        "linux": {
+          "profile": "${XDG_CONFIG_HOME:-~/.config}/inkscape",
+          "flatpak": "~/.var/app/org.inkscape.Inkscape/config/inkscape (unverifiziert)"
+        },
+        "env": { "INKSCAPE_PROFILE_DIR": "ersetzt den gesamten Profilordner (Hauptschalter fuer isoliertes Cypher-Profil)", "INKSCAPE_EXTENSIONS_DIR": "ersetzt Benutzer-Extension-Ordner" },
+        "subfoldersAutoCreated": ["keys", "templates", "icons", "extensions", "ui", "symbols", "paint", "themes", "palettes", "fontcollections"]
+      },
+      "resources": {
+        "palettes": { "format": "GIMP-Palette .gpl (Kopfzeile 'GIMP Palette', 'Name:', 'Columns:', dann 'R G B Name')", "dest": "configDirs.<os>.palettes" },
+        "templates": {
+          "format": "SVG-Datei mit <inkscape:templateinfo> bzw. in der Programm-Auslieferung <inkscape:_templateinfo> (Unterfelder name, author, shortdesc, date, label, category, priority, icon)",
+          "dest": "configDirs.<os>.templates",
+          "defaultTemplate": "default.svg im Benutzerordner templates/ ueberschreibt die mitgelieferte Standardvorlage (auch default.<locale>.svg)",
+          "note": "Seit 1.4 koennen eigene Vorlagen Kategorie und Label tragen. Am sichersten: Vorlage in Inkscape per Datei > Vorlage speichern erzeugen und die Datei uebernehmen."
+        },
+        "fonts": { "dest": "configDirs.<os>.fonts", "note": "Inkscape laedt <profil>/fonts standardmaessig (Praeferenz /options/font/use_fontsdir_user = true). Neue Schriften brauchen unter Windows/macOS einen Neustart, unter Linux nicht." },
+        "preferences": {
+          "format": "preferences.xml: <inkscape version=\"1\"><group id=\"...\" attr=\"...\"/></inkscape>",
+          "relevantGroups": ["export (default, append_extension, path, defaultxdpi)", "save_as", "template", "palette", "theme (preferDarkTheme, defaultIconTheme)", "ui (language)"],
+          "strategy": "Nur anlegen, wenn die Datei noch nicht existiert; nie bestehende Benutzereinstellungen ueberschreiben. Schluessel per Diff nach einem Probelauf mit leerem INKSCAPE_PROFILE_DIR bestimmen."
+        }
+      },
+      "detect": {
+        "windows": { "paths": ["%ProgramFiles%\\Inkscape\\bin\\inkscape.exe"], "verified": false },
+        "macos": { "paths": ["/Applications/Inkscape.app"] },
+        "linux": { "path": ["inkscape"], "flatpak": "org.inkscape.Inkscape", "snap": "inkscape" }
+      },
+      "notes": [
+        "Download-Links der Windows-Dateien sind Weiterleitungsseiten (HTML mit Meta-Refresh) auf /gallery/item/<id>/<datei>, die dann per 302 auf media.inkscape.org/dl/resources/file/ gehen.",
+        "Pruefsummen liegen auf media.inkscape.org (Haupt-/Projektserver), keine Fremd-Mirrors beteiligt.",
+        "Windows und macOS: nur SHA-256, keine GPG-Signatur. Linux-AppImage: nur .sig (DSA-1024/SHA-1 des Uploaders).",
+        "Inkscape-Doku: Vor Updates alte Version deinstallieren; fuer Parallelinstallationen die 7z-Archive nutzen und in einen leeren Ordner entpacken.",
+        "Die ARM64-Windows-Seiten verlinken Dateien mit 'x64' im Namen (Seitenfehler?) - ARM ist nicht im Umfang."
+      ]
+    },
+    {
+      "id": "kdenlive",
+      "name": "Kdenlive",
+      "category": "video",
+      "license": "GPL-3.0-only OR LicenseRef-KDE-Accepted-GPL",
+      "homepage": "https://kdenlive.org/",
+      "channel": "stable",
+      "series": "26.08",
+      "version": "26.08.2",
+      "releasedAt": "2026-10-13",
+      "versionDiscovery": {
+        "type": "html-directory-listing",
+        "url": "https://download.kde.org/stable/kdenlive/{series}/windows/",
+        "regex": "kdenlive-(\\d+\\.\\d+\\.\\d+)_standalone\\.exe",
+        "select": "max-semver",
+        "seriesList": { "url": "https://download.kde.org/stable/kdenlive/", "regex": "href=\"(\\d{2}\\.\\d{2})/\"", "select": "max" }
+      },
+      "platformSupport": { "windows-x64": "Windows 10 (1809) oder neuer", "macos": "ab macOS 13, arm64 und x86_64", "linux-x86_64": "AppImage (offiziell: AppImage und Flatpak)" },
+      "artifacts": {
+        "windows-x64": [
+          {
+            "kind": "installer",
+            "subtype": "standalone-sfx",
+            "portable": true,
+            "preferred": true,
+            "urlTemplate": "https://download.kde.org/stable/kdenlive/{series}/windows/kdenlive-{version}_standalone.exe",
+            "sizeApprox": 134973971,
+            "checksum": { "type": "sha256", "urlTemplate": "https://download.kde.org/stable/kdenlive/{series}/windows/kdenlive-{version}_standalone.exe.sha256", "format": "sha256sum", "host": "download.kde.org", "inline": { "version": "26.08.2", "sha256": "43526e50770fb306b12a8d7f6a7bb5829f8ca546390bd169fb3c3cc222874487" } },
+            "signature": { "type": "none", "keyFingerprints": [] },
+            "extractNote": "Laut Doku 'self-extracting archive' (Ordner waehlen, danach bin\\kdenlive.exe). Silent-Schalter und SFX-Typ NICHT verifiziert; Alternative: Datei mit 7z-Bibliothek direkt oeffnen."
+          },
+          {
+            "kind": "installer",
+            "subtype": "nsis-or-similar",
+            "adminRequired": true,
+            "urlTemplate": "https://download.kde.org/stable/kdenlive/{series}/windows/kdenlive-{version}.exe",
+            "sizeApprox": 135679104,
+            "checksum": { "type": "sha256", "urlTemplate": "https://download.kde.org/stable/kdenlive/{series}/windows/kdenlive-{version}.exe.sha256", "format": "sha256sum", "host": "download.kde.org", "inline": { "version": "26.08.2", "sha256": "9f89d8ac53b190ba506af86fb37b31f17b60a532394bd5303af4e505b3a5bee6" } },
+            "signature": { "type": "none", "keyFingerprints": [] }
+          }
+        ],
+        "macos-arm64": [
+          {
+            "kind": "dmg",
+            "preferred": true,
+            "urlTemplate": "https://download.kde.org/stable/kdenlive/{series}/macOS/kdenlive-{version}-arm64.dmg",
+            "sizeApprox": 144286250,
+            "checksum": { "type": "sha256", "urlTemplate": "https://download.kde.org/stable/kdenlive/{series}/macOS/kdenlive-{version}-arm64.dmg.sha256", "format": "sha256sum", "host": "download.kde.org", "inline": { "version": "26.08.2", "sha256": "ffcbff6d6e6651fe7a7cd2b00cb7304c8ef049da8287c389dbda146d5e8928ac" } },
+            "signature": { "type": "none", "keyFingerprints": [] },
+            "gatekeeperNote": "Doku beschreibt Gatekeeper-Warnung 'Apple kann nicht nach Schadsoftware suchen' (App nicht notarisiert). Ohne Quarantaene-Attribut (Download per App, Kopie per ditto) erscheint sie vermutlich nicht.",
+            "extract": { "method": "hdiutil-attach-copy-app", "appName": "kdenlive.app", "appNameVerified": false }
+          }
+        ],
+        "macos-x86_64": [
+          {
+            "kind": "dmg",
+            "preferred": true,
+            "urlTemplate": "https://download.kde.org/stable/kdenlive/{series}/macOS/kdenlive-{version}-x86_64.dmg",
+            "sizeApprox": 158286259,
+            "checksum": { "type": "sha256", "urlTemplate": "https://download.kde.org/stable/kdenlive/{series}/macOS/kdenlive-{version}-x86_64.dmg.sha256", "format": "sha256sum", "host": "download.kde.org", "inline": { "version": "26.08.2", "sha256": "45e07f190581eeba8e87a12d2e879b3f754a83df19787dc9fdea389a51259b33" } },
+            "signature": { "type": "none", "keyFingerprints": [] },
+            "extract": { "method": "hdiutil-attach-copy-app", "appName": "kdenlive.app", "appNameVerified": false }
+          }
+        ],
+        "linux-x86_64": [
+          {
+            "kind": "appimage",
+            "preferred": true,
+            "urlTemplate": "https://download.kde.org/stable/kdenlive/{series}/linux/kdenlive-{version}-x86_64.AppImage",
+            "sizeApprox": 215427576,
+            "checksum": { "type": "sha256", "urlTemplate": "https://download.kde.org/stable/kdenlive/{series}/linux/kdenlive-{version}-x86_64.AppImage.sha256", "format": "sha256sum", "host": "download.kde.org", "inline": { "version": "26.08.2", "sha256": "3194c0979bcfb7ec4a0b33ebc05178a51cffdf5b180c3a89bcf4da94e025bc78" } },
+            "signature": { "type": "none", "keyFingerprints": [], "note": ".sig existiert nicht (404)." },
+            "runNote": "Ubuntu 24.04: libfuse2t64 noetig, sonst --appimage-extract-and-run."
+          }
+        ]
+      },
+      "launch": {
+        "windows": { "exeRelPath": "kdenlive/bin/kdenlive.exe", "exeGlob": "**/bin/kdenlive.exe", "verified": "Doku: 'bin folder ... kdenlive.exe'; Top-Level-Ordner nicht geprueft" },
+        "macos": { "exeRelPath": "kdenlive.app/Contents/MacOS/kdenlive", "verified": false },
+        "linux": { "exeRelPath": "kdenlive-{version}-x86_64.AppImage", "chmod": "+x", "verified": true },
+        "args": {
+          "openFile": ["{file}.kdenlive"],
+          "configName": ["--config", "{name}"],
+          "mltPath": ["--mlt-path", "{path}"],
+          "addClips": ["-i", "{clip1},{clip2}"],
+          "noWelcome": ["--no-welcome"],
+          "render": ["--render", "--render-preset", "{preset}", "{file}.kdenlive", "{out}"],
+          "verifyFile": ["--verify-file", "{file}.kdenlive"],
+          "setupReport": ["--setup-report", "{reportFile}"]
+        }
+      },
+      "configDirs": {
+        "windows": {
+          "kdenliverc": "%LOCALAPPDATA%\\kdenliverc",
+          "data": "%APPDATA%\\kdenlive",
+          "titles": "%APPDATA%\\kdenlive\\titles",
+          "profiles": "%APPDATA%\\kdenlive\\profiles",
+          "exportPresets": "%LOCALAPPDATA%\\kdenlive\\export",
+          "exportPresetsDocSays": "%APPDATA%\\kdenlive\\export",
+          "exportPresetsNote": "Quellcode (renderpresetrepository.cpp) schreibt nach AppLocalDataLocation/export, die Doku-Tabelle nennt Roaming. Im Smoke-Test klaeren.",
+          "cache": "%LOCALAPPDATA%\\kdenlive",
+          "autosave": "%APPDATA%\\kdenlive\\.backup",
+          "uiRc": "%LOCALAPPDATA%\\kxmlgui5\\kdenlive\\kdenliveui.rc"
+        },
+        "macos": {
+          "kdenliverc": "~/Library/Preferences/kdenliverc",
+          "data": "~/Library/Application Support/kdenlive",
+          "titles": "~/Library/Application Support/kdenlive/titles",
+          "profiles": "~/Library/Application Support/kdenlive/profiles",
+          "exportPresets": "~/Library/Application Support/kdenlive/export",
+          "cache": "~/Library/Caches/kdenlive"
+        },
+        "linux": {
+          "kdenliverc": "${XDG_CONFIG_HOME:-~/.config}/kdenliverc",
+          "appImageRc": "${XDG_CONFIG_HOME:-~/.config}/kdenlive-appimagerc",
+          "data": "${XDG_DATA_HOME:-~/.local/share}/kdenlive",
+          "titles": "${XDG_DATA_HOME:-~/.local/share}/kdenlive/titles",
+          "profiles": "${XDG_DATA_HOME:-~/.local/share}/kdenlive/profiles",
+          "exportPresets": "${XDG_DATA_HOME:-~/.local/share}/kdenlive/export",
+          "cache": "${XDG_CACHE_HOME:-~/.cache}/kdenlive"
+        }
+      },
+      "resources": {
+        "titleTemplates": { "format": ".kdenlivetitle (XML, im Titel-Editor speicherbar)", "dest": "configDirs.<os>.titles" },
+        "projectProfiles": {
+          "format": "MLT-Profil: Textdatei ohne Endung mit key=value (description, frame_rate_num, frame_rate_den, width, height, progressive, sample_aspect_num, sample_aspect_den, display_aspect_num, display_aspect_den, colorspace)",
+          "dest": "configDirs.<os>.profiles"
+        },
+        "renderPresets": {
+          "format": "XML <profiles version=\"1\"> mit <profile name category extension args .../> in customprofiles.xml (editierbar) bzw. *.xml im export-Ordner; Stock-Beispiel: https://invent.kde.org/multimedia/kdenlive/-/raw/master/data/profiles.xml",
+          "dest": "configDirs.<os>.exportPresets"
+        }
+      },
+      "detect": {
+        "windows": { "paths": ["%ProgramFiles%\\kdenlive\\bin\\kdenlive.exe"], "verified": false },
+        "macos": { "paths": ["/Applications/kdenlive.app"] },
+        "linux": { "path": ["kdenlive"], "flatpak": "org.kde.kdenlive" }
+      },
+      "notes": [
+        "download.kde.org leitet die Artefakte per 302 auf Mirror (z. B. ftp.gwdg.de) um; .sha256 kommt direkt von download.kde.org.",
+        "Keine GPG-Signaturen fuer Kdenlive.",
+        "Windows 'standalone' braucht kein Admin, wird nicht als Programm gelistet; seit 26.04.0 registriert nur der Installer die Dateiendung.",
+        "kdenliverc loeschen setzt Einstellungen zurueck."
+      ]
+    }
+  ],
+  "optionalCandidates": [
+    { "id": "gimp", "name": "GIMP 3.2", "version": "3.2.6", "recommended": true, "license": "GPL-3.0-or-later", "hostChecksums": "https://download.gimp.org/gimp/v3.2/SHA256SUMS", "artifacts": { "windows-x64": "gimp-3.2.6-setup.exe (182 MB, Installer, kein Portable)", "macos-arm64": "gimp-3.2.6-arm64.dmg", "macos-x86_64": "gimp-3.2.6-x86_64.dmg", "linux-x86_64": "GIMP-3.2.6-x86_64.AppImage" } },
+    { "id": "scribus", "name": "Scribus 1.6", "version": "1.6.6 (laut Wikipedia, 13.04.2026)", "recommended": "unter Vorbehalt", "license": "GPL-2.0-or-later", "verified": false, "note": "scribus.net blockt Abrufe (Anubis), Dateien liegen auf SourceForge; Dateinamen/Pruefsummen nicht verifiziert." },
+    { "id": "pixelorama", "name": "Pixelorama", "version": "1.2.3", "recommended": false, "license": "MIT", "note": "GitHub-Release mit digest sha256 je Asset; Nische (Pixel-Art)." },
+    { "id": "audacity", "name": "Audacity", "version": "4.0.1", "recommended": false, "license": "GPL (GitHub: NOASSERTION)", "note": "Portables 7z fuer Windows, CHECKSUMS.txt als Release-Asset." },
+    { "id": "darktable", "name": "darktable", "version": "5.6.2", "recommended": false, "license": "GPL-3.0", "note": "Kein Windows-Portable, Mac nur arm64." },
+    { "id": "upscayl", "name": "Upscayl", "version": "2.15.0 (2024-12-25)", "recommended": false, "license": "AGPL-3.0", "note": "Letzter Release Dez 2024, 250-390 MB, GPU-Pflicht - nicht empfohlen." }
+  ],
+  "linkOnly": [
+    { "id": "affinity", "name": "Affinity (Canva)", "homepage": "https://www.affinity.studio/", "downloadUrl": "https://www.affinity.studio/en/download", "note": "Kostenlos fuer Einzelpersonen, Download laeuft ueber Canva-Anmeldung (Konto noetig). Nur verlinken, nicht automatisch laden." }
+  ]
+}
