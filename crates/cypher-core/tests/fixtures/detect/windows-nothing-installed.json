@@ -1,0 +1,14 @@
+{
+  "name": "Windows: nichts installiert, andere Programme in der Registry",
+  "os": "windows",
+  "arch": "x86_64",
+  "home": "C:/Users/anna",
+  "programFiles": ["C:/Program Files"],
+  "localAppData": "C:/Users/anna/AppData/Local",
+  "registry": [
+    { "displayName": "7-Zip 24.09", "displayVersion": "24.09", "installLocation": "C:\\Program Files\\7-Zip" },
+    { "displayName": "", "displayVersion": "1.0" }
+  ],
+  "files": {},
+  "expect": []
+}

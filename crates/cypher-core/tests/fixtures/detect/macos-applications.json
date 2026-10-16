@@ -1,0 +1,25 @@
+{
+  "name": "macOS: /Applications, ~/Applications, Spotlight; Cypher-Installation wird ausgenommen",
+  "os": "macos",
+  "arch": "aarch64",
+  "home": "/Users/anna",
+  "files": {
+    "/Applications/Blender.app/Contents/Info.plist": "<?xml version=\"1.0\" encoding=\"UTF-8\"?><plist version=\"1.0\"><dict><key>CFBundleIdentifier</key><string>org.blenderfoundation.blender</string><key>CFBundleShortVersionString</key><string>5.1.1</string></dict></plist>",
+    "/Users/anna/Applications/krita.app/Contents/Info.plist": "<?xml version=\"1.0\" encoding=\"UTF-8\"?><plist version=\"1.0\"><dict><key>CFBundleIdentifier</key><string>org.krita</string><key>CFBundleVersion</key><string>5.3.4.1</string></dict></plist>",
+    "/Volumes/Werkzeuge/Inkscape.app/Contents/Info.plist": "<?xml version=\"1.0\" encoding=\"UTF-8\"?><plist version=\"1.0\"><dict><key>CFBundleIdentifier</key><string>org.inkscape.Inkscape</string><key>CFBundleShortVersionString</key><string>1.4.3</string></dict></plist>",
+    "/Users/anna/Applications/Cypher Studio/Blender.app/Contents/Info.plist": "<?xml version=\"1.0\" encoding=\"UTF-8\"?><plist version=\"1.0\"><dict><key>CFBundleShortVersionString</key><string>5.2.2</string></dict></plist>",
+    "/Applications/kdenlive.app/Contents/Info.plist": "kein plist"
+  },
+  "dirs": ["/Volumes/Werkzeuge/Inkscape.app", "/Users/anna/Applications/Cypher Studio/Blender.app"],
+  "commands": [
+    { "match": "org.inkscape.Inkscape", "stdout": "/Volumes/Werkzeuge/Inkscape.app\n/Volumes/Weg/Fehlt.app\n" },
+    { "match": "org.blenderfoundation.blender", "stdout": "/Users/anna/Applications/Cypher Studio/Blender.app\n" }
+  ],
+  "managed": ["/Users/anna/Applications/Cypher Studio/Blender.app"],
+  "expect": [
+    { "programId": "blender", "kind": "system", "version": "5.1.1", "location": "/Applications/Blender.app" },
+    { "programId": "krita", "kind": "system", "version": "5.3.4.1", "location": "/Users/anna/Applications/krita.app" },
+    { "programId": "inkscape", "kind": "system", "version": "1.4.3", "location": "/Volumes/Werkzeuge/Inkscape.app" },
+    { "programId": "kdenlive", "kind": "system", "version": null, "location": "/Applications/kdenlive.app", "problems": ["versionUnknown"] }
+  ]
+}

@@ -53,9 +53,15 @@ pub struct StoredInstallation {
     /// Absoluter Installationsordner.
     pub path: String,
     pub launcher: StoredLauncher,
+    /// Installationsordner der Programme, unter dem `path` liegt (beim Entfernen darf nur dort gelöscht werden).
+    #[serde(default)]
+    pub programs_root: Option<String>,
     pub installed_at: String,
     pub verified: StoredVerified,
     pub artifact: StoredArtifact,
+    /// macOS: Gatekeeper hat die App nicht akzeptiert (nicht beglaubigt); Start nur nach Bestätigung.
+    #[serde(default)]
+    pub not_notarized: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -199,9 +205,11 @@ mod tests {
             kind: "cypher".into(),
             path: "/data/programs/blender/5.2.2".into(),
             launcher: StoredLauncher::Exe { rel_exe: "blender.exe".into() },
+            programs_root: Some("/data/programs".into()),
             installed_at: "2026-10-20T10:00:00Z".into(),
             verified: StoredVerified { sha256: "ab".repeat(32), catalog_sequence: 1, signature_checked: false },
             artifact: StoredArtifact { url: "https://download.blender.org/x.zip".into(), kind: "zip".into() },
+            not_notarized: false,
         }
     }
 
@@ -263,9 +271,11 @@ mod tests {
                 "id": "cypher:blender:5.2.2", "programId": "blender", "version": "5.2.2", "kind": "cypher",
                 "path": "C:\\Users\\x\\AppData\\Local\\de.cypherxcypher.studio\\data\\programs\\blender\\5.2.2",
                 "launcher": { "type": "exe", "relExe": "blender.exe" },
+                "programsRoot": null,
                 "installedAt": "2026-10-20T10:00:00Z",
                 "verified": { "sha256": "00", "catalogSequence": 7, "signatureChecked": false },
-                "artifact": { "url": "https://download.blender.org/x.zip", "kind": "zip" }
+                "artifact": { "url": "https://download.blender.org/x.zip", "kind": "zip" },
+                "notNotarized": false
             }],
             "manualInstallations": [{ "id": "manual:krita:ab12", "programId": "krita", "path": "D:\\Tools\\krita\\bin\\krita.exe" }],
             "preferred": { "blender": "cypher:blender:5.2.2" },

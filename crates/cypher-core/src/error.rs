@@ -246,6 +246,8 @@ pub enum SetupError {
     PlanExpired(String),
     #[error("Konflikt bei {0:?}")]
     Conflict(Vec<PathBuf>),
+    #[error("ungültige Eingabe `{field}`: {reason}")]
+    InvalidInput { field: String, reason: String },
     #[error("Hilfsprogramm fehlgeschlagen: {0}")]
     Process(String),
     #[error(transparent)]
@@ -498,6 +500,7 @@ impl From<&CoreError> for AppError {
                 SetupError::Conflict(files) => {
                     AppError::SetupConflict { files: files.iter().map(|p| display_path(p)).collect() }
                 }
+                SetupError::InvalidInput { field, reason } => AppError::invalid_input(field.clone(), reason.clone()),
                 SetupError::Process(reason) => AppError::InstallVerificationFailed { reason: reason.clone() },
                 SetupError::Path(p) => AppError::invalid_input("path", p.to_string()),
                 SetupError::Io(io) => io_to_app(io),

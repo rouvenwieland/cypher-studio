@@ -1,0 +1,20 @@
+{
+  "name": "Linux: kaputte Hilfswerkzeuge, Zeitüberschreitung bei --version, nichts Verwertbares",
+  "os": "linux",
+  "arch": "x86_64",
+  "home": "/home/anna",
+  "pathDirs": ["/usr/bin"],
+  "files": {
+    "/usr/bin/flatpak": "",
+    "/usr/bin/snap": "",
+    "/usr/bin/blender": ""
+  },
+  "commands": [
+    { "match": "flatpak list", "code": 1, "stderr": "error: kaputt" },
+    { "match": "snap list", "stdout": "" },
+    { "match": "/usr/bin/blender --version", "timeout": true }
+  ],
+  "expect": [
+    { "programId": "blender", "kind": "system", "version": null, "location": "/usr/bin/blender", "problems": ["versionUnknown"] }
+  ]
+}

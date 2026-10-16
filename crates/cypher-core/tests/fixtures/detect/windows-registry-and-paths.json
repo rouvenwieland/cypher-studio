@@ -1,0 +1,29 @@
+{
+  "name": "Windows: Registry, bekannte Pfade, kaputter Eintrag, Cypher-Installation wird ausgenommen",
+  "os": "windows",
+  "arch": "x86_64",
+  "home": "C:/Users/anna",
+  "programFiles": ["C:/Program Files", "C:/Program Files (x86)"],
+  "localAppData": "C:/Users/anna/AppData/Local",
+  "registry": [
+    { "displayName": "Krita (x64) 5.2.9", "displayVersion": "5.2.9.0", "installLocation": "C:\\Program Files\\Krita (x64)", "displayIcon": "\"C:\\Program Files\\Krita (x64)\\bin\\krita.exe\",0" },
+    { "displayName": "Blender", "displayVersion": "5.2.2", "installLocation": "C:\\Program Files\\Blender Foundation\\Blender 5.2\\" },
+    { "displayName": "Krita Phantom", "installLocation": "D:\\Gibt\\Es\\Nicht" },
+    { "displayName": "Microsoft Office", "displayVersion": "16.0", "installLocation": "C:\\Program Files\\Microsoft Office" },
+    { "displayName": "Kdenlive 26.08.1", "displayVersion": "26.08.1", "displayIcon": "C:\\Program Files\\kdenlive\\bin\\kdenlive.exe" }
+  ],
+  "files": {
+    "C:/Program Files/Krita (x64)/bin/krita.exe": "",
+    "C:/Program Files/Blender Foundation/Blender 5.2/blender.exe": "",
+    "C:/Program Files/Inkscape/bin/inkscape.exe": "",
+    "C:/Program Files/kdenlive/bin/kdenlive.exe": "",
+    "C:/Users/anna/AppData/Local/de.cypherxcypher.studio/data/programs/blender/5.2.2/blender.exe": ""
+  },
+  "managed": ["C:/Users/anna/AppData/Local/de.cypherxcypher.studio/data/programs/blender/5.2.2"],
+  "expect": [
+    { "programId": "blender", "kind": "system", "version": "5.2.2", "location": "C:/Program Files/Blender Foundation/Blender 5.2/blender.exe" },
+    { "programId": "krita", "kind": "system", "version": "5.2.9.0", "location": "C:/Program Files/Krita (x64)/bin/krita.exe" },
+    { "programId": "inkscape", "kind": "system", "version": null, "location": "C:/Program Files/Inkscape/bin/inkscape.exe", "problems": ["versionUnknown"] },
+    { "programId": "kdenlive", "kind": "system", "version": "26.08.1", "location": "C:/Program Files/kdenlive/bin/kdenlive.exe" }
+  ]
+}

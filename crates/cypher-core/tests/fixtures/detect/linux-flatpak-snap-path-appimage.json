@@ -1,0 +1,30 @@
+{
+  "name": "Linux: Flatpak, Snap, PATH mit Versionsabfrage, AppImage, .desktop-Datei",
+  "os": "linux",
+  "arch": "x86_64",
+  "home": "/home/anna",
+  "pathDirs": ["/usr/local/bin", "/usr/bin", "/home/anna/.local/bin"],
+  "files": {
+    "/usr/bin/flatpak": "",
+    "/usr/bin/snap": "",
+    "/usr/bin/blender": "",
+    "/home/anna/Applications/kdenlive-26.08.2-x86_64.AppImage": "",
+    "/home/anna/Applications/notizen.txt": "",
+    "/opt/inkscape/bin/inkscape": "",
+    "/usr/share/applications/org.inkscape.Inkscape.desktop": "[Desktop Entry]\nName=Inkscape\nExec=/opt/inkscape/bin/inkscape %F\n",
+    "/usr/share/applications/viewer.desktop": "[Desktop Entry]\nExec=eog %U\n"
+  },
+  "commands": [
+    { "match": "flatpak list", "stdout": "org.kde.krita\t5.3.4.1\tsystem\norg.blender.Blender\t4.5.9\tuser\ncom.example.Other\t1.0\tsystem\n" },
+    { "match": "snap list", "stdout": "Name       Version  Rev  Tracking       Publisher  Notes\ncore22     20260101 1500 latest/stable  canonical  base\nblender    5.0.1    900  latest/stable  blenderfoundation  classic\n" },
+    { "match": "/usr/bin/blender --version", "stdout": "Blender 5.2.2 LTS\n\tbuild date: 2026-09-15\n" }
+  ],
+  "expect": [
+    { "programId": "blender", "kind": "system", "version": "5.2.2", "location": "/usr/bin/blender" },
+    { "programId": "blender", "kind": "flatpak", "version": "4.5.9", "location": "org.blender.Blender" },
+    { "programId": "blender", "kind": "snap", "version": "5.0.1", "location": "/snap/bin/blender", "problems": ["setupNotSupported"] },
+    { "programId": "krita", "kind": "flatpak", "version": "5.3.4.1", "location": "org.kde.krita" },
+    { "programId": "inkscape", "kind": "system", "version": null, "location": "/opt/inkscape/bin/inkscape", "problems": ["versionUnknown"] },
+    { "programId": "kdenlive", "kind": "system", "version": "26.08.2", "location": "/home/anna/Applications/kdenlive-26.08.2-x86_64.AppImage" }
+  ]
+}

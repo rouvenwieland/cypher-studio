@@ -1,0 +1,16 @@
+{
+  "name": "Windows: Blender über Steam (Bibliothek auf zweitem Laufwerk)",
+  "os": "windows",
+  "arch": "x86_64",
+  "home": "C:/Users/anna",
+  "programFiles": ["C:/Program Files", "C:/Program Files (x86)"],
+  "localAppData": "C:/Users/anna/AppData/Local",
+  "files": {
+    "C:/Program Files (x86)/Steam/steamapps/libraryfolders.vdf": "\"libraryfolders\"\n{\n\t\"0\"\n\t{\n\t\t\"path\"\t\t\"D:\\\\SteamLibrary\"\n\t}\n}\n",
+    "D:/SteamLibrary/steamapps/appmanifest_365670.acf": "\"AppState\"\n{\n\t\"appid\"\t\t\"365670\"\n\t\"installdir\"\t\t\"Blender\"\n}\n",
+    "D:/SteamLibrary/steamapps/common/Blender/blender.exe": ""
+  },
+  "expect": [
+    { "programId": "blender", "kind": "steam", "version": null, "location": "D:/SteamLibrary/steamapps/common/Blender/blender.exe", "problems": ["versionUnknown"] }
+  ]
+}
