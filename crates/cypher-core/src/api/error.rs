@@ -177,15 +177,5 @@ impl std::error::Error for AppError {}
 
 /// Kurze, zufällige Korrelations-ID für Log und Fehlermeldung.
 pub fn new_correlation_id() -> String {
-    uuid_like()
-}
-
-fn uuid_like() -> String {
-    // Ohne uuid-Abhängigkeit in dieser frühen Schicht: Zeitstempel + Zähler + Adresse eines Stack-Werts.
-    use std::sync::atomic::{AtomicU64, Ordering};
-    use std::time::{SystemTime, UNIX_EPOCH};
-    static COUNTER: AtomicU64 = AtomicU64::new(1);
-    let nanos = SystemTime::now().duration_since(UNIX_EPOCH).map(|d| d.as_nanos()).unwrap_or(0);
-    let n = COUNTER.fetch_add(1, Ordering::Relaxed);
-    format!("{:08x}-{:04x}", (nanos & 0xffff_ffff) as u32, (n & 0xffff) as u16)
+    uuid::Uuid::new_v4().to_string()
 }

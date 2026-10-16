@@ -1,0 +1,1223 @@
+{
+  "schemaVersion": 1,
+  "sequence": 1,
+  "generatedAt": "2026-10-16T12:00:00Z",
+  "expiresAt": "2027-04-16T00:00:00Z",
+  "minAppVersion": "0.1.0",
+  "programs": [
+    {
+      "id": "blender",
+      "name": "Blender",
+      "vendor": "Blender Foundation",
+      "category": "3d",
+      "description": "3D-Modelle im PS2-Retro-Stil für den 3D-Shop, mit Cypher-Startszene und Export-Add-on.",
+      "homepage": "https://www.blender.org/",
+      "releaseNotesUrl": "https://www.blender.org/download/releases/",
+      "license": {
+        "spdx": "GPL-3.0-or-later",
+        "name": "GNU General Public License v3.0 or later",
+        "url": "https://www.blender.org/about/license/"
+      },
+      "detect": {
+        "windows": {
+          "uninstallDisplayNamePrefixes": [
+            "Blender"
+          ],
+          "exeNames": [
+            "blender.exe"
+          ],
+          "knownPaths": [
+            "{ProgramFiles}\\Blender Foundation\\Blender *\\blender.exe"
+          ],
+          "steamAppId": 365670
+        },
+        "macos": {
+          "bundleIds": [
+            "org.blenderfoundation.blender"
+          ],
+          "appNames": [
+            "Blender.app"
+          ]
+        },
+        "linux": {
+          "flatpakIds": [
+            "org.blender.Blender"
+          ],
+          "snapNames": [
+            "blender"
+          ],
+          "binNames": [
+            "blender"
+          ],
+          "versionProbe": true
+        }
+      },
+      "setup": {
+        "packId": "blender",
+        "versionRange": ">=4.2, <6",
+        "roots": [
+          "blenderConfig",
+          "blenderScripts",
+          "blenderExtensions",
+          "blenderExtensionConfig"
+        ],
+        "configVersionDir": "majorMinor"
+      },
+      "releases": [
+        {
+          "version": "5.2.2",
+          "channel": "lts",
+          "releasedAt": "2026-09-15",
+          "artifacts": [
+            {
+              "os": "windows",
+              "arch": "x86_64",
+              "kind": "zip",
+              "url": "https://download.blender.org/release/Blender5.2/blender-5.2.2-windows-x64.zip",
+              "fileName": "blender-5.2.2-windows-x64.zip",
+              "size": 404453484,
+              "sha256": "3849d17a682cba006075aaa3f3597ecb5c9c30ec31035b2e092c53e40679b535",
+              "checksumSource": "https://download.blender.org/release/Blender5.2/blender-5.2.2.sha256",
+              "stripComponents": 1,
+              "unpackedSizeMax": 1600000000,
+              "launch": {
+                "exe": "blender.exe",
+                "fileArgs": "append",
+                "portableMarker": "portable"
+              }
+            },
+            {
+              "os": "macos",
+              "arch": "aarch64",
+              "kind": "dmg",
+              "url": "https://download.blender.org/release/Blender5.2/blender-5.2.2-macos-arm64.dmg",
+              "fileName": "blender-5.2.2-macos-arm64.dmg",
+              "size": 346286611,
+              "sha256": "dc4125399b8bfefe283cc1624d6cfc7809d1cac20ace51072127eb371f31f210",
+              "checksumSource": "https://download.blender.org/release/Blender5.2/blender-5.2.2.sha256",
+              "unpackedSizeMax": 2000000000,
+              "macAppName": "Blender.app",
+              "launch": {
+                "exe": "Blender",
+                "fileArgs": "append"
+              }
+            },
+            {
+              "os": "linux",
+              "arch": "x86_64",
+              "kind": "tarXz",
+              "url": "https://download.blender.org/release/Blender5.2/blender-5.2.2-linux-x64.tar.xz",
+              "fileName": "blender-5.2.2-linux-x64.tar.xz",
+              "size": 383295504,
+              "sha256": "84098912789dc450e95697c4184fb8a90acbe5111c2ba4aede3fecb57806a168",
+              "checksumSource": "https://download.blender.org/release/Blender5.2/blender-5.2.2.sha256",
+              "stripComponents": 1,
+              "unpackedSizeMax": 1800000000,
+              "launch": {
+                "exe": "blender",
+                "fileArgs": "append",
+                "portableMarker": "portable"
+              }
+            }
+          ]
+        },
+        {
+          "version": "4.5.14",
+          "channel": "lts",
+          "releasedAt": "2026-09-15",
+          "artifacts": [
+            {
+              "os": "macos",
+              "arch": "x86_64",
+              "kind": "dmg",
+              "url": "https://download.blender.org/release/Blender4.5/blender-4.5.14-macos-x64.dmg",
+              "fileName": "blender-4.5.14-macos-x64.dmg",
+              "size": 340090796,
+              "sha256": "613e73339e97bd113adeeb28d9155beeacf2df7119ee4dbd6bdce234843645f6",
+              "checksumSource": "https://download.blender.org/release/Blender4.5/blender-4.5.14.sha256",
+              "unpackedSizeMax": 2000000000,
+              "macAppName": "Blender.app",
+              "launch": {
+                "exe": "Blender",
+                "fileArgs": "append"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "krita",
+      "name": "Krita",
+      "vendor": "KDE / Krita Foundation",
+      "category": "raster",
+      "description": "Digitale Malerei und Motive für den Druck: Paletten, Vorlagen und Schriften der Cypher-Kollektionen.",
+      "homepage": "https://krita.org/",
+      "releaseNotesUrl": "https://krita.org/en/item/krita-5-3-release-notes/",
+      "license": {
+        "spdx": "GPL-3.0-or-later",
+        "name": "GNU General Public License v3.0 or later",
+        "url": "https://krita.org/en/about/krita/"
+      },
+      "detect": {
+        "windows": {
+          "uninstallDisplayNamePrefixes": [
+            "Krita"
+          ],
+          "exeNames": [
+            "krita.exe"
+          ],
+          "knownPaths": [
+            "{ProgramFiles}\\Krita (x64)\\bin\\krita.exe"
+          ]
+        },
+        "macos": {
+          "bundleIds": [
+            "org.krita"
+          ],
+          "appNames": [
+            "krita.app"
+          ]
+        },
+        "linux": {
+          "flatpakIds": [
+            "org.kde.krita"
+          ],
+          "snapNames": [
+            "krita"
+          ],
+          "binNames": [
+            "krita"
+          ],
+          "appImageGlobs": [
+            "krita-*.AppImage"
+          ]
+        }
+      },
+      "setup": {
+        "packId": "krita",
+        "versionRange": ">=5.2, <6",
+        "roots": [
+          "kritaResources",
+          "userFonts"
+        ]
+      },
+      "releases": [
+        {
+          "version": "5.3.4.1",
+          "channel": "stable",
+          "releasedAt": "2026-10-07",
+          "artifacts": [
+            {
+              "os": "windows",
+              "arch": "x86_64",
+              "kind": "zip",
+              "url": "https://download.kde.org/stable/krita/5.3.4.1/krita-x64-5.3.4.1.zip",
+              "fileName": "krita-x64-5.3.4.1.zip",
+              "size": 227787916,
+              "sha256": "eda810059a120171d30d4661c7684c73a8feb72b01ad5709531cbebe6b84d032",
+              "checksumSource": "https://download.kde.org/stable/krita/5.3.4.1/krita-x64-5.3.4.1.zip.sha256",
+              "stripComponents": 1,
+              "unpackedSizeMax": 1500000000,
+              "launch": {
+                "exe": "bin/krita.exe",
+                "fileArgs": "append"
+              }
+            },
+            {
+              "os": "macos",
+              "arch": "universal",
+              "kind": "dmg",
+              "url": "https://download.kde.org/stable/krita/5.3.4.1/krita-5.3.4.1-signed.dmg",
+              "fileName": "krita-5.3.4.1-signed.dmg",
+              "size": 392023759,
+              "sha256": "531e261da1fd8d5c468cfcd4eebd16e9edf6ab320e89406d2875f2e43c1148de",
+              "checksumSource": "https://download.kde.org/stable/krita/5.3.4.1/krita-5.3.4.1-signed.dmg.sha256",
+              "unpackedSizeMax": 1500000000,
+              "macAppName": "krita.app",
+              "launch": {
+                "exe": "krita",
+                "fileArgs": "append"
+              }
+            },
+            {
+              "os": "linux",
+              "arch": "x86_64",
+              "kind": "appImage",
+              "url": "https://download.kde.org/stable/krita/5.3.4.1/krita-5.3.4.1-x86_64.AppImage",
+              "fileName": "krita-5.3.4.1-x86_64.AppImage",
+              "size": 381635064,
+              "sha256": "e315dfb3da81cdb8bddc4bb3fcd4d9bacd0630fc7065d8ed07de758b267573f0",
+              "checksumSource": "https://download.kde.org/stable/krita/5.3.4.1/krita-5.3.4.1-x86_64.AppImage.sha256",
+              "signature": {
+                "type": "pgp",
+                "enforce": true,
+                "url": "https://download.kde.org/stable/krita/5.3.4.1/krita-5.3.4.1-x86_64.AppImage.sig",
+                "publicKeys": [
+                  "-----BEGIN PGP PUBLIC KEY BLOCK-----\nComment: Hostname: \nVersion: Hockeypuck 2.2\n\n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\n=VW7q\n-----END PGP PUBLIC KEY BLOCK-----"
+                ],
+                "fingerprints": [
+                  "E9FB29E74ADEACC5E3035B8AB69EB4CF7468332F"
+                ]
+              },
+              "unpackedSizeMax": 1500000000,
+              "launch": {
+                "exe": "krita-5.3.4.1-x86_64.AppImage",
+                "fileArgs": "append"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "inkscape",
+      "name": "Inkscape",
+      "vendor": "Inkscape Project",
+      "category": "vector",
+      "description": "Vektorgrafik für Logos, Schriftzüge und druckfertige Motive.",
+      "homepage": "https://inkscape.org/",
+      "releaseNotesUrl": "https://inkscape.org/release/inkscape-1.4.4/",
+      "license": {
+        "spdx": "GPL-2.0-or-later",
+        "name": "GNU General Public License v2.0 or later",
+        "url": "https://inkscape.org/about/license/"
+      },
+      "detect": {
+        "windows": {
+          "uninstallDisplayNamePrefixes": [
+            "Inkscape"
+          ],
+          "exeNames": [
+            "inkscape.exe"
+          ],
+          "knownPaths": [
+            "{ProgramFiles}\\Inkscape\\bin\\inkscape.exe"
+          ]
+        },
+        "macos": {
+          "bundleIds": [
+            "org.inkscape.Inkscape"
+          ],
+          "appNames": [
+            "Inkscape.app"
+          ]
+        },
+        "linux": {
+          "flatpakIds": [
+            "org.inkscape.Inkscape"
+          ],
+          "snapNames": [
+            "inkscape"
+          ],
+          "binNames": [
+            "inkscape"
+          ],
+          "appImageGlobs": [
+            "Inkscape-*.AppImage"
+          ]
+        }
+      },
+      "setup": {
+        "packId": "inkscape",
+        "versionRange": ">=1.3, <2",
+        "roots": [
+          "inkscapeProfile",
+          "userFonts"
+        ]
+      },
+      "releases": [
+        {
+          "version": "1.4.4",
+          "channel": "stable",
+          "releasedAt": "2026-05-05",
+          "artifacts": [
+            {
+              "os": "windows",
+              "arch": "x86_64",
+              "kind": "7z",
+              "url": "https://inkscape.org/gallery/item/59503/inkscape-1.4.4_2026-05-05_dcaf3e7-x64_mHK170m.7z",
+              "fileName": "inkscape-1.4.4_2026-05-05_dcaf3e7-x64_mHK170m.7z",
+              "size": 110359970,
+              "sha256": "c4dbd64a92628abe7d7316c43f9325396e4d48417866027ee3d993d4f5b54c6a",
+              "checksumSource": "https://media.inkscape.org/media/resources/sigs/inkscape-1.4.4_2026-05-05_dcaf3e7-x64.7z_BKqiyKW.sha256",
+              "stripComponents": 1,
+              "unpackedSizeMax": 900000000,
+              "launch": {
+                "exe": "bin/inkscape.exe",
+                "fileArgs": "append"
+              }
+            },
+            {
+              "os": "macos",
+              "arch": "aarch64",
+              "kind": "dmg",
+              "url": "https://media.inkscape.org/dl/resources/file/Inkscape-1.4.4_arm64.dmg",
+              "fileName": "Inkscape-1.4.4_arm64.dmg",
+              "size": 156920591,
+              "sha256": "eacca94ab01e59467cdd5452a2867c3734450f9a4cfb3346956cc9b07f34f3f1",
+              "checksumSource": "https://media.inkscape.org/media/resources/sigs/Inkscape-1.4.4_arm64.dmg.sha256",
+              "unpackedSizeMax": 1500000000,
+              "macAppName": "Inkscape.app",
+              "launch": {
+                "exe": "inkscape",
+                "fileArgs": "append"
+              }
+            },
+            {
+              "os": "macos",
+              "arch": "x86_64",
+              "kind": "dmg",
+              "url": "https://media.inkscape.org/dl/resources/file/Inkscape-1.4.4_x86_64.dmg",
+              "fileName": "Inkscape-1.4.4_x86_64.dmg",
+              "size": 160146603,
+              "sha256": "17ff9f49b60115237cad9b60605950e26b11b04600e726a4513224aa373aee11",
+              "checksumSource": "https://media.inkscape.org/media/resources/sigs/Inkscape-1.4.4_x86_64.dmg.sha256",
+              "unpackedSizeMax": 1500000000,
+              "macAppName": "Inkscape.app",
+              "launch": {
+                "exe": "inkscape",
+                "fileArgs": "append"
+              }
+            },
+            {
+              "os": "linux",
+              "arch": "x86_64",
+              "kind": "appImage",
+              "url": "https://media.inkscape.org/dl/resources/file/Inkscape-1.4.4.AppImage",
+              "fileName": "Inkscape-1.4.4.AppImage",
+              "size": 120236536,
+              "sha256": "d217fe05c92faaed5c3af46856b6299c98933dc722819cb5bc2ca052c5522166",
+              "checksumSource": "https://inkscape.org/release/inkscape-1.4.4/gnulinux/appimage/dl/",
+              "checksumOrigin": "cypherPinned",
+              "signature": {
+                "type": "pgp",
+                "enforce": false,
+                "url": "https://media.inkscape.org/media/resources/sigs/Inkscape-dcaf3e7-x86_64.AppImage.sig",
+                "publicKeys": [
+                  "-----BEGIN PGP PUBLIC KEY BLOCK-----\nComment: 74E8 DA13 9805 5A81 20B2  76EB 5FCB 204E F882 B07A\n\n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\n=p0wW\n-----END PGP PUBLIC KEY BLOCK-----"
+                ],
+                "fingerprints": [
+                  "74E8DA1398055A8120B276EB5FCB204EF882B07A"
+                ]
+              },
+              "unpackedSizeMax": 1500000000,
+              "launch": {
+                "exe": "Inkscape-1.4.4.AppImage",
+                "fileArgs": "append"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "kdenlive",
+      "name": "Kdenlive",
+      "vendor": "KDE",
+      "category": "video",
+      "description": "Videoschnitt für Reels und Clips, mit Cypher-Titelvorlagen und Hochformat-Profilen.",
+      "homepage": "https://kdenlive.org/",
+      "releaseNotesUrl": "https://kdenlive.org/news/",
+      "license": {
+        "spdx": "GPL-3.0-or-later",
+        "name": "GNU General Public License v3.0 or later",
+        "url": "https://kdenlive.org/en/about/"
+      },
+      "detect": {
+        "windows": {
+          "uninstallDisplayNamePrefixes": [
+            "Kdenlive"
+          ],
+          "exeNames": [
+            "kdenlive.exe"
+          ],
+          "knownPaths": [
+            "{ProgramFiles}\\kdenlive\\bin\\kdenlive.exe"
+          ]
+        },
+        "macos": {
+          "bundleIds": [
+            "org.kde.kdenlive"
+          ],
+          "appNames": [
+            "kdenlive.app"
+          ]
+        },
+        "linux": {
+          "flatpakIds": [
+            "org.kde.kdenlive"
+          ],
+          "binNames": [
+            "kdenlive"
+          ],
+          "appImageGlobs": [
+            "kdenlive-*.AppImage"
+          ]
+        }
+      },
+      "setup": {
+        "packId": "kdenlive",
+        "versionRange": ">=24.0, <30",
+        "roots": [
+          "kdenliveData",
+          "userFonts"
+        ]
+      },
+      "releases": [
+        {
+          "version": "26.08.2",
+          "channel": "stable",
+          "releasedAt": "2026-10-13",
+          "artifacts": [
+            {
+              "os": "windows",
+              "arch": "x86_64",
+              "kind": "sfx7z",
+              "url": "https://download.kde.org/stable/kdenlive/26.08/windows/kdenlive-26.08.2_standalone.exe",
+              "fileName": "kdenlive-26.08.2_standalone.exe",
+              "size": 134973971,
+              "sha256": "43526e50770fb306b12a8d7f6a7bb5829f8ca546390bd169fb3c3cc222874487",
+              "checksumSource": "https://download.kde.org/stable/kdenlive/26.08/windows/kdenlive-26.08.2_standalone.exe.sha256",
+              "stripComponents": 1,
+              "unpackedSizeMax": 1000000000,
+              "launch": {
+                "exe": "bin/kdenlive.exe",
+                "fileArgs": "append"
+              }
+            },
+            {
+              "os": "macos",
+              "arch": "aarch64",
+              "kind": "dmg",
+              "url": "https://download.kde.org/stable/kdenlive/26.08/macOS/kdenlive-26.08.2-arm64.dmg",
+              "fileName": "kdenlive-26.08.2-arm64.dmg",
+              "size": 144286250,
+              "sha256": "ffcbff6d6e6651fe7a7cd2b00cb7304c8ef049da8287c389dbda146d5e8928ac",
+              "checksumSource": "https://download.kde.org/stable/kdenlive/26.08/macOS/kdenlive-26.08.2-arm64.dmg.sha256",
+              "unpackedSizeMax": 1500000000,
+              "macAppName": "kdenlive.app",
+              "launch": {
+                "exe": "kdenlive",
+                "fileArgs": "append"
+              }
+            },
+            {
+              "os": "macos",
+              "arch": "x86_64",
+              "kind": "dmg",
+              "url": "https://download.kde.org/stable/kdenlive/26.08/macOS/kdenlive-26.08.2-x86_64.dmg",
+              "fileName": "kdenlive-26.08.2-x86_64.dmg",
+              "size": 158286259,
+              "sha256": "45e07f190581eeba8e87a12d2e879b3f754a83df19787dc9fdea389a51259b33",
+              "checksumSource": "https://download.kde.org/stable/kdenlive/26.08/macOS/kdenlive-26.08.2-x86_64.dmg.sha256",
+              "unpackedSizeMax": 1500000000,
+              "macAppName": "kdenlive.app",
+              "launch": {
+                "exe": "kdenlive",
+                "fileArgs": "append"
+              }
+            },
+            {
+              "os": "linux",
+              "arch": "x86_64",
+              "kind": "appImage",
+              "url": "https://download.kde.org/stable/kdenlive/26.08/linux/kdenlive-26.08.2-x86_64.AppImage",
+              "fileName": "kdenlive-26.08.2-x86_64.AppImage",
+              "size": 215427576,
+              "sha256": "3194c0979bcfb7ec4a0b33ebc05178a51cffdf5b180c3a89bcf4da94e025bc78",
+              "checksumSource": "https://download.kde.org/stable/kdenlive/26.08/linux/kdenlive-26.08.2-x86_64.AppImage.sha256",
+              "unpackedSizeMax": 1500000000,
+              "launch": {
+                "exe": "kdenlive-26.08.2-x86_64.AppImage",
+                "fileArgs": "append"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "links": [
+    {
+      "id": "affinity",
+      "name": "Affinity",
+      "url": "https://www.affinity.studio/",
+      "description": "Kommerzielles Grafikprogramm (Canva).",
+      "note": "Nur Verweis, keine Installation durch Cypher Studio."
+    }
+  ],
+  "printProfiles": [
+    {
+      "id": "shirtigo-tee-front",
+      "provider": "shirtigo",
+      "product": {
+        "id": "tee",
+        "providerProductId": "organic-shirt",
+        "label": "Organic Shirt (Creator 2.0, STTU169)"
+      },
+      "placement": "front",
+      "techniques": [
+        "dtg",
+        "dtf"
+      ],
+      "title": "T-Shirt Vorderseite",
+      "printAreaMm": {
+        "width": 330,
+        "height": 450
+      },
+      "safeAreaMm": {
+        "width": 280,
+        "height": 360
+      },
+      "topMarginHintMm": 26,
+      "widthPresets": [
+        {
+          "id": "chestEmblem",
+          "label": "Brustemblem",
+          "widthMm": 100,
+          "maxWidthMm": 150
+        },
+        {
+          "id": "chestCentered",
+          "label": "Brust zentriert",
+          "widthMm": 280,
+          "maxWidthMm": 330
+        }
+      ],
+      "defaultWidthMm": 280,
+      "targetDpi": 300,
+      "errorBelowDpi": 150,
+      "minPxPerSide": 1000,
+      "maxPxPerSide": 10500,
+      "warnFileBytes": 50331648,
+      "maxFileBytes": 67108864,
+      "acceptedUploadFormats": [
+        "png",
+        "jpeg"
+      ],
+      "color": {
+        "exportProfile": "adobeRgb",
+        "acceptedProfiles": [
+          "adobeRgb",
+          "srgb"
+        ]
+      },
+      "alpha": {
+        "semiMin": 13,
+        "semiMax": 252,
+        "ghostMax": 12,
+        "edgeRadiusPx": 2,
+        "warnShare": 0.001,
+        "errorShare": 0.01,
+        "severityOnLightGarment": "info",
+        "severityForDtf": "error"
+      },
+      "strokes": {
+        "warnBelowPx": 10,
+        "criticalBelowPx": 5
+      },
+      "source": {
+        "urls": [
+          "https://cockpit.shirtigo.com/de/catalog/product/organic-shirt",
+          "https://cockpit.shirtigo.com/de/catalog/product/organic-hoodie",
+          "https://helpcenter.shirtigo.de/faq/haeufigste-fragen/motiverstellung-haeufigste-fragen/dtg-guideline/"
+        ],
+        "checkedAt": "2026-10-16T00:00:00Z"
+      },
+      "assumption": true
+    },
+    {
+      "id": "shirtigo-tee-back",
+      "provider": "shirtigo",
+      "product": {
+        "id": "tee",
+        "providerProductId": "organic-shirt",
+        "label": "Organic Shirt (Creator 2.0, STTU169)"
+      },
+      "placement": "back",
+      "techniques": [
+        "dtg",
+        "dtf"
+      ],
+      "title": "T-Shirt Rückseite",
+      "printAreaMm": {
+        "width": 330,
+        "height": 450
+      },
+      "safeAreaMm": {
+        "width": 280,
+        "height": 360
+      },
+      "topMarginHintMm": 74,
+      "widthPresets": [
+        {
+          "id": "backShoulder",
+          "label": "Rücken Schulterhöhe",
+          "widthMm": 300,
+          "maxWidthMm": 330
+        }
+      ],
+      "defaultWidthMm": 300,
+      "targetDpi": 300,
+      "errorBelowDpi": 150,
+      "minPxPerSide": 1000,
+      "maxPxPerSide": 10500,
+      "warnFileBytes": 50331648,
+      "maxFileBytes": 67108864,
+      "acceptedUploadFormats": [
+        "png",
+        "jpeg"
+      ],
+      "color": {
+        "exportProfile": "adobeRgb",
+        "acceptedProfiles": [
+          "adobeRgb",
+          "srgb"
+        ]
+      },
+      "alpha": {
+        "semiMin": 13,
+        "semiMax": 252,
+        "ghostMax": 12,
+        "edgeRadiusPx": 2,
+        "warnShare": 0.001,
+        "errorShare": 0.01,
+        "severityOnLightGarment": "info",
+        "severityForDtf": "error"
+      },
+      "strokes": {
+        "warnBelowPx": 10,
+        "criticalBelowPx": 5
+      },
+      "source": {
+        "urls": [
+          "https://cockpit.shirtigo.com/de/catalog/product/organic-shirt",
+          "https://cockpit.shirtigo.com/de/catalog/product/organic-hoodie",
+          "https://helpcenter.shirtigo.de/faq/haeufigste-fragen/motiverstellung-haeufigste-fragen/dtg-guideline/"
+        ],
+        "checkedAt": "2026-10-16T00:00:00Z"
+      },
+      "assumption": true
+    },
+    {
+      "id": "shirtigo-tee-sleeve-left",
+      "provider": "shirtigo",
+      "product": {
+        "id": "tee",
+        "providerProductId": "organic-shirt",
+        "label": "Organic Shirt (Creator 2.0, STTU169)"
+      },
+      "placement": "sleeveLeft",
+      "techniques": [
+        "dtf"
+      ],
+      "title": "T-Shirt Ärmel links",
+      "printAreaMm": {
+        "width": 100,
+        "height": 100
+      },
+      "safeAreaMm": null,
+      "topMarginHintMm": null,
+      "widthPresets": [],
+      "defaultWidthMm": 80,
+      "targetDpi": 300,
+      "errorBelowDpi": 150,
+      "minPxPerSide": 1000,
+      "maxPxPerSide": 10500,
+      "warnFileBytes": 50331648,
+      "maxFileBytes": 67108864,
+      "acceptedUploadFormats": [
+        "png",
+        "jpeg"
+      ],
+      "color": {
+        "exportProfile": "adobeRgb",
+        "acceptedProfiles": [
+          "adobeRgb",
+          "srgb"
+        ]
+      },
+      "alpha": {
+        "semiMin": 13,
+        "semiMax": 252,
+        "ghostMax": 12,
+        "edgeRadiusPx": 2,
+        "warnShare": 0.001,
+        "errorShare": 0.01,
+        "severityOnLightGarment": "info",
+        "severityForDtf": "error"
+      },
+      "strokes": {
+        "warnBelowPx": 10,
+        "criticalBelowPx": 5
+      },
+      "source": {
+        "urls": [
+          "https://cockpit.shirtigo.com/de/catalog/product/organic-shirt",
+          "https://cockpit.shirtigo.com/de/catalog/product/organic-hoodie",
+          "https://helpcenter.shirtigo.de/faq/haeufigste-fragen/motiverstellung-haeufigste-fragen/dtg-guideline/"
+        ],
+        "checkedAt": "2026-10-16T00:00:00Z"
+      },
+      "assumption": true
+    },
+    {
+      "id": "shirtigo-tee-sleeve-right",
+      "provider": "shirtigo",
+      "product": {
+        "id": "tee",
+        "providerProductId": "organic-shirt",
+        "label": "Organic Shirt (Creator 2.0, STTU169)"
+      },
+      "placement": "sleeveRight",
+      "techniques": [
+        "dtf"
+      ],
+      "title": "T-Shirt Ärmel rechts",
+      "printAreaMm": {
+        "width": 100,
+        "height": 100
+      },
+      "safeAreaMm": null,
+      "topMarginHintMm": null,
+      "widthPresets": [],
+      "defaultWidthMm": 80,
+      "targetDpi": 300,
+      "errorBelowDpi": 150,
+      "minPxPerSide": 1000,
+      "maxPxPerSide": 10500,
+      "warnFileBytes": 50331648,
+      "maxFileBytes": 67108864,
+      "acceptedUploadFormats": [
+        "png",
+        "jpeg"
+      ],
+      "color": {
+        "exportProfile": "adobeRgb",
+        "acceptedProfiles": [
+          "adobeRgb",
+          "srgb"
+        ]
+      },
+      "alpha": {
+        "semiMin": 13,
+        "semiMax": 252,
+        "ghostMax": 12,
+        "edgeRadiusPx": 2,
+        "warnShare": 0.001,
+        "errorShare": 0.01,
+        "severityOnLightGarment": "info",
+        "severityForDtf": "error"
+      },
+      "strokes": {
+        "warnBelowPx": 10,
+        "criticalBelowPx": 5
+      },
+      "source": {
+        "urls": [
+          "https://cockpit.shirtigo.com/de/catalog/product/organic-shirt",
+          "https://cockpit.shirtigo.com/de/catalog/product/organic-hoodie",
+          "https://helpcenter.shirtigo.de/faq/haeufigste-fragen/motiverstellung-haeufigste-fragen/dtg-guideline/"
+        ],
+        "checkedAt": "2026-10-16T00:00:00Z"
+      },
+      "assumption": true
+    },
+    {
+      "id": "shirtigo-tee-back-inside",
+      "provider": "shirtigo",
+      "product": {
+        "id": "tee",
+        "providerProductId": "organic-shirt",
+        "label": "Organic Shirt (Creator 2.0, STTU169)"
+      },
+      "placement": "backInside",
+      "techniques": [
+        "dtf"
+      ],
+      "title": "T-Shirt Nacken innen",
+      "printAreaMm": {
+        "width": 70,
+        "height": 50
+      },
+      "safeAreaMm": null,
+      "topMarginHintMm": null,
+      "widthPresets": [],
+      "defaultWidthMm": 60,
+      "targetDpi": 300,
+      "errorBelowDpi": 150,
+      "minPxPerSide": 1000,
+      "maxPxPerSide": 10500,
+      "warnFileBytes": 50331648,
+      "maxFileBytes": 67108864,
+      "acceptedUploadFormats": [
+        "png",
+        "jpeg"
+      ],
+      "color": {
+        "exportProfile": "adobeRgb",
+        "acceptedProfiles": [
+          "adobeRgb",
+          "srgb"
+        ]
+      },
+      "alpha": {
+        "semiMin": 13,
+        "semiMax": 252,
+        "ghostMax": 12,
+        "edgeRadiusPx": 2,
+        "warnShare": 0.001,
+        "errorShare": 0.01,
+        "severityOnLightGarment": "info",
+        "severityForDtf": "error"
+      },
+      "strokes": {
+        "warnBelowPx": 10,
+        "criticalBelowPx": 5
+      },
+      "source": {
+        "urls": [
+          "https://cockpit.shirtigo.com/de/catalog/product/organic-shirt",
+          "https://cockpit.shirtigo.com/de/catalog/product/organic-hoodie",
+          "https://helpcenter.shirtigo.de/faq/haeufigste-fragen/motiverstellung-haeufigste-fragen/dtg-guideline/"
+        ],
+        "checkedAt": "2026-10-16T00:00:00Z"
+      },
+      "assumption": true
+    },
+    {
+      "id": "shirtigo-hoodie-front",
+      "provider": "shirtigo",
+      "product": {
+        "id": "hoodie",
+        "providerProductId": "organic-hoodie",
+        "label": "Organic Hoodie (Cruiser 2.0, STSU177)"
+      },
+      "placement": "front",
+      "techniques": [
+        "dtg",
+        "dtf"
+      ],
+      "title": "Hoodie Vorderseite",
+      "printAreaMm": {
+        "width": 330,
+        "height": 280
+      },
+      "safeAreaMm": null,
+      "topMarginHintMm": 40,
+      "widthPresets": [
+        {
+          "id": "chestEmblem",
+          "label": "Brustemblem",
+          "widthMm": 100,
+          "maxWidthMm": 150
+        },
+        {
+          "id": "chestCentered",
+          "label": "Brust zentriert",
+          "widthMm": 280,
+          "maxWidthMm": 330
+        }
+      ],
+      "defaultWidthMm": 280,
+      "targetDpi": 300,
+      "errorBelowDpi": 150,
+      "minPxPerSide": 1000,
+      "maxPxPerSide": 10500,
+      "warnFileBytes": 50331648,
+      "maxFileBytes": 67108864,
+      "acceptedUploadFormats": [
+        "png",
+        "jpeg"
+      ],
+      "color": {
+        "exportProfile": "adobeRgb",
+        "acceptedProfiles": [
+          "adobeRgb",
+          "srgb"
+        ]
+      },
+      "alpha": {
+        "semiMin": 13,
+        "semiMax": 252,
+        "ghostMax": 12,
+        "edgeRadiusPx": 2,
+        "warnShare": 0.001,
+        "errorShare": 0.01,
+        "severityOnLightGarment": "info",
+        "severityForDtf": "error"
+      },
+      "strokes": {
+        "warnBelowPx": 10,
+        "criticalBelowPx": 5
+      },
+      "source": {
+        "urls": [
+          "https://cockpit.shirtigo.com/de/catalog/product/organic-shirt",
+          "https://cockpit.shirtigo.com/de/catalog/product/organic-hoodie",
+          "https://helpcenter.shirtigo.de/faq/haeufigste-fragen/motiverstellung-haeufigste-fragen/dtg-guideline/"
+        ],
+        "checkedAt": "2026-10-16T00:00:00Z"
+      },
+      "assumption": true
+    },
+    {
+      "id": "shirtigo-hoodie-back",
+      "provider": "shirtigo",
+      "product": {
+        "id": "hoodie",
+        "providerProductId": "organic-hoodie",
+        "label": "Organic Hoodie (Cruiser 2.0, STSU177)"
+      },
+      "placement": "back",
+      "techniques": [
+        "dtg",
+        "dtf"
+      ],
+      "title": "Hoodie Rückseite",
+      "printAreaMm": {
+        "width": 330,
+        "height": 390
+      },
+      "safeAreaMm": null,
+      "topMarginHintMm": 1,
+      "widthPresets": [
+        {
+          "id": "backShoulder",
+          "label": "Rücken Schulterhöhe",
+          "widthMm": 300,
+          "maxWidthMm": 330
+        }
+      ],
+      "defaultWidthMm": 300,
+      "targetDpi": 300,
+      "errorBelowDpi": 150,
+      "minPxPerSide": 1000,
+      "maxPxPerSide": 10500,
+      "warnFileBytes": 50331648,
+      "maxFileBytes": 67108864,
+      "acceptedUploadFormats": [
+        "png",
+        "jpeg"
+      ],
+      "color": {
+        "exportProfile": "adobeRgb",
+        "acceptedProfiles": [
+          "adobeRgb",
+          "srgb"
+        ]
+      },
+      "alpha": {
+        "semiMin": 13,
+        "semiMax": 252,
+        "ghostMax": 12,
+        "edgeRadiusPx": 2,
+        "warnShare": 0.001,
+        "errorShare": 0.01,
+        "severityOnLightGarment": "info",
+        "severityForDtf": "error"
+      },
+      "strokes": {
+        "warnBelowPx": 10,
+        "criticalBelowPx": 5
+      },
+      "source": {
+        "urls": [
+          "https://cockpit.shirtigo.com/de/catalog/product/organic-shirt",
+          "https://cockpit.shirtigo.com/de/catalog/product/organic-hoodie",
+          "https://helpcenter.shirtigo.de/faq/haeufigste-fragen/motiverstellung-haeufigste-fragen/dtg-guideline/"
+        ],
+        "checkedAt": "2026-10-16T00:00:00Z"
+      },
+      "assumption": true
+    },
+    {
+      "id": "shirtigo-hoodie-sleeve-left",
+      "provider": "shirtigo",
+      "product": {
+        "id": "hoodie",
+        "providerProductId": "organic-hoodie",
+        "label": "Organic Hoodie (Cruiser 2.0, STSU177)"
+      },
+      "placement": "sleeveLeft",
+      "techniques": [
+        "dtf"
+      ],
+      "title": "Hoodie Ärmel links",
+      "printAreaMm": {
+        "width": 100,
+        "height": 400
+      },
+      "safeAreaMm": null,
+      "topMarginHintMm": null,
+      "widthPresets": [],
+      "defaultWidthMm": 80,
+      "targetDpi": 300,
+      "errorBelowDpi": 150,
+      "minPxPerSide": 1000,
+      "maxPxPerSide": 10500,
+      "warnFileBytes": 50331648,
+      "maxFileBytes": 67108864,
+      "acceptedUploadFormats": [
+        "png",
+        "jpeg"
+      ],
+      "color": {
+        "exportProfile": "adobeRgb",
+        "acceptedProfiles": [
+          "adobeRgb",
+          "srgb"
+        ]
+      },
+      "alpha": {
+        "semiMin": 13,
+        "semiMax": 252,
+        "ghostMax": 12,
+        "edgeRadiusPx": 2,
+        "warnShare": 0.001,
+        "errorShare": 0.01,
+        "severityOnLightGarment": "info",
+        "severityForDtf": "error"
+      },
+      "strokes": {
+        "warnBelowPx": 10,
+        "criticalBelowPx": 5
+      },
+      "source": {
+        "urls": [
+          "https://cockpit.shirtigo.com/de/catalog/product/organic-shirt",
+          "https://cockpit.shirtigo.com/de/catalog/product/organic-hoodie",
+          "https://helpcenter.shirtigo.de/faq/haeufigste-fragen/motiverstellung-haeufigste-fragen/dtg-guideline/"
+        ],
+        "checkedAt": "2026-10-16T00:00:00Z"
+      },
+      "assumption": true
+    },
+    {
+      "id": "shirtigo-hoodie-sleeve-right",
+      "provider": "shirtigo",
+      "product": {
+        "id": "hoodie",
+        "providerProductId": "organic-hoodie",
+        "label": "Organic Hoodie (Cruiser 2.0, STSU177)"
+      },
+      "placement": "sleeveRight",
+      "techniques": [
+        "dtf"
+      ],
+      "title": "Hoodie Ärmel rechts",
+      "printAreaMm": {
+        "width": 100,
+        "height": 400
+      },
+      "safeAreaMm": null,
+      "topMarginHintMm": null,
+      "widthPresets": [],
+      "defaultWidthMm": 80,
+      "targetDpi": 300,
+      "errorBelowDpi": 150,
+      "minPxPerSide": 1000,
+      "maxPxPerSide": 10500,
+      "warnFileBytes": 50331648,
+      "maxFileBytes": 67108864,
+      "acceptedUploadFormats": [
+        "png",
+        "jpeg"
+      ],
+      "color": {
+        "exportProfile": "adobeRgb",
+        "acceptedProfiles": [
+          "adobeRgb",
+          "srgb"
+        ]
+      },
+      "alpha": {
+        "semiMin": 13,
+        "semiMax": 252,
+        "ghostMax": 12,
+        "edgeRadiusPx": 2,
+        "warnShare": 0.001,
+        "errorShare": 0.01,
+        "severityOnLightGarment": "info",
+        "severityForDtf": "error"
+      },
+      "strokes": {
+        "warnBelowPx": 10,
+        "criticalBelowPx": 5
+      },
+      "source": {
+        "urls": [
+          "https://cockpit.shirtigo.com/de/catalog/product/organic-shirt",
+          "https://cockpit.shirtigo.com/de/catalog/product/organic-hoodie",
+          "https://helpcenter.shirtigo.de/faq/haeufigste-fragen/motiverstellung-haeufigste-fragen/dtg-guideline/"
+        ],
+        "checkedAt": "2026-10-16T00:00:00Z"
+      },
+      "assumption": true
+    },
+    {
+      "id": "shirtigo-hoodie-back-inside",
+      "provider": "shirtigo",
+      "product": {
+        "id": "hoodie",
+        "providerProductId": "organic-hoodie",
+        "label": "Organic Hoodie (Cruiser 2.0, STSU177)"
+      },
+      "placement": "backInside",
+      "techniques": [
+        "dtf"
+      ],
+      "title": "Hoodie Nacken innen",
+      "printAreaMm": {
+        "width": 70,
+        "height": 50
+      },
+      "safeAreaMm": null,
+      "topMarginHintMm": null,
+      "widthPresets": [],
+      "defaultWidthMm": 60,
+      "targetDpi": 300,
+      "errorBelowDpi": 150,
+      "minPxPerSide": 1000,
+      "maxPxPerSide": 10500,
+      "warnFileBytes": 50331648,
+      "maxFileBytes": 67108864,
+      "acceptedUploadFormats": [
+        "png",
+        "jpeg"
+      ],
+      "color": {
+        "exportProfile": "adobeRgb",
+        "acceptedProfiles": [
+          "adobeRgb",
+          "srgb"
+        ]
+      },
+      "alpha": {
+        "semiMin": 13,
+        "semiMax": 252,
+        "ghostMax": 12,
+        "edgeRadiusPx": 2,
+        "warnShare": 0.001,
+        "errorShare": 0.01,
+        "severityOnLightGarment": "info",
+        "severityForDtf": "error"
+      },
+      "strokes": {
+        "warnBelowPx": 10,
+        "criticalBelowPx": 5
+      },
+      "source": {
+        "urls": [
+          "https://cockpit.shirtigo.com/de/catalog/product/organic-shirt",
+          "https://cockpit.shirtigo.com/de/catalog/product/organic-hoodie",
+          "https://helpcenter.shirtigo.de/faq/haeufigste-fragen/motiverstellung-haeufigste-fragen/dtg-guideline/"
+        ],
+        "checkedAt": "2026-10-16T00:00:00Z"
+      },
+      "assumption": true
+    }
+  ],
+  "models": []
+}

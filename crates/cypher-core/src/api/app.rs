@@ -361,6 +361,7 @@ inline_struct! {
 }
 
 dto_struct! {
+    #[derive(Default)]
     pub struct SettingsPatch {
         #[serde(default, skip_serializing_if = "Option::is_none")]
         #[ts(optional, inline)]

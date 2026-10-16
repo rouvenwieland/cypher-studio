@@ -4,3 +4,13 @@
 //! öffentliche API dieses Crates auf. Alle IPC-Typen stehen in [`api`].
 
 pub mod api;
+pub mod catalog;
+pub mod download;
+pub mod error;
+pub mod jobs;
+pub mod platform;
+pub mod progress;
+pub mod settings;
+pub mod state;
+pub mod util;
+pub mod verify;

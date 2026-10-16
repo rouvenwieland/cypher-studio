@@ -17,10 +17,58 @@ default = []
 test-util = []
 
 [dependencies]
+# Vertrag und Fehler
 serde.workspace = true
 serde_json.workspace = true
 thiserror.workspace = true
 ts-rs = { version = "12", features = ["serde-compat"] }
+# Async und Netzwerk
+tokio.workspace = true
+tokio-util.workspace = true
+futures-util = "0.3"
+reqwest = { version = "0.13", default-features = false, features = ["rustls-no-provider", "stream", "http2", "system-proxy"] }
+rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12"] }
+url = "2"
+# Prüfen
+sha2 = "0.11"
+hex = "0.4"
+minisign-verify = "0.3"
+# Plattform und Dateisystem
+directories = "6"
+tempfile = "3"
+fs4 = "1"
+walkdir = "2"
+globset = "0.4"
+which = "8"
+sysinfo = { version = "0.38", default-features = false, features = ["system"] }
+infer = "0.19"
+uuid = { version = "1", features = ["v4"] }
+time = { version = "0.3", features = ["formatting", "parsing", "macros"] }
+arc-swap = "1"
+semver = "1"
+tracing = "0.1"
+# Archive
+zip = { version = "9", default-features = false, features = ["deflate"] }
+tar = "0.4"
+liblzma = "0.4"
+flate2 = "1"
+sevenz-rust2 = "0.24"
+# Bilder
+image = { version = "0.25", default-features = false, features = ["png", "jpeg", "tiff", "webp"] }
+png = "0.18"
+fast_image_resize = "5"
+moxcms = "0.9"
+unicode-normalization = "0.1.25"
+base64 = "0.22"
+
+[target.'cfg(windows)'.dependencies]
+winreg = "0.55"
 
 [dev-dependencies]
 pretty_assertions = "1"
+axum = "0.8"
+minisign = "0.9"
+proptest = "1"
+jsonschema = "0.33"
+# Aktiviert die Testhilfen (http gegen 127.0.0.1) auch für die Tests des eigenen Crates
+cypher-core = { path = ".", features = ["test-util"] }
