@@ -22,7 +22,14 @@ export function applyUi(ui: UiPreferences): void {
   root.setAttribute("data-density", ui.density);
   if (ui.motion === "system") root.removeAttribute("data-motion");
   else root.setAttribute("data-motion", ui.motion);
-  const measure = ui.measureColor === "cyan" ? null : ui.measureColor === "ink" ? "tinte" : ui.measureColor === "paper" ? "papier" : "magenta";
+  const measure =
+    ui.measureColor === "cyan"
+      ? null
+      : ui.measureColor === "ink"
+        ? "tinte"
+        : ui.measureColor === "paper"
+          ? "papier"
+          : "magenta";
   if (measure) root.setAttribute("data-messfarbe", measure);
   else root.removeAttribute("data-messfarbe");
   root.style.setProperty("--app-zoom", String(ui.zoomPercent / 100));
@@ -77,7 +84,9 @@ export function useSettings() {
 export type Breakpoint = "narrow" | "std" | "wide";
 
 export function useBreakpoint(): Breakpoint {
-  const [bp, setBp] = useState<Breakpoint>(() => (document.documentElement.getAttribute("data-bp") as Breakpoint | null) ?? "std");
+  const [bp, setBp] = useState<Breakpoint>(
+    () => (document.documentElement.getAttribute("data-bp") as Breakpoint | null) ?? "std",
+  );
   useEffect(() => {
     const read = () => setBp((document.documentElement.getAttribute("data-bp") as Breakpoint | null) ?? "std");
     const mo = new MutationObserver(read);

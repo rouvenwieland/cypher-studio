@@ -1,0 +1,182 @@
+/* Social: Vorschau in echtem Seitenverhältnis, Sicherheitszonen als Messspur, Vorlagenliste mit Vorschaubildern. */
+
+.soc__stage {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--s-6);
+  outline: none;
+}
+
+.soc__stage:focus-visible {
+  outline: var(--focus-w) solid var(--focus);
+  outline-offset: var(--focus-offset-inset);
+}
+
+.soc__row {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: var(--s-6);
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+
+.soc__pane {
+  position: relative;
+  margin: 0;
+  max-width: 100%;
+  max-height: 100%;
+  height: 100%;
+  background: var(--panel);
+  border: var(--hair) solid var(--control);
+  overflow: hidden;
+}
+
+.soc__row--all .soc__pane {
+  height: 100%;
+  width: auto;
+  flex: 0 1 auto;
+}
+
+.soc__canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.soc__loading {
+  position: absolute;
+  inset: 0;
+  background: var(--panel);
+}
+
+.soc__zone,
+.soc__grid {
+  position: absolute;
+  pointer-events: none;
+}
+
+.soc__zone {
+  background: repeating-linear-gradient(45deg, var(--mess-gegen) 0 1px, transparent 1px 7px);
+  border: var(--hair) dashed var(--mess);
+}
+
+.soc__grid {
+  border: var(--hair) dashed var(--mess);
+  outline: var(--hair) solid var(--mess-gegen);
+}
+
+.soc__zone-chip {
+  position: absolute;
+  top: var(--s-1);
+  left: var(--s-1);
+}
+
+.soc__tools {
+  position: absolute;
+  top: var(--s-3);
+  right: var(--s-4);
+  z-index: 2;
+  display: flex;
+  gap: var(--s-1);
+  padding: var(--s-1);
+  border: var(--hair) solid var(--control);
+  background: var(--panel);
+}
+
+.soc__tools .iconbtn {
+  border-color: transparent;
+  background: transparent;
+}
+
+.soc__tools .iconbtn[aria-pressed="true"] {
+  background: var(--select-bg);
+  color: var(--select-fg);
+}
+
+.soc__empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--s-4);
+  padding: var(--s-7);
+  overflow: auto;
+}
+
+.soc__tpls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-4);
+}
+
+.soc__tpl {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--s-1);
+  width: 96px;
+  padding: var(--s-2);
+  border: var(--hair) solid transparent;
+  background: transparent;
+  color: var(--fg);
+  text-align: left;
+}
+
+.soc__tpl:hover {
+  background: var(--hover);
+}
+
+.soc__tpl[aria-pressed="true"] {
+  border: var(--edge-strong) solid var(--fg);
+}
+
+.soc__tpls--large .soc__tpl {
+  width: 144px;
+}
+
+.soc__thumb {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: var(--panel);
+  border: var(--hair) solid var(--control);
+}
+
+.soc__saved {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.focal {
+  position: relative;
+  display: block;
+  max-height: 160px;
+  background: var(--surround-hell);
+  border: var(--hair) solid var(--control);
+  cursor: crosshair;
+  overflow: hidden;
+}
+
+.focal img {
+  display: block;
+  width: 100%;
+  max-height: 160px;
+  object-fit: contain;
+}
+
+.focal__mark {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  translate: -50% -50%;
+  border: var(--edge-strong) solid var(--mess-chip-fg);
+  background: var(--mess-chip-bg);
+  pointer-events: none;
+}

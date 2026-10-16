@@ -6,20 +6,63 @@ import { t } from "../../i18n/de";
  * Prüfpunkte des Berichts: Der Vertrag liefert nur Befunde (Verstöße). Aus ihnen und dem Profil bauen wir die
  * Zeilen „Regel · Messwert · Grenze“ (CONCEPT.md 6.4). Erfüllte Regeln erscheinen einzeln in mute.
  */
-export type CheckId = "format" | "size" | "resolution" | "fit" | "alphaBg" | "semi" | "ghost" | "strokes" | "color" | "fileSize" | "contrast";
+export type CheckId =
+  | "format"
+  | "size"
+  | "resolution"
+  | "fit"
+  | "alphaBg"
+  | "semi"
+  | "ghost"
+  | "strokes"
+  | "color"
+  | "fileSize"
+  | "contrast";
 
-export const CHECK_ORDER: readonly CheckId[] = ["format", "size", "resolution", "fit", "alphaBg", "semi", "ghost", "strokes", "color", "fileSize", "contrast"];
+export const CHECK_ORDER: readonly CheckId[] = [
+  "format",
+  "size",
+  "resolution",
+  "fit",
+  "alphaBg",
+  "semi",
+  "ghost",
+  "strokes",
+  "color",
+  "fileSize",
+  "contrast",
+];
 
 export const CHECK_RULES: Record<CheckId, readonly PrintRuleId[]> = {
-  format: ["format.unreadable", "format.notUploadable", "format.jpegNoAlpha", "format.animated", "format.interlaced", "format.bitDepth16", "format.indexed"],
+  format: [
+    "format.unreadable",
+    "format.notUploadable",
+    "format.jpegNoAlpha",
+    "format.animated",
+    "format.interlaced",
+    "format.bitDepth16",
+    "format.indexed",
+  ],
   size: ["size.belowMinPixels", "size.aboveMaxPixels"],
-  resolution: ["resolution.tooLow", "resolution.belowTarget", "resolution.metadataMismatch", "resolution.upscaleNeeded"],
+  resolution: [
+    "resolution.tooLow",
+    "resolution.belowTarget",
+    "resolution.metadataMismatch",
+    "resolution.upscaleNeeded",
+  ],
   fit: ["layout.empty", "layout.exceedsPrintArea", "layout.exceedsSafeArea", "layout.touchesEdge"],
   alphaBg: ["alpha.missing", "alpha.opaqueBackground"],
   semi: ["alpha.semiTransparent"],
   ghost: ["alpha.ghostPixels"],
   strokes: ["detail.thinLines"],
-  color: ["color.cmyk", "color.noProfile", "color.unsupportedProfile", "color.profileDiffers", "color.grayscale", "color.nearBlack"],
+  color: [
+    "color.cmyk",
+    "color.noProfile",
+    "color.unsupportedProfile",
+    "color.profileDiffers",
+    "color.grayscale",
+    "color.nearBlack",
+  ],
   fileSize: ["file.tooLarge"],
   contrast: ["contrast.lowOnGarment"],
 };
@@ -57,19 +100,43 @@ export function evaluateChecks(report: PrintReport, profile: PrintProfile): Chec
 
   const base: Record<CheckId, { title: string; measured: string; limit: string }> = {
     format: { title: c.format.title, measured: fmtLabel, limit: c.format.limit },
-    size: { title: c.size.title, measured: `${report.file.widthPx} × ${report.file.heightPx} px`, limit: c.size.limit(profile.minPxPerSide, profile.maxPxPerSide) },
-    resolution: { title: c.resolution.title, measured: v.atWidth(Math.round(report.placement.effectiveDpi), Math.round(report.placement.plannedWidthMm)), limit: c.resolution.limit(profile.targetDpi) },
+    size: {
+      title: c.size.title,
+      measured: `${report.file.widthPx} × ${report.file.heightPx} px`,
+      limit: c.size.limit(profile.minPxPerSide, profile.maxPxPerSide),
+    },
+    resolution: {
+      title: c.resolution.title,
+      measured: v.atWidth(Math.round(report.placement.effectiveDpi), Math.round(report.placement.plannedWidthMm)),
+      limit: c.resolution.limit(profile.targetDpi),
+    },
     fit: {
       title: c.fit.title,
       measured: `${fmtNumber(report.placement.plannedWidthMm, 1)} × ${fmtNumber(report.placement.plannedHeightMm, 1)} mm`,
       limit: c.fit.limit(profile.printAreaMm.width, profile.printAreaMm.height),
     },
-    alphaBg: { title: c.alphaBg.title, measured: report.alpha.present ? v.alphaPresent : v.alphaMissing, limit: c.alphaBg.limit },
-    semi: { title: c.semi.title, measured: report.alpha.present ? fmtPercent(semiShare, 1) : "—", limit: c.semi.limit(fmtPercent(profile.alpha.warnShare, 1)) },
+    alphaBg: {
+      title: c.alphaBg.title,
+      measured: report.alpha.present ? v.alphaPresent : v.alphaMissing,
+      limit: c.alphaBg.limit,
+    },
+    semi: {
+      title: c.semi.title,
+      measured: report.alpha.present ? fmtPercent(semiShare, 1) : "—",
+      limit: c.semi.limit(fmtPercent(profile.alpha.warnShare, 1)),
+    },
     ghost: { title: c.ghost.title, measured: v.pixels(report.alpha.ghostPixelCount), limit: c.ghost.limit },
-    strokes: { title: c.strokes.title, measured: strokeMm === null ? "—" : `${fmtNumber(strokeMm, 1)} mm`, limit: c.strokes.limit(fmtNumber(strokeMinMm, 1)) },
+    strokes: {
+      title: c.strokes.title,
+      measured: strokeMm === null ? "—" : `${fmtNumber(strokeMm, 1)} mm`,
+      limit: c.strokes.limit(fmtNumber(strokeMinMm, 1)),
+    },
     color: { title: c.color.title, measured: colorLabel, limit: c.color.limit },
-    fileSize: { title: c.fileSize.title, measured: fmtBytes(report.file.fileBytes), limit: c.fileSize.limit(fmtBytes(profile.warnFileBytes), fmtBytes(profile.maxFileBytes)) },
+    fileSize: {
+      title: c.fileSize.title,
+      measured: fmtBytes(report.file.fileBytes),
+      limit: c.fileSize.limit(fmtBytes(profile.warnFileBytes), fmtBytes(profile.maxFileBytes)),
+    },
     contrast: { title: c.contrast.title, measured: report.garment ? v.contrastFine : "—", limit: c.contrast.limit },
   };
 
@@ -110,5 +177,7 @@ export function summarize(results: CheckResult[]): CheckSummary {
 /** Reihenfolge im Bericht: Fehler, Hinweise, Info, nicht geprüft, erfüllt (letzte Gruppe eingeklappt). */
 export function sortChecks(results: CheckResult[]): CheckResult[] {
   const order: Record<CheckState, number> = { error: 0, warning: 1, info: 2, open: 3, ok: 4 };
-  return [...results].sort((a, b) => order[a.state] - order[b.state] || CHECK_ORDER.indexOf(a.id) - CHECK_ORDER.indexOf(b.id));
+  return [...results].sort(
+    (a, b) => order[a.state] - order[b.state] || CHECK_ORDER.indexOf(a.id) - CHECK_ORDER.indexOf(b.id),
+  );
 }

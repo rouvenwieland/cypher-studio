@@ -1,4 +1,4 @@
-import { useEffect, useState, type KeyboardEvent } from "react";
+import { useEffect, useState, type KeyboardEvent, type ReactNode } from "react";
 import { useNavigate } from "react-router";
 import type { AppError, InstallPlan } from "@contract";
 import { call } from "../../ipc/commands";
@@ -22,7 +22,17 @@ import "./install.css";
 
 const i = t.install;
 
-function ChecksumGroups({ sha, filled, diffAgainst, label }: { sha: string; filled?: number; diffAgainst?: string; label: string }) {
+function ChecksumGroups({
+  sha,
+  filled,
+  diffAgainst,
+  label,
+}: {
+  sha: string;
+  filled?: number;
+  diffAgainst?: string;
+  label: string;
+}) {
   const groups = checksumGroups(sha);
   const other = diffAgainst ? checksumGroups(diffAgainst) : null;
   return (
@@ -31,7 +41,10 @@ function ChecksumGroups({ sha, filled, diffAgainst, label }: { sha: string; fill
         const diff = other ? other[idx] !== g : false;
         const on = filled === undefined ? false : idx < filled;
         return (
-          <span key={idx} className={["sum__g", on ? "sum__g--on" : "", diff ? "sum__g--diff" : ""].filter(Boolean).join(" ")}>
+          <span
+            key={idx}
+            className={["sum__g", on ? "sum__g--on" : "", diff ? "sum__g--diff" : ""].filter(Boolean).join(" ")}
+          >
             {g}
           </span>
         );
@@ -45,12 +58,31 @@ function drive(dir: string): string {
   return m ? m[0] : dir.startsWith("/") ? "/" : "dem Datenträger";
 }
 
-function ReviewBody({ plan, applySetup, onApplySetup, hasPack, releasedAt, onChangeTarget, stale }: { plan: InstallPlan; applySetup: boolean; onApplySetup: (v: boolean) => void; hasPack: boolean; releasedAt: string | null; onChangeTarget: () => void; stale: string | null }) {
+function ReviewBody({
+  plan,
+  applySetup,
+  onApplySetup,
+  hasPack,
+  releasedAt,
+  onChangeTarget,
+  stale,
+}: {
+  plan: InstallPlan;
+  applySetup: boolean;
+  onApplySetup: (v: boolean) => void;
+  hasPack: boolean;
+  releasedAt: string | null;
+  onChangeTarget: () => void;
+  stale: string | null;
+}) {
   const [why, setWhy] = useState(false);
   const [allGroups, setAllGroups] = useState(false);
   const copy = useToasts((s) => s.push);
   const unpacked = Math.max(0, plan.target.requiredBytes - plan.artifact.size);
-  const openLicense = () => void call("app_open_external", { req: { target: { kind: "programPage", programId: plan.programId, page: "license" } } });
+  const openLicense = () =>
+    void call("app_open_external", {
+      req: { target: { kind: "programPage", programId: plan.programId, page: "license" } },
+    });
   return (
     <div className="stack stack--loose">
       <Facts
@@ -72,12 +104,35 @@ function ReviewBody({ plan, applySetup, onApplySetup, hasPack, releasedAt, onCha
                 <button type="button" className="linkbtn" aria-expanded={why} onClick={() => setWhy(!why)}>
                   {i.whyThisSource}
                 </button>
-                {why ? <span className="install__why">{i.whyThisSourceText(plan.programName, plan.source.mirrorRedirects)}</span> : null}
+                {why ? (
+                  <span className="install__why">
+                    {i.whyThisSourceText(plan.programName, plan.source.mirrorRedirects)}
+                  </span>
+                ) : null}
               </>
             ),
           },
-          { label: i.labels.version, value: <span className="t-data">{i.versionLine(plan.version, i.channel[plan.channel], releasedAt ? fmtDate(releasedAt) : null)}</span> },
-          { label: i.labels.size, value: <span className="t-data">{i.sizeLine(fmtBytes(plan.artifact.size), fmtBytes(unpacked), drive(plan.target.dir), fmtBytes(plan.target.availableBytes))}</span> },
+          {
+            label: i.labels.version,
+            value: (
+              <span className="t-data">
+                {i.versionLine(plan.version, i.channel[plan.channel], releasedAt ? fmtDate(releasedAt) : null)}
+              </span>
+            ),
+          },
+          {
+            label: i.labels.size,
+            value: (
+              <span className="t-data">
+                {i.sizeLine(
+                  fmtBytes(plan.artifact.size),
+                  fmtBytes(unpacked),
+                  drive(plan.target.dir),
+                  fmtBytes(plan.target.availableBytes),
+                )}
+              </span>
+            ),
+          },
           {
             label: i.labels.license,
             value: (
@@ -98,14 +153,21 @@ function ReviewBody({ plan, applySetup, onApplySetup, hasPack, releasedAt, onCha
                 </span>
                 {allGroups ? <ChecksumGroups sha={plan.artifact.sha256} label={i.labels.checksum} /> : null}
                 <span className="install__sub-actions">
-                  <button type="button" className="linkbtn" aria-expanded={allGroups} onClick={() => setAllGroups(!allGroups)}>
+                  <button
+                    type="button"
+                    className="linkbtn"
+                    aria-expanded={allGroups}
+                    onClick={() => setAllGroups(!allGroups)}
+                  >
                     {allGroups ? i.hideAllGroups : i.showAllGroups}
                   </button>
                   <button
                     type="button"
                     className="linkbtn"
                     onClick={() => {
-                      void navigator.clipboard?.writeText(plan.artifact.sha256).then(() => copy({ kind: "info", text: t.common.copied }));
+                      void navigator.clipboard
+                        ?.writeText(plan.artifact.sha256)
+                        .then(() => copy({ kind: "info", text: t.common.copied }));
                     }}
                   >
                     <IconCopy size={12} /> {i.copyChecksum}
@@ -129,10 +191,10 @@ function ReviewBody({ plan, applySetup, onApplySetup, hasPack, releasedAt, onCha
           },
         ]}
       />
-      {stale ? (
-        <Notice kind="info" title={stale} role="status" />
+      {stale ? <Notice kind="info" title={stale} role="status" /> : null}
+      {plan.replaces ? (
+        <p className="t-meta">{i.notes.replaces(plan.programName, plan.replaces.version ?? "—")}</p>
       ) : null}
-      {plan.replaces ? <p className="t-meta">{i.notes.replaces(plan.programName, plan.replaces.version ?? "—")}</p> : null}
       {plan.existing.map((e) => (
         <p key={e.id} className="t-meta">
           {i.notes.existing(plan.programName, e.version ?? "—")}
@@ -203,23 +265,62 @@ function PhaseList({ progress, allDone, plan }: { progress: RunProgress; allDone
         let detail: string = i.phaseDetail.pending;
         let value: number | null = null;
         if (p === "download") {
-          detail = state === "done" ? i.phaseDetail.download(fmtMegabytes(total), fmtBytes(total), null) : i.phaseDetail.download(fmtMegabytes(progress.download.done), fmtBytes(total), progress.download.rate > 0 ? fmtRate(progress.download.rate) : null);
+          detail =
+            state === "done"
+              ? i.phaseDetail.download(fmtMegabytes(total), fmtBytes(total), null)
+              : i.phaseDetail.download(
+                  fmtMegabytes(progress.download.done),
+                  fmtBytes(total),
+                  progress.download.rate > 0 ? fmtRate(progress.download.rate) : null,
+                );
           value = total > 0 ? progress.download.done / total : 0;
           if (state === "done") detail = `${fmtBytes(total)}`;
         } else if (p === "verify") {
-          detail = state === "done" || progress.verified ? i.phaseDetail.verifyDone : state === "running" ? i.phaseDetail.verify : i.phaseDetail.pending;
+          detail =
+            state === "done" || progress.verified
+              ? i.phaseDetail.verifyDone
+              : state === "running"
+                ? i.phaseDetail.verify
+                : i.phaseDetail.pending;
         } else if (p === "install") {
           if (state === "running") {
-            detail = progress.phase === "checkContent" ? i.phaseDetail.checkContent : progress.phase === "register" ? i.phaseDetail.register : i.phaseDetail.extract(String(progress.extract.done), progress.extract.total === null ? null : String(progress.extract.total));
+            detail =
+              progress.phase === "checkContent"
+                ? i.phaseDetail.checkContent
+                : progress.phase === "register"
+                  ? i.phaseDetail.register
+                  : i.phaseDetail.extract(
+                      String(progress.extract.done),
+                      progress.extract.total === null ? null : String(progress.extract.total),
+                    );
             value = progress.extract.total ? progress.extract.done / progress.extract.total : null;
           } else if (state === "done") detail = i.state.done;
         } else {
-          detail = state === "done" ? (progress.setup === "needsYou" ? i.phaseDetail.setupNeedsYou : i.phaseDetail.setupDone(progress.setupCount)) : state === "running" ? i.phaseDetail.setup(progress.setupCount) : i.phaseDetail.pending;
+          detail =
+            state === "done"
+              ? progress.setup === "needsYou"
+                ? i.phaseDetail.setupNeedsYou
+                : i.phaseDetail.setupDone(progress.setupCount)
+              : state === "running"
+                ? i.phaseDetail.setup(progress.setupCount)
+                : i.phaseDetail.pending;
         }
         return (
-          <li key={p} className="phase" data-state={state} data-phase={p} aria-current={state === "running" ? "step" : undefined}>
+          <li
+            key={p}
+            className="phase"
+            data-state={state}
+            data-phase={p}
+            aria-current={state === "running" ? "step" : undefined}
+          >
             <span className="phase__mark" aria-hidden="true">
-              {state === "done" ? <GlyphOk size={16} /> : state === "running" ? <span className="phase__run" /> : <GlyphOpen size={16} />}
+              {state === "done" ? (
+                <GlyphOk size={16} />
+              ) : state === "running" ? (
+                <span className="phase__run" />
+              ) : (
+                <GlyphOpen size={16} />
+              )}
             </span>
             <span className="phase__label t-strong">{i.phases[p]}</span>
             <span className="phase__detail t-data" data-testid={`phase-${p}`}>
@@ -232,7 +333,11 @@ function PhaseList({ progress, allDone, plan }: { progress: RunProgress; allDone
             ) : null}
             {p === "verify" && (state === "running" || state === "done") ? (
               <div className="phase__sum">
-                <ChecksumGroups sha={plan.artifact.sha256} filled={state === "done" || progress.verified ? 99 : fill} label={i.labels.checksum} />
+                <ChecksumGroups
+                  sha={plan.artifact.sha256}
+                  filled={state === "done" || progress.verified ? 99 : fill}
+                  label={i.labels.checksum}
+                />
               </div>
             ) : null}
           </li>
@@ -242,7 +347,13 @@ function PhaseList({ progress, allDone, plan }: { progress: RunProgress; allDone
   );
 }
 
-function ChecksumError({ error, plan }: { error: Extract<AppError, { kind: "checksumMismatch" }>; plan: InstallPlan | null }) {
+function ChecksumError({
+  error,
+  plan,
+}: {
+  error: Extract<AppError, { kind: "checksumMismatch" }>;
+  plan: InstallPlan | null;
+}) {
   const c = i.errors.checksum;
   const push = useToasts((s) => s.push);
   return (
@@ -254,7 +365,9 @@ function ChecksumError({ error, plan }: { error: Extract<AppError, { kind: "chec
         actions={
           <Button
             onClick={() => {
-              void navigator.clipboard?.writeText(c.detailsText(plan?.programName ?? "", error.file, error.expected, error.actual)).then(() => push({ kind: "info", text: c.copied }));
+              void navigator.clipboard
+                ?.writeText(c.detailsText(plan?.programName ?? "", error.file, error.expected, error.actual))
+                .then(() => push({ kind: "info", text: c.copied }));
             }}
             icon={IconCopy}
           >
@@ -275,13 +388,24 @@ function ChecksumError({ error, plan }: { error: Extract<AppError, { kind: "chec
   );
 }
 
-function ErrorBody({ error, plan, progress }: { error: AppError; plan: InstallPlan | null; progress: RunProgress | null }) {
+function ErrorBody({
+  error,
+  plan,
+  progress,
+}: {
+  error: AppError;
+  plan: InstallPlan | null;
+  progress: RunProgress | null;
+}) {
   const e = i.errors;
   if (error.kind === "checksumMismatch") return <ChecksumError error={error} plan={plan} />;
   const msg = errorText(error);
   switch (error.kind) {
     case "network": {
-      const title = progress && progress.download.done > 0 ? e.network.title(error.host, fmtMegabytes(progress.download.done), fmtMegabytes(progress.download.total)) : e.network.titlePlain(error.host);
+      const title =
+        progress && progress.download.done > 0
+          ? e.network.title(error.host, fmtMegabytes(progress.download.done), fmtMegabytes(progress.download.total))
+          : e.network.titlePlain(error.host);
       return (
         <Notice kind="error" title={title} role="alert">
           {e.network.safe}
@@ -290,7 +414,11 @@ function ErrorBody({ error, plan, progress }: { error: AppError; plan: InstallPl
     }
     case "diskFull":
       return (
-        <Notice kind="error" title={e.disk.title(drive(error.path), fmtBytes(Math.max(0, error.neededBytes - error.availableBytes)))} role="alert">
+        <Notice
+          kind="error"
+          title={e.disk.title(drive(error.path), fmtBytes(Math.max(0, error.neededBytes - error.availableBytes)))}
+          role="alert"
+        >
           {e.disk.safe}
         </Notice>
       );
@@ -329,36 +457,69 @@ function ErrorBody({ error, plan, progress }: { error: AppError; plan: InstallPl
 export function InstallDialogHost() {
   const request = useInstallUi((s) => s.request);
   if (!request) return null;
-  return <InstallDialog key={`${request.programId}:${request.version ?? ""}`} programId={request.programId} version={request.version} />;
+  return (
+    <InstallDialog
+      key={`${request.programId}:${request.version ?? ""}:${request.modelId ?? ""}`}
+      programId={request.programId}
+      version={request.version}
+      modelId={request.modelId}
+    />
+  );
 }
 
-function InstallDialog({ programId, version }: { programId: string; version: string | undefined }) {
+function InstallDialog({
+  programId,
+  version,
+  modelId,
+}: {
+  programId: string;
+  version: string | undefined;
+  modelId: string | undefined;
+}) {
   const close = useInstallUi((s) => s.close);
   const navigate = useNavigate();
   const settings = useSettings();
   const programs = useCmd("programs_list", undefined);
   const program = programs.data?.programs.find((p) => p.id === programId);
-  const hasPack = !!program?.setup && program.supportedOnThisPlatform;
-  const flow = useInstallFlow(programId, version, hasPack, settings.data?.onboarding.applySetup ?? true);
+  const hasPack = !modelId && !!program?.setup && program.supportedOnThisPlatform;
+  const flow = useInstallFlow(programId, version, hasPack, settings.data?.onboarding.applySetup ?? true, modelId);
   const { stage } = flow;
   const name = program?.name ?? stage_plan_name(stage) ?? programId;
-  const isUpdate = stage.kind !== "loading" && stage.kind !== "error" ? ("plan" in stage ? stage.plan.replaces !== null : false) : false;
+  const isUpdate =
+    stage.kind !== "loading" && stage.kind !== "error"
+      ? "plan" in stage
+        ? stage.plan.replaces !== null
+        : false
+      : false;
 
   const running = stage.kind === "running";
-  const title = stage.kind === "done" ? i.doneTitle(stage.plan.programName, stage.plan.version) : isUpdate ? i.titleUpdate(name) : i.title(name);
+  const title =
+    stage.kind === "done"
+      ? i.doneTitle(stage.plan.programName, stage.plan.version)
+      : isUpdate
+        ? i.titleUpdate(name)
+        : i.title(name);
 
   const changeTarget = () => {
     void call("settings_choose_dir", { req: { which: "programsDir" } }).then(() => flow.reload());
   };
   const launch = () => {
-    void call("program_launch", { req: { programId } }).catch(() => undefined);
+    if (!modelId) void call("program_launch", { req: { programId } }).catch(() => undefined);
     close();
   };
   const primary = (): void => {
     if (stage.kind === "review") flow.start();
     else if (stage.kind === "done") launch();
     else if (stage.kind === "error") {
-      if (stage.error.kind === "planExpired" || stage.error.kind === "consentMismatch" || stage.error.kind === "busy" || stage.error.kind === "cancelled" || stage.error.kind === "network" || stage.error.kind === "checksumMismatch") flow.reload();
+      if (
+        stage.error.kind === "planExpired" ||
+        stage.error.kind === "consentMismatch" ||
+        stage.error.kind === "busy" ||
+        stage.error.kind === "cancelled" ||
+        stage.error.kind === "network" ||
+        stage.error.kind === "checksumMismatch"
+      )
+        flow.reload();
     }
   };
   const onKeyDown = (e: KeyboardEvent<HTMLDialogElement>) => {
@@ -367,10 +528,13 @@ function InstallDialog({ programId, version }: { programId: string; version: str
       primary();
     }
   };
-  const staleNote = program && program.latest && stage.kind === "review" && stage.plan.version !== program.latest.version ? i.errors.stale(program.name, program.latest.version, stage.plan.version) : null;
+  const staleNote =
+    program && program.latest && stage.kind === "review" && stage.plan.version !== program.latest.version
+      ? i.errors.stale(program.name, program.latest.version, stage.plan.version)
+      : null;
 
-  let body = null;
-  let footer = null;
+  let body: ReactNode;
+  let footer: ReactNode;
   if (stage.kind === "loading") {
     body = (
       <p className="t-read" role="status">
@@ -379,7 +543,17 @@ function InstallDialog({ programId, version }: { programId: string; version: str
     );
     footer = <Button onClick={close}>{t.common.cancel}</Button>;
   } else if (stage.kind === "review") {
-    body = <ReviewBody plan={stage.plan} applySetup={flow.applySetup} onApplySetup={flow.setApplySetup} hasPack={hasPack} releasedAt={program?.latest?.releasedAt ?? null} onChangeTarget={changeTarget} stale={staleNote} />;
+    body = (
+      <ReviewBody
+        plan={stage.plan}
+        applySetup={flow.applySetup}
+        onApplySetup={flow.setApplySetup}
+        hasPack={hasPack}
+        releasedAt={program?.latest?.releasedAt ?? null}
+        onChangeTarget={changeTarget}
+        stale={staleNote}
+      />
+    );
     footer = (
       <>
         <Button onClick={close}>{i.cancel}</Button>
@@ -400,7 +574,11 @@ function InstallDialog({ programId, version }: { programId: string; version: str
         <Button onClick={close} data-testid="install-background">
           {i.background}
         </Button>
-        <Button onClick={flow.cancel} disabled={stage.progress.cancelling || stage.progress.jobId === null} data-testid="install-cancel">
+        <Button
+          onClick={flow.cancel}
+          disabled={stage.progress.cancelling || stage.progress.jobId === null}
+          data-testid="install-cancel"
+        >
           {stage.progress.cancelling ? i.cancelling : i.cancel}
         </Button>
       </>
@@ -414,7 +592,17 @@ function InstallDialog({ programId, version }: { programId: string; version: str
           {i.doneSub}
         </p>
         <PhaseList
-          progress={{ phase: null, download: { done: done.plan.artifact.size, total: done.plan.artifact.size, rate: 0 }, extract: { done: 0, total: null }, verified: true, verifiedSha: done.plan.artifact.sha256, setup: done.setupCount > 0 || done.setupNeedsYou ? (done.setupNeedsYou ? "needsYou" : "done") : "off", setupCount: done.setupCount, cancelling: false, jobId: null }}
+          progress={{
+            phase: null,
+            download: { done: done.plan.artifact.size, total: done.plan.artifact.size, rate: 0 },
+            extract: { done: 0, total: null },
+            verified: true,
+            verifiedSha: done.plan.artifact.sha256,
+            setup: done.setupCount > 0 || done.setupNeedsYou ? (done.setupNeedsYou ? "needsYou" : "done") : "off",
+            setupCount: done.setupCount,
+            cancelling: false,
+            jobId: null,
+          }}
           allDone
           plan={done.plan}
         />
@@ -438,7 +626,7 @@ function InstallDialog({ programId, version }: { programId: string; version: str
           {i.close}
         </Button>
         <Button variant="action" combo="mod+enter" onClick={launch} data-testid="install-launch">
-          {i.launchAfter(done.plan.programName)}
+          {modelId ? i.close : i.launchAfter(done.plan.programName)}
         </Button>
       </>
     );
@@ -479,7 +667,13 @@ function InstallDialog({ programId, version }: { programId: string; version: str
             {i.errors.expiredPlan.again}
           </Button>
         ) : null}
-        {kind !== "network" && kind !== "checksumMismatch" && kind !== "diskFull" && kind !== "busy" && kind !== "cancelled" && kind !== "planExpired" && kind !== "consentMismatch" ? (
+        {kind !== "network" &&
+        kind !== "checksumMismatch" &&
+        kind !== "diskFull" &&
+        kind !== "busy" &&
+        kind !== "cancelled" &&
+        kind !== "planExpired" &&
+        kind !== "consentMismatch" ? (
           <Button variant="action" onClick={flow.reload}>
             {i.errors.generic.retry}
           </Button>
@@ -489,12 +683,22 @@ function InstallDialog({ programId, version }: { programId: string; version: str
   }
 
   return (
-    <Dialog open title={title} onClose={close} dismissible={!running} testId="install-dialog" footer={footer} onKeyDown={onKeyDown}>
+    <Dialog
+      open
+      title={title}
+      onClose={close}
+      dismissible={!running}
+      testId="install-dialog"
+      footer={footer}
+      onKeyDown={onKeyDown}
+    >
       {body}
     </Dialog>
   );
 }
 
 function stage_plan_name(stage: { kind: string }): string | null {
-  return "plan" in stage && stage.plan && typeof (stage.plan as InstallPlan).programName === "string" ? (stage.plan as InstallPlan).programName : null;
+  return "plan" in stage && stage.plan && typeof (stage.plan as InstallPlan).programName === "string"
+    ? (stage.plan as InstallPlan).programName
+    : null;
 }

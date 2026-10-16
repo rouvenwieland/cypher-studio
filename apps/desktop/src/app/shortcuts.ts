@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { call } from "../ipc/commands";
@@ -10,11 +10,14 @@ import { useMainAction, useUi } from "./stores";
 import { useSettings } from "./theme";
 
 const REGION_SELECTOR = "[data-region]";
-const FOCUSABLE = 'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+const FOCUSABLE =
+  'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 /** F6: nächster Bereich in Lesereihenfolge (Rail → Vorschau → Messung → Ausgang), Umschalt+F6 rückwärts. */
 export function cycleRegion(back: boolean): void {
-  const regions = [...document.querySelectorAll<HTMLElement>(REGION_SELECTOR)].filter((el) => el.offsetParent !== null || el.getClientRects().length > 0);
+  const regions = [...document.querySelectorAll<HTMLElement>(REGION_SELECTOR)].filter(
+    (el) => el.offsetParent !== null || el.getClientRects().length > 0,
+  );
   if (regions.length === 0) return;
   const active = document.activeElement;
   let index = regions.findIndex((r) => r === active || r.contains(active));
@@ -30,17 +33,42 @@ export function useGlobalShortcuts(): void {
   const qc = useQueryClient();
   const settings = useSettings();
   const zoom = settings.data?.ui.zoomPercent ?? 100;
+  // Schnelles Wiederholen von Strg + / Strg - darf keine Schritte verlieren: Der Zielwert läuft der Abfrage voraus.
+  const target = useRef(zoom);
+  const pending = useRef(0);
+  useEffect(() => {
+    if (pending.current === 0) target.current = zoom;
+  }, [zoom]);
 
   useEffect(() => {
     const mac = isMacPlatform();
     const setZoom = (value: number) => {
-      void call("settings_update", { req: { ui: { zoomPercent: clamp(value, 50, 200) } } }).then(() => qc.invalidateQueries({ queryKey: ["settings_get"] }));
+      target.current = clamp(value, 50, 200);
+      pending.current += 1;
+      void call("settings_update", { req: { ui: { zoomPercent: target.current } } })
+        .then(() => qc.invalidateQueries({ queryKey: ["settings_get"] }))
+        .finally(() => {
+          pending.current -= 1;
+        });
     };
     const onKey = (e: KeyboardEvent) => {
       if (e.defaultPrevented || e.isComposing) return;
       // Im Erststart (Vollfenster ohne Rail) gelten nur Hilfe, Fokuswechsel, Zoom und die Hauptaktion
       const intro = window.location.hash.startsWith("#/erststart");
-      if (intro && !(e.key === "F6" || e.key === "F1" || e.key === "?" || matchesCombo(e, "mod+enter", mac) || matchesCombo(e, "mod+=", mac) || matchesCombo(e, "mod+plus", mac) || matchesCombo(e, "mod+-", mac) || matchesCombo(e, "mod+0", mac))) return;
+      if (
+        intro &&
+        !(
+          e.key === "F6" ||
+          e.key === "F1" ||
+          e.key === "?" ||
+          matchesCombo(e, "mod+enter", mac) ||
+          matchesCombo(e, "mod+=", mac) ||
+          matchesCombo(e, "mod+plus", mac) ||
+          matchesCombo(e, "mod+-", mac) ||
+          matchesCombo(e, "mod+0", mac)
+        )
+      )
+        return;
       for (const m of MODULES) {
         if (matchesCombo(e, `mod+${m.digit}`, mac)) {
           e.preventDefault();
@@ -73,10 +101,10 @@ export function useGlobalShortcuts(): void {
         window.dispatchEvent(new CustomEvent("cypher:open-file"));
       } else if (matchesCombo(e, "mod+=", mac) || matchesCombo(e, "mod+plus", mac)) {
         e.preventDefault();
-        setZoom(zoom + 10);
+        setZoom(target.current + 10);
       } else if (matchesCombo(e, "mod+-", mac)) {
         e.preventDefault();
-        setZoom(zoom - 10);
+        setZoom(target.current - 10);
       } else if (matchesCombo(e, "mod+0", mac)) {
         e.preventDefault();
         setZoom(100);
@@ -90,5 +118,5 @@ export function useGlobalShortcuts(): void {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [navigate, qc, zoom]);
+  }, [navigate, qc]);
 }

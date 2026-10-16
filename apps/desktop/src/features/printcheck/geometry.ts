@@ -11,7 +11,13 @@ export interface Placement {
   topMm: number;
 }
 
-export function placeMotif(area: Size, plannedWidthMm: number, plannedHeightMm: number, offsetTopMm: number, offsetCenterMm: number): Placement {
+export function placeMotif(
+  area: Size,
+  plannedWidthMm: number,
+  plannedHeightMm: number,
+  offsetTopMm: number,
+  offsetCenterMm: number,
+): Placement {
   return {
     widthMm: plannedWidthMm,
     heightMm: plannedHeightMm,

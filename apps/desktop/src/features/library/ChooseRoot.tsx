@@ -47,7 +47,9 @@ export function useChooseRoot(onDone?: () => void) {
   const use = () => {
     if (!candidate) return;
     setBusy(true);
-    call("library_use_root", { req: { candidateId: candidate.candidateId, initialize: initialize || !candidate.initialized } })
+    call("library_use_root", {
+      req: { candidateId: candidate.candidateId, initialize: initialize || !candidate.initialized },
+    })
       .then(async () => {
         await qc.invalidateQueries();
         push({ kind: "info", text: c.done(candidate.path) });
@@ -67,7 +69,19 @@ export function useChooseRoot(onDone?: () => void) {
       footer={
         <>
           <Button onClick={() => setCandidate(null)}>{t.common.cancel}</Button>
-          <Button variant="action" combo="mod+enter" onClick={use} disabled={busy || (candidate?.problems.some((p) => p === "notWritable" || p === "insideAppData" || p === "systemDirectory") ?? false)} data-testid="choose-root-use">
+          <Button
+            variant="action"
+            combo="mod+enter"
+            onClick={use}
+            disabled={
+              busy ||
+              (candidate?.problems.some(
+                (p) => p === "notWritable" || p === "insideAppData" || p === "systemDirectory",
+              ) ??
+                false)
+            }
+            data-testid="choose-root-use"
+          >
             {c.use}
           </Button>
         </>
@@ -82,7 +96,9 @@ export function useChooseRoot(onDone?: () => void) {
       {candidate ? (
         <div className="stack stack--loose">
           <p className="t-data selectable">{candidate.path}</p>
-          <p className="t-section">{c.summary(fmtCount(candidate.fileCount), fmtBytes(candidate.totalBytes), fmtCount(candidate.projectCount))}</p>
+          <p className="t-section">
+            {c.summary(fmtCount(candidate.fileCount), fmtBytes(candidate.totalBytes), fmtCount(candidate.projectCount))}
+          </p>
           <p className="t-meta">{c.sync(candidate.syncTool)}</p>
           {candidate.problems.map((p) => (
             <Notice key={p} kind={p === "veryLarge" ? "warn" : "error"} title={c.problems[p]} />
@@ -92,7 +108,11 @@ export function useChooseRoot(onDone?: () => void) {
               {c.initialize}
             </Checkbox>
           ) : null}
-          {error ? <Notice kind="error" title={errorText(error).title}>{errorText(error).text}</Notice> : null}
+          {error ? (
+            <Notice kind="error" title={errorText(error).title}>
+              {errorText(error).text}
+            </Notice>
+          ) : null}
           <p className="t-meta t-mute">{c.hint}</p>
         </div>
       ) : null}

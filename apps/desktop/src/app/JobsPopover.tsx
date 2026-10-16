@@ -29,7 +29,12 @@ function ActiveRow({ job }: { job: JobInfo }) {
       <div className="jobs__head">
         <strong className="t-strong">{jobLabel(job)}</strong>
         {job.cancellable ? (
-          <Button variant="text" small onClick={() => void call("job_cancel", { req: { jobId: job.id } })} aria-label={`${t.jobs.cancel}: ${jobLabel(job)}`}>
+          <Button
+            variant="text"
+            small
+            onClick={() => void call("job_cancel", { req: { jobId: job.id } })}
+            aria-label={`${t.jobs.cancel}: ${jobLabel(job)}`}
+          >
             {t.jobs.cancel}
           </Button>
         ) : null}
@@ -65,7 +70,17 @@ function RecentRow({ rec }: { rec: JobRecord }) {
   );
 }
 
-export function JobsPopover({ narrow, lamp, count, icon: Icon }: { narrow: boolean; lamp: Lamp; count: number; icon: IconComponent }) {
+export function JobsPopover({
+  narrow,
+  lamp,
+  count,
+  icon: Icon,
+}: {
+  narrow: boolean;
+  lamp: Lamp;
+  count: number;
+  icon: IconComponent;
+}) {
   const open = useUi((s) => s.jobsOpen);
   const setOpen = useUi((s) => s.setJobs);
   const active = useJobs((s) => s.active);
@@ -90,7 +105,13 @@ export function JobsPopover({ narrow, lamp, count, icon: Icon }: { narrow: boole
       }}
     >
       <Popover.Trigger asChild>
-        <button type="button" className="rail__item" aria-label={narrow ? `${t.nav.jobs}, ${lampWord(lamp)}` : undefined} data-testid="nav-jobs" aria-keyshortcuts="Control+J">
+        <button
+          type="button"
+          className="rail__item"
+          aria-label={narrow ? `${t.nav.jobs}, ${lampWord(lamp)}` : undefined}
+          data-testid="nav-jobs"
+          aria-keyshortcuts="Control+J"
+        >
           <span className={`lamp lamp--${lamp}`} aria-hidden="true">
             <Icon size={20} />
           </span>
@@ -103,7 +124,15 @@ export function JobsPopover({ narrow, lamp, count, icon: Icon }: { narrow: boole
         </button>
       </Popover.Trigger>
       <Popover.Portal>
-        <Popover.Content className="pop jobs" side="right" align="end" sideOffset={8} collisionPadding={8} aria-label={t.jobs.popoverLabel} data-testid="jobs-popover">
+        <Popover.Content
+          className="pop jobs"
+          side="right"
+          align="end"
+          sideOffset={8}
+          collisionPadding={8}
+          aria-label={t.jobs.popoverLabel}
+          data-testid="jobs-popover"
+        >
           <h2 className="t-label jobs__title">{t.jobs.active}</h2>
           {active.length === 0 ? (
             <p className="t-meta t-mute jobs__empty">{t.jobs.none}</p>

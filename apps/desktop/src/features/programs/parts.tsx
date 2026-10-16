@@ -23,7 +23,10 @@ export interface ProgramRow {
 export function useProgramRows() {
   const query = useCmd("programs_list", undefined);
   const jobs = useJobs((s) => s.active);
-  const rows = useMemo<ProgramRow[]>(() => (query.data?.programs ?? []).map((program) => ({ program, state: deriveProgramState(program, jobs) })), [query.data, jobs]);
+  const rows = useMemo<ProgramRow[]>(
+    () => (query.data?.programs ?? []).map((program) => ({ program, state: deriveProgramState(program, jobs) })),
+    [query.data, jobs],
+  );
   return { query, rows };
 }
 
@@ -66,9 +69,18 @@ export function useProgramActions() {
           if (state.job) void call("job_cancel", { req: { jobId: state.job.id } });
           return;
         case "launch":
-          void call("program_launch", { req: { programId: program.id, ...(state.installation ? { installationId: state.installation.id } : {}) } })
+          void call("program_launch", {
+            req: { programId: program.id, ...(state.installation ? { installationId: state.installation.id } : {}) },
+          })
             .then(() => push({ kind: "info", text: t.programs.launchedToast(program.name) }))
-            .catch((e: unknown) => push({ kind: "error", text: isAppError(e) ? `${t.programs.launchFailed(program.name)} ${errorText(e).text}` : t.programs.launchFailed(program.name) }));
+            .catch((e: unknown) =>
+              push({
+                kind: "error",
+                text: isAppError(e)
+                  ? `${t.programs.launchFailed(program.name)} ${errorText(e).text}`
+                  : t.programs.launchFailed(program.name),
+              }),
+            );
           return;
       }
     },
@@ -90,7 +102,9 @@ export function ProgressText({ row }: { row: ProgramRow }) {
   return (
     <span className="prog">
       <span className="t-data">
-        {state.status === "downloading" && total > 0 ? t.programs.progress.of(fmtMegabytes(done), fmtBytes(total)) : t.programs.progress.percent(pct)}
+        {state.status === "downloading" && total > 0
+          ? t.programs.progress.of(fmtMegabytes(done), fmtBytes(total))
+          : t.programs.progress.percent(pct)}
       </span>
       <Bar value={state.progress} label={program.name} valueText={`${statusWord(state.status)} ${pct} %`} thin />
     </span>
@@ -103,14 +117,26 @@ export function StatusCell({ row }: { row: ProgramRow }) {
     return (
       <span className="status status--fg">
         <span className="phase__run" aria-hidden="true" />
-        <span className="status__word">{state.status === "downloading" && state.progress !== null ? t.programs.progress.loadingPct(Math.round((state.progress / 0.7) * 100)) : statusWord(state.status)}</span>
+        <span className="status__word">
+          {state.status === "downloading" && state.progress !== null
+            ? t.programs.progress.loadingPct(Math.round((state.progress / 0.7) * 100))
+            : statusWord(state.status)}
+        </span>
       </span>
     );
   }
   return <Status kind={state.kind}>{statusWord(state.status)}</Status>;
 }
 
-export function RowActionButton({ row, onRun, small }: { row: ProgramRow; onRun: (row: ProgramRow) => void; small?: boolean }) {
+export function RowActionButton({
+  row,
+  onRun,
+  small,
+}: {
+  row: ProgramRow;
+  onRun: (row: ProgramRow) => void;
+  small?: boolean;
+}) {
   const label = actionLabel(row.state.action);
   return (
     <Button

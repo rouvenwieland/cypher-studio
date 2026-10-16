@@ -26,7 +26,11 @@ export const useToasts = create<ToastState>((set, get) => ({
     const id = ++toastId;
     set((s) => ({ toasts: [...s.toasts.slice(-2), { ...toast, id }] }));
     // Fehler bleiben bis zum Schließen, Info 6 s (CONCEPT.md 4 „Meldungen“)
-    if (toast.kind === "info") toastTimers.set(id, setTimeout(() => get().dismiss(id), 6000));
+    if (toast.kind === "info")
+      toastTimers.set(
+        id,
+        setTimeout(() => get().dismiss(id), 6000),
+      );
     return id;
   },
   dismiss: (id) => {

@@ -9,7 +9,18 @@ import type {
   InstallStartReq,
 } from "@contract";
 import { now, nowIso } from "../../lib/clock";
-import { db, finishJob, iso, makeInstallation, newId, progressJob, sleepScaled, startJob, catalogProgram, type ActiveJob } from "./state";
+import {
+  db,
+  finishJob,
+  iso,
+  makeInstallation,
+  newId,
+  progressJob,
+  sleepScaled,
+  startJob,
+  catalogProgram,
+  type ActiveJob,
+} from "./state";
 import { GIB, MIB, PROGRAMS_DIR, fakeSha } from "./fixtures";
 import { emit } from "@tauri-apps/api/event";
 
@@ -62,7 +73,12 @@ export function makePlan(programId: string, version?: string): InstallPlan {
 }
 
 export function checkConsent(plan: InstallPlan, consent: InstallConsent): void {
-  if (consent.planId !== plan.planId || consent.sha256 !== plan.artifact.sha256 || consent.licenseSpdx !== plan.license.spdx || consent.targetDir !== plan.target.dir) {
+  if (
+    consent.planId !== plan.planId ||
+    consent.sha256 !== plan.artifact.sha256 ||
+    consent.licenseSpdx !== plan.license.spdx ||
+    consent.targetDir !== plan.target.dir
+  ) {
     throw { kind: "consentMismatch", planId: plan.planId } satisfies AppError;
   }
 }
@@ -84,7 +100,8 @@ async function phase(job: ActiveJob, ms: number, from: number, to: number, name:
 export async function runInstall(req: InstallStartReq, onEvent: (event: InstallEvent) => void): Promise<Installation> {
   const plan = db.plans.get(req.planId);
   if (!plan) throw { kind: "planExpired", planId: req.planId } satisfies AppError;
-  if (new Date(plan.expiresAt).getTime() < now().getTime()) throw { kind: "planExpired", planId: req.planId } satisfies AppError;
+  if (new Date(plan.expiresAt).getTime() < now().getTime())
+    throw { kind: "planExpired", planId: req.planId } satisfies AppError;
   checkConsent(plan, req.consent);
   const p = catalogProgram(plan.programId);
   if (!p) throw { kind: "notFound", entity: "program", id: plan.programId } satisfies AppError;
@@ -99,23 +116,38 @@ export async function runInstall(req: InstallStartReq, onEvent: (event: InstallE
     onEvent({ type: "phase", phase: "download" });
     const rate = 14 * MIB;
     let done = 0;
-    const failAt = db.scenario === "installNetworkFail" ? 0.4 : null;
+    const failAt = db.flags.has("installNetworkFail") ? 0.4 : null;
     while (done < total) {
       if (job.cancelled) throw cancelled();
       await sleepScaled(100);
       const chunk = Math.min(total - done, rate * 0.1 * (0.85 + Math.random() * 0.3));
       done += chunk;
-      onEvent({ type: "downloadProgress", downloadedBytes: Math.round(done), totalBytes: total, bytesPerSecond: Math.round(rate) });
+      onEvent({
+        type: "downloadProgress",
+        downloadedBytes: Math.round(done),
+        totalBytes: total,
+        bytesPerSecond: Math.round(rate),
+      });
       progressJob(job, (done / total) * 0.7, "download");
       if (failAt !== null && done / total > failAt) {
-        throw { kind: "network", host: plan.source.host, message: `Verbindung zu ${plan.source.host} abgebrochen bei ${Math.round(done / MIB)} von ${Math.round(total / MIB)} MB`, retryable: true } satisfies AppError;
+        throw {
+          kind: "network",
+          host: plan.source.host,
+          message: `Verbindung zu ${plan.source.host} abgebrochen bei ${Math.round(done / MIB)} von ${Math.round(total / MIB)} MB`,
+          retryable: true,
+        } satisfies AppError;
       }
     }
     onEvent({ type: "phase", phase: "verifyChecksum" });
     await phase(job, 900, 0.7, 0.78, "verifyChecksum");
-    if (db.scenario === "installChecksumFail") {
+    if (db.flags.has("installChecksumFail")) {
       const actual = fakeSha(`manipuliert-${plan.artifact.sha256}`);
-      throw { kind: "checksumMismatch", file: plan.artifact.fileName, expected: plan.artifact.sha256, actual: actual.slice(0, 20) + plan.artifact.sha256.slice(20, 44) + actual.slice(44) } satisfies AppError;
+      throw {
+        kind: "checksumMismatch",
+        file: plan.artifact.fileName,
+        expected: plan.artifact.sha256,
+        actual: actual.slice(0, 20) + plan.artifact.sha256.slice(20, 44) + actual.slice(44),
+      } satisfies AppError;
     }
     onEvent({ type: "verified", sha256: plan.artifact.sha256, signatureChecked: false });
     onEvent({ type: "phase", phase: "extract" });
@@ -123,7 +155,12 @@ export async function runInstall(req: InstallStartReq, onEvent: (event: InstallE
     for (let i = 1; i <= 12; i++) {
       if (job.cancelled) throw cancelled();
       await sleepScaled(110);
-      onEvent({ type: "extractProgress", entriesDone: Math.round((entries * i) / 12), entriesTotal: entries, bytesWritten: Math.round((p.unpackedSize * i) / 12) });
+      onEvent({
+        type: "extractProgress",
+        entriesDone: Math.round((entries * i) / 12),
+        entriesTotal: entries,
+        bytesWritten: Math.round((p.unpackedSize * i) / 12),
+      });
       progressJob(job, 0.78 + (0.16 * i) / 12, "extract");
     }
     onEvent({ type: "phase", phase: "checkContent" });
@@ -138,7 +175,9 @@ export async function runInstall(req: InstallStartReq, onEvent: (event: InstallE
     // nach Aktualisierung: bisherige Einrichtung bleibt, Bausteine werden „veraltet“
     if (plan.replaces) {
       const st = db.setup[p.pack.packId];
-      if (st) for (const id of Object.keys(st.components)) if (st.components[id] === "current") st.components[id] = "outdated";
+      if (st)
+        for (const id of Object.keys(st.components))
+          if (st.components[id] === "current") st.components[id] = "outdated";
     }
     onEvent({ type: "finished", installation });
     finishJob(job, "succeeded", null, { kind: "installation", installationId: installation.id });
@@ -146,8 +185,15 @@ export async function runInstall(req: InstallStartReq, onEvent: (event: InstallE
     return installation;
   } catch (error) {
     const isErr = typeof error === "object" && error !== null && "kind" in error;
-    const appError: AppError = isErr ? (error as AppError) : { kind: "internal", message: "Unbekannter Fehler in der Simulation", correlationId: "mock" };
-    finishJob(job, appError.kind === "cancelled" ? "cancelled" : "failed", appError.kind === "cancelled" ? null : appError, { kind: "none" });
+    const appError: AppError = isErr
+      ? (error as AppError)
+      : { kind: "internal", message: "Unbekannter Fehler in der Simulation", correlationId: "mock" };
+    finishJob(
+      job,
+      appError.kind === "cancelled" ? "cancelled" : "failed",
+      appError.kind === "cancelled" ? null : appError,
+      { kind: "none" },
+    );
     throw appError;
   }
 }

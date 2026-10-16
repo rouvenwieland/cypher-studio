@@ -1,5 +1,13 @@
 import { useState } from "react";
-import type { Finding, GarmentColor, PrintExportOptions, PrintProfile, PrintReport, PrintTechnique, Project } from "@contract";
+import type {
+  Finding,
+  GarmentColor,
+  PrintExportOptions,
+  PrintProfile,
+  PrintReport,
+  PrintTechnique,
+  Project,
+} from "@contract";
 import { findingText } from "../../i18n/findings";
 import { fmtNumber } from "../../i18n/format";
 import { t } from "../../i18n/de";
@@ -42,7 +50,17 @@ function stateWord(s: CheckState): string {
 }
 
 /** Urteil: Statusfläche über die ganze Breite (Form + Wort + Zählung). */
-export function VerdictBlock({ report, checks, hasFile, loading }: { report: PrintReport | undefined; checks: CheckResult[]; hasFile: boolean; loading: boolean }) {
+export function VerdictBlock({
+  report,
+  checks,
+  hasFile,
+  loading,
+}: {
+  report: PrintReport | undefined;
+  checks: CheckResult[];
+  hasFile: boolean;
+  loading: boolean;
+}) {
   if (!hasFile) return <Verdict kind="open" word={p.verdict.none} testId="verdict" />;
   if (!report || loading) {
     return <Verdict kind="open" word={p.verdict.pending} count={p.report.loading} testId="verdict" />;
@@ -50,11 +68,22 @@ export function VerdictBlock({ report, checks, hasFile, loading }: { report: Pri
   const sum = summarize(checks);
   const kind = sum.verdict === "ok" ? "ok" : sum.verdict === "warning" ? "warn" : "error";
   const word = sum.verdict === "ok" ? p.verdict.ok : sum.verdict === "warning" ? p.verdict.warning : p.verdict.error;
-  const count = sum.verdict === "ok" ? p.verdict.countsOk(sum.satisfied) : p.verdict.counts(sum.warnings, sum.errors, sum.unchecked);
+  const count =
+    sum.verdict === "ok"
+      ? p.verdict.countsOk(sum.satisfied)
+      : p.verdict.counts(sum.warnings, sum.errors, sum.unchecked);
   return <Verdict kind={kind} word={word} count={count} testId="verdict" />;
 }
 
-export function GarmentSection({ garments, value, onChange }: { garments: GarmentColor[]; value: string; onChange: (id: string) => void }) {
+export function GarmentSection({
+  garments,
+  value,
+  onChange,
+}: {
+  garments: GarmentColor[];
+  value: string;
+  onChange: (id: string) => void;
+}) {
   const current = garments.find((g) => g.id === value);
   return (
     <div className="stack">
@@ -122,7 +151,7 @@ export function SizeSection({
               onBlur={() => setText(String(Math.round(widthMm * 10) / 10).replace(".", ","))}
               data-testid="print-width"
             />
-            <span className="input-group__unit">mm</span>
+            <span className="input-group__unit">{t.common.unitMm}</span>
           </div>
         </Field>
         <div className="size-dpi t-data" data-testid="print-dpi">
@@ -133,8 +162,18 @@ export function SizeSection({
           )}
         </div>
       </div>
-      <Slider value={widthMm} min={20} max={Math.round(profile.printAreaMm.width)} step={1} onChange={onWidth} label={p.size.slider} valueText={`${Math.round(widthMm)} mm`} />
-      {report && report.placement.maxWidthMmAtTargetDpi > 0 ? <p className="t-meta t-mute">{p.size.maxHint(Math.floor(report.placement.maxWidthMmAtTargetDpi))}</p> : null}
+      <Slider
+        value={widthMm}
+        min={20}
+        max={Math.round(profile.printAreaMm.width)}
+        step={1}
+        onChange={onWidth}
+        label={p.size.slider}
+        valueText={`${Math.round(widthMm)} mm`}
+      />
+      {report && report.placement.maxWidthMmAtTargetDpi > 0 ? (
+        <p className="t-meta t-mute">{p.size.maxHint(Math.floor(report.placement.maxWidthMmAtTargetDpi))}</p>
+      ) : null}
       {profile.widthPresets.length > 0 ? (
         <Field label={p.size.placement}>
           <Segmented
@@ -149,7 +188,12 @@ export function SizeSection({
         </Field>
       ) : null}
       <Field label={p.size.technique}>
-        <Segmented label={p.size.technique} value={technique} onChange={onTechnique} options={profile.techniques.map((x) => ({ value: x, label: p.size.techniques[x] }))} />
+        <Segmented
+          label={p.size.technique}
+          value={technique}
+          onChange={onTechnique}
+          options={profile.techniques.map((x) => ({ value: x, label: p.size.techniques[x] }))}
+        />
       </Field>
       <p className="t-meta t-mute">{p.size.techniqueHelp}</p>
       <Field label={p.size.offsetTop} htmlFor="print-offset-top">
@@ -164,7 +208,7 @@ export function SizeSection({
               if (Number.isFinite(n)) onOffsetTop(Math.max(0, Math.min(profile.printAreaMm.height, n)));
             }}
           />
-          <span className="input-group__unit">mm</span>
+          <span className="input-group__unit">{t.common.unitMm}</span>
         </div>
       </Field>
     </div>
@@ -209,7 +253,9 @@ function CheckRow({
       {expanded ? (
         <div className="rrow__more">
           {check.notCheckedWhy ? <p className="t-meta">{check.notCheckedWhy}</p> : null}
-          {check.findings.length === 0 && !check.notCheckedWhy ? <p className="t-meta t-mute">{stateWord("ok")}</p> : null}
+          {check.findings.length === 0 && !check.notCheckedWhy ? (
+            <p className="t-meta t-mute">{stateWord("ok")}</p>
+          ) : null}
           {check.findings.map((f, i) => {
             const msg = findingText(f);
             return (
@@ -302,7 +348,13 @@ export function ReportSection({
       </ul>
       {ok.length > 0 ? (
         <div>
-          <button type="button" className="linkbtn rlist__ok" aria-expanded={showOk} onClick={() => setShowOk(!showOk)} data-testid="show-ok">
+          <button
+            type="button"
+            className="linkbtn rlist__ok"
+            aria-expanded={showOk}
+            onClick={() => setShowOk(!showOk)}
+            data-testid="show-ok"
+          >
             {showOk ? <IconDown size={12} /> : <IconRight size={12} />} {p.report.satisfied(ok.length)}
           </button>
           {showOk ? <ul className="rlist">{ok.map(row)}</ul> : null}
@@ -345,13 +397,21 @@ export function ExportSection({
         <p className="t-meta t-mute">{e.modeHelp}</p>
         <fieldset className="exp__fieldset">
           <legend className="t-label">{e.fixes}</legend>
-          <Checkbox checked={options.fixes.cleanGhostPixels} onChange={(v) => onChange({ ...options, fixes: { ...options.fixes, cleanGhostPixels: v } })}>
+          <Checkbox
+            checked={options.fixes.cleanGhostPixels}
+            onChange={(v) => onChange({ ...options, fixes: { ...options.fixes, cleanGhostPixels: v } })}
+          >
             {e.cleanGhost}
           </Checkbox>
           <SelectField
             label={e.semi}
             value={options.fixes.semiTransparency}
-            onChange={(v) => onChange({ ...options, fixes: { ...options.fixes, semiTransparency: v as PrintExportOptions["fixes"]["semiTransparency"] } })}
+            onChange={(v) =>
+              onChange({
+                ...options,
+                fixes: { ...options.fixes, semiTransparency: v as PrintExportOptions["fixes"]["semiTransparency"] },
+              })
+            }
             options={[
               { value: "keep", label: e.semiOptions.keep },
               { value: "threshold", label: e.semiOptions.threshold },
@@ -359,7 +419,10 @@ export function ExportSection({
               { value: "halftone", label: e.semiOptions.halftone, disabled: true },
             ]}
           />
-          <Checkbox checked={options.fixes.nearBlackToPureBlack} onChange={(v) => onChange({ ...options, fixes: { ...options.fixes, nearBlackToPureBlack: v } })}>
+          <Checkbox
+            checked={options.fixes.nearBlackToPureBlack}
+            onChange={(v) => onChange({ ...options, fixes: { ...options.fixes, nearBlackToPureBlack: v } })}
+          >
             {e.nearBlack}
           </Checkbox>
         </fieldset>
@@ -374,7 +437,10 @@ export function ExportSection({
             ]}
           />
         </Field>
-        <Checkbox checked={options.writePlacementJson} onChange={(v) => onChange({ ...options, writePlacementJson: v })}>
+        <Checkbox
+          checked={options.writePlacementJson}
+          onChange={(v) => onChange({ ...options, writePlacementJson: v })}
+        >
           {e.placementJson}
         </Checkbox>
         <Checkbox checked={options.allowUpscale} onChange={(v) => onChange({ ...options, allowUpscale: v })}>
@@ -398,7 +464,9 @@ export function ExportSection({
             { value: "dialog", label: e.destDialog },
           ]}
         />
-        <p className="t-meta t-mute">{fmtNumber(options.plannedWidthMm, 0)} mm</p>
+        <p className="t-meta t-mute">
+          {fmtNumber(options.plannedWidthMm, 0)} {t.common.unitMm}
+        </p>
       </div>
     </details>
   );

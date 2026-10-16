@@ -60,7 +60,10 @@ export interface ComboEvent {
 
 /** Prüft, ob ein Tastaturereignis zur Notation passt. */
 export function matchesCombo(e: ComboEvent, combo: string, mac: boolean = isMacPlatform()): boolean {
-  const parts = combo.toLowerCase().split("+").map((p) => p.trim());
+  const parts = combo
+    .toLowerCase()
+    .split("+")
+    .map((p) => p.trim());
   const key = parts[parts.length - 1] ?? "";
   const wantMod = parts.includes("mod");
   const wantShift = parts.includes("shift");
@@ -68,12 +71,20 @@ export function matchesCombo(e: ComboEvent, combo: string, mac: boolean = isMacP
   const mod = mac ? e.metaKey : e.ctrlKey;
   if (wantMod !== mod) return false;
   if (!mac && e.metaKey) return false;
-  if (wantShift !== e.shiftKey && key.length > 1) return false;
   if (wantAlt !== e.altKey) return false;
-  const pressed = e.key.toLowerCase();
-  const aliases: Record<string, string> = { plus: "+", esc: "escape", space: " ", left: "arrowleft", right: "arrowright", up: "arrowup", down: "arrowdown" };
+  const aliases: Record<string, string> = {
+    plus: "+",
+    esc: "escape",
+    space: " ",
+    left: "arrowleft",
+    right: "arrowright",
+    up: "arrowup",
+    down: "arrowdown",
+  };
   const want = aliases[key] ?? key;
-  return pressed === want;
+  // Umschalt zählt nur bei benannten Tasten (Enter, Pfeile …); bei Zeichen („+“, „?“) steckt es schon im Zeichen
+  if (want.length > 1 && wantShift !== e.shiftKey) return false;
+  return e.key.toLowerCase() === want;
 }
 
 /** Ist das Ziel ein Texteingabefeld? Einzeltasten dürfen dort nie greifen (WCAG 2.1.4). */

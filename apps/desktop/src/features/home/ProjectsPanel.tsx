@@ -65,7 +65,9 @@ export function ProjectsPanel({ onCreate }: { onCreate: () => void }) {
   const header = (
     <div className="panel__head">
       <h2 className="t-section">{s.title}</h2>
-      {status.data?.root ? <span className="t-data t-mute t-trunc selectable">{s.folderLabel(status.data.root)}</span> : null}
+      {status.data?.root ? (
+        <span className="t-data t-mute t-trunc selectable">{s.folderLabel(status.data.root)}</span>
+      ) : null}
     </div>
   );
 
@@ -105,7 +107,12 @@ export function ProjectsPanel({ onCreate }: { onCreate: () => void }) {
   if (projects.isError) {
     const err = projects.error;
     const path = status.data?.root ?? "";
-    const text = err.kind === "permissionDenied" ? s.error.permission(path) : err.kind === "io" ? s.error.unreachable(path) : s.error.generic;
+    const text =
+      err.kind === "permissionDenied"
+        ? s.error.permission(path)
+        : err.kind === "io"
+          ? s.error.unreachable(path)
+          : s.error.generic;
     return (
       <section className="panel" data-testid="projects-error">
         {header}
@@ -114,7 +121,9 @@ export function ProjectsPanel({ onCreate }: { onCreate: () => void }) {
           title={text}
           actions={
             <>
-              <Button onClick={() => void qc.invalidateQueries({ queryKey: ["projects_list"] })}>{s.error.retry}</Button>
+              <Button onClick={() => void qc.invalidateQueries({ queryKey: ["projects_list"] })}>
+                {s.error.retry}
+              </Button>
               <Button onClick={choose.start}>{s.error.other}</Button>
             </>
           }
@@ -142,15 +151,28 @@ export function ProjectsPanel({ onCreate }: { onCreate: () => void }) {
   const total = status.data?.entryCount ?? 0;
 
   const menuFor = (p: Project): MenuEntry[] => [
-    { id: "reveal", label: s.menu.reveal, onSelect: () => void call("app_reveal", { req: { target: { kind: "project", projectId: p.id } } }) },
+    {
+      id: "reveal",
+      label: s.menu.reveal,
+      onSelect: () => void call("app_reveal", { req: { target: { kind: "project", projectId: p.id } } }),
+    },
     ...collections.map((c, idx) => ({
       id: `coll-${c.id}`,
       label: `${s.menu.collection}: ${c.name}`,
       separatorBefore: idx === 0,
       onSelect: () => void call("project_set_collection", { req: { projectId: p.id, collection: c.id } }),
     })),
-    { id: "coll-none", label: `${s.menu.collection}: ${s.noCollection}`, onSelect: () => void call("project_set_collection", { req: { projectId: p.id, collection: null } }) },
-    { id: "forget", label: s.menu.forget, separatorBefore: true, onSelect: () => void call("project_forget", { req: { projectId: p.id } }) },
+    {
+      id: "coll-none",
+      label: `${s.menu.collection}: ${s.noCollection}`,
+      onSelect: () => void call("project_set_collection", { req: { projectId: p.id, collection: null } }),
+    },
+    {
+      id: "forget",
+      label: s.menu.forget,
+      separatorBefore: true,
+      onSelect: () => void call("project_forget", { req: { projectId: p.id } }),
+    },
   ];
 
   return (
@@ -161,13 +183,27 @@ export function ProjectsPanel({ onCreate }: { onCreate: () => void }) {
           {s.scanning(fmtCount(Math.round((scan.progress ?? 0) * total)), fmtCount(total))}
         </p>
       ) : null}
-      <ul className="plist" role="listbox" aria-label={s.listLabel} aria-describedby="projects-hint" {...roving.containerProps} data-testid="projects-list">
+      <ul
+        className="plist"
+        role="grid"
+        aria-label={s.listLabel}
+        aria-describedby="projects-hint"
+        {...roving.containerProps}
+        data-testid="projects-list"
+      >
         {shown.map((p, i) => {
           const coll = collections.find((c) => c.id === p.collection);
           const lastName = p.lastFile?.relPath.split("/").pop() ?? null;
           return (
-            <li key={p.id} role="option" className="prow" {...roving.itemProps(i)} onDoubleClick={() => openProject(p)} data-testid={`project-${p.id}`} aria-label={`${p.name}, ${s.files(p.fileCount)}`}>
-              <div className="prow__main">
+            <li
+              key={p.id}
+              role="row"
+              className="prow"
+              {...roving.itemProps(i)}
+              onDoubleClick={() => openProject(p)}
+              data-testid={`project-${p.id}`}
+            >
+              <div className="prow__main" role="gridcell">
                 <span className="prow__name t-trunc">{p.name}</span>
                 {lastName ? (
                   <span className="prow__last t-meta t-trunc" title={lastName}>
@@ -175,10 +211,21 @@ export function ProjectsPanel({ onCreate }: { onCreate: () => void }) {
                   </span>
                 ) : null}
               </div>
-              <CollectionMark collection={coll} />
-              <span className="t-data prow__count">{s.files(p.fileCount)}</span>
-              <span className="t-data prow__time">{fmtRelative(p.updatedAt)}</span>
-              <span className="prow__menu" onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
+              <div role="gridcell">
+                <CollectionMark collection={coll} />
+              </div>
+              <span className="t-data prow__count" role="gridcell">
+                {s.files(p.fileCount)}
+              </span>
+              <span className="t-data prow__time" role="gridcell">
+                {fmtRelative(p.updatedAt)}
+              </span>
+              <span
+                className="prow__menu"
+                role="gridcell"
+                onClick={(e) => e.stopPropagation()}
+                onKeyDown={(e) => e.stopPropagation()}
+              >
                 <ActionMenu entries={menuFor(p)} label={`${t.common.more}: ${p.name}`} />
               </span>
             </li>
@@ -201,5 +248,7 @@ export function ProjectsPanel({ onCreate }: { onCreate: () => void }) {
 }
 
 function toApp(e: unknown) {
-  return e && typeof e === "object" && "kind" in e ? (e as Parameters<typeof errorText>[0]) : ({ kind: "internal", message: "Unbekannter Fehler", correlationId: "unbekannt" } as const);
+  return e && typeof e === "object" && "kind" in e
+    ? (e as Parameters<typeof errorText>[0])
+    : ({ kind: "internal", message: "Unbekannter Fehler", correlationId: "unbekannt" } as const);
 }

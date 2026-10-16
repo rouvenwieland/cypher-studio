@@ -89,6 +89,14 @@
   border-top: var(--hair) solid var(--line);
 }
 
+.board__links li {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--s-1);
+  padding: var(--s-2) 0;
+}
+
 /* Detail */
 .detail {
   display: flex;

@@ -1,4 +1,11 @@
-import { keepPreviousData, useMutation, useQuery, useQueryClient, type UseMutationResult, type UseQueryResult } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type UseMutationResult,
+  type UseQueryResult,
+} from "@tanstack/react-query";
 import type { AppError, CommandArgs, CommandName, CommandResult } from "@contract";
 import { call } from "./commands";
 
@@ -18,12 +25,19 @@ export function queryKey(cmd: CommandName, args?: unknown): readonly unknown[] {
   return args === undefined ? [cmd] : [cmd, args];
 }
 
-export function useCmd<K extends CommandName>(cmd: K, args: ArgsOrUndefined<K>, options: QueryOptions = {}): UseQueryResult<CommandResult<K>, AppError> {
+export function useCmd<K extends CommandName>(
+  cmd: K,
+  args: ArgsOrUndefined<K>,
+  options: QueryOptions = {},
+): UseQueryResult<CommandResult<K>, AppError> {
   const { keepPrevious, ...rest } = options;
   return useQuery<CommandResult<K>, AppError>({
     queryKey: queryKey(cmd, args),
     ...(keepPrevious ? { placeholderData: keepPreviousData } : {}),
-    queryFn: () => (args === undefined ? (call as (c: K) => Promise<CommandResult<K>>)(cmd) : (call as (c: K, a: unknown) => Promise<CommandResult<K>>)(cmd, args)),
+    queryFn: () =>
+      args === undefined
+        ? (call as (c: K) => Promise<CommandResult<K>>)(cmd)
+        : (call as (c: K, a: unknown) => Promise<CommandResult<K>>)(cmd, args),
     ...rest,
   });
 }
@@ -35,7 +49,10 @@ export function useCmdMutation<K extends CommandName>(
 ): UseMutationResult<CommandResult<K>, AppError, ArgsOrUndefined<K>> {
   const qc = useQueryClient();
   return useMutation<CommandResult<K>, AppError, ArgsOrUndefined<K>>({
-    mutationFn: (args) => (args === undefined ? (call as (c: K) => Promise<CommandResult<K>>)(cmd) : (call as (c: K, a: unknown) => Promise<CommandResult<K>>)(cmd, args)),
+    mutationFn: (args) =>
+      args === undefined
+        ? (call as (c: K) => Promise<CommandResult<K>>)(cmd)
+        : (call as (c: K, a: unknown) => Promise<CommandResult<K>>)(cmd, args),
     onSettled: () => {
       for (const name of invalidate) void qc.invalidateQueries({ queryKey: [name] });
     },

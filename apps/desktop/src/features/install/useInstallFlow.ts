@@ -28,7 +28,7 @@ export type Stage =
   | { kind: "loading" }
   | { kind: "review"; plan: InstallPlan }
   | { kind: "running"; plan: InstallPlan; progress: RunProgress }
-  | { kind: "done"; plan: InstallPlan; installation: Installation; setupCount: number; setupNeedsYou: boolean }
+  | { kind: "done"; plan: InstallPlan; installation: Installation | null; setupCount: number; setupNeedsYou: boolean }
   | { kind: "error"; plan: InstallPlan | null; error: AppError; progress: RunProgress | null };
 
 const EMPTY: RunProgress = {
@@ -52,7 +52,13 @@ export interface InstallFlow {
   reload: () => void;
 }
 
-export function useInstallFlow(programId: string, version: string | undefined, hasPack: boolean, defaultApplySetup: boolean): InstallFlow {
+export function useInstallFlow(
+  programId: string,
+  version: string | undefined,
+  hasPack: boolean,
+  defaultApplySetup: boolean,
+  modelId?: string,
+): InstallFlow {
   const qc = useQueryClient();
   const [stage, setStage] = useState<Stage>({ kind: "loading" });
   const [applySetup, setApplySetup] = useState(defaultApplySetup && hasPack);
@@ -63,7 +69,10 @@ export function useInstallFlow(programId: string, version: string | undefined, h
   const loadPlan = useCallback(() => {
     const gen = ++generation.current;
     setStage({ kind: "loading" });
-    call("install_preview", { req: { programId, ...(version ? { version } : {}) } })
+    (modelId
+      ? call("bgremove_model_preview", { req: { modelId } })
+      : call("install_preview", { req: { programId, ...(version ? { version } : {}) } })
+    )
       .then((plan) => {
         if (gen !== generation.current) return;
         planRef.current = plan;
@@ -74,7 +83,7 @@ export function useInstallFlow(programId: string, version: string | undefined, h
         planRef.current = null;
         setStage({ kind: "error", plan: null, error: toAppError(e), progress: null });
       });
-  }, [programId, version]);
+  }, [programId, version, modelId]);
 
   useEffect(() => {
     loadPlan();
@@ -129,20 +138,31 @@ export function useInstallFlow(programId: string, version: string | undefined, h
   const start = useCallback(() => {
     const plan = planRef.current;
     if (!plan) return;
-    progressRef.current = { ...EMPTY, setup: applySetup ? "pending" : "off", download: { done: 0, total: plan.artifact.size, rate: 0 } };
+    progressRef.current = {
+      ...EMPTY,
+      setup: applySetup ? "pending" : "off",
+      download: { done: 0, total: plan.artifact.size, rate: 0 },
+    };
     setStage({ kind: "running", plan, progress: progressRef.current });
-    call("install_start", {
-      req: {
+    const req = {
+      planId: plan.planId,
+      consent: {
         planId: plan.planId,
-        consent: { planId: plan.planId, sha256: plan.artifact.sha256, licenseSpdx: plan.license.spdx, targetDir: plan.target.dir, acceptedAt: nowIso() },
+        sha256: plan.artifact.sha256,
+        licenseSpdx: plan.license.spdx,
+        targetDir: plan.target.dir,
+        acceptedAt: nowIso(),
       },
-      onEvent: channel(handleEvent),
-    })
+    };
+    const run: Promise<Installation | null> = modelId
+      ? call("bgremove_model_install", { req, onEvent: channel<InstallEvent>(handleEvent) }).then(() => null)
+      : call("install_start", { req, onEvent: channel<InstallEvent>(handleEvent) });
+    run
       .then(async (installation) => {
         patch((p) => ({ ...p, phase: "register" }));
         let setupCount = 0;
         let setupNeedsYou = false;
-        if (applySetup) {
+        if (applySetup && installation) {
           try {
             const r = await runSetup(installation, plan);
             setupCount = r.count;
@@ -151,7 +171,7 @@ export function useInstallFlow(programId: string, version: string | undefined, h
             setupNeedsYou = true;
           }
         }
-        void qc.invalidateQueries({ queryKey: ["programs_list"] });
+        void qc.invalidateQueries({ queryKey: [modelId ? "bgremove_status" : "programs_list"] });
         setStage({ kind: "done", plan, installation, setupCount, setupNeedsYou });
         const id = progressRef.current.jobId;
         if (id) setTimeout(() => useJobs.getState().unwatch(id), 1500);
@@ -163,7 +183,7 @@ export function useInstallFlow(programId: string, version: string | undefined, h
         setStage({ kind: "error", plan, error, progress: progressRef.current });
         void qc.invalidateQueries({ queryKey: ["programs_list"] });
       });
-  }, [applySetup, handleEvent, patch, qc, runSetup]);
+  }, [applySetup, handleEvent, patch, qc, runSetup, modelId]);
 
   const cancel = useCallback(() => {
     const id = progressRef.current.jobId;

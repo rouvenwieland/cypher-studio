@@ -4,15 +4,30 @@ import { GlyphError, GlyphInfo, GlyphOk, GlyphWarn } from "./icons";
 export interface MzItem {
   label: string;
   value: ReactNode;
+  /** Beginnt eine neue Zeile (lange Werte wie Pfade), ohne „·“ am Zeilenende. */
+  newLine?: boolean;
 }
 
 /** Messzeile: Paare aus Etikett und Wert, getrennt durch „·“ (CONCEPT.md 5, Bausteine des Gerüsts). */
-export function MessZeile({ items, plain, label }: { items: MzItem[]; plain?: boolean | undefined; label?: string | undefined }) {
+export function MessZeile({
+  items,
+  plain,
+  stacked,
+  label,
+}: {
+  items: MzItem[];
+  plain?: boolean | undefined;
+  /** Untereinander statt in einer Zeile (schmaler Inspektor): Etikett links, Wert rechts, ohne „·“. */
+  stacked?: boolean | undefined;
+  label?: string | undefined;
+}) {
+  const cls = ["mz", plain ? "mz--plain" : "", stacked ? "mz--stack" : ""].filter(Boolean).join(" ");
   return (
-    <div className={plain ? "mz mz--plain" : "mz"} {...(label ? { role: "group", "aria-label": label } : {})}>
+    <div className={cls} {...(label ? { role: "group", "aria-label": label } : {})}>
       {items.map((item, i) => (
         <Fragment key={`${item.label}-${i}`}>
-          {i > 0 ? (
+          {i > 0 && item.newLine ? <span className="mz__break" aria-hidden="true" /> : null}
+          {i > 0 && !item.newLine ? (
             <span className="mz__sep" aria-hidden="true">
               ·
             </span>
@@ -64,7 +79,11 @@ export function Notice({
 }) {
   const G = kind === "error" ? GlyphError : kind === "warn" ? GlyphWarn : kind === "ok" ? GlyphOk : GlyphInfo;
   return (
-    <div className={`notice notice--${kind}`} {...(role ? { role } : kind === "error" ? { role: "alert" } : {})} {...(testId ? { "data-testid": testId } : {})}>
+    <div
+      className={`notice notice--${kind}`}
+      {...(role ? { role } : kind === "error" ? { role: "alert" } : {})}
+      {...(testId ? { "data-testid": testId } : {})}
+    >
       <G size={20} />
       <div className="notice__body">
         <strong className="notice__title">{title}</strong>
@@ -76,7 +95,17 @@ export function Notice({
 }
 
 /** Leerer Zustand: was fehlt + was der nächste Schritt bewirkt (CONCEPT.md 7). */
-export function EmptyState({ title, children, actions, testId }: { title?: string; children: ReactNode; actions?: ReactNode; testId?: string | undefined }) {
+export function EmptyState({
+  title,
+  children,
+  actions,
+  testId,
+}: {
+  title?: string;
+  children: ReactNode;
+  actions?: ReactNode;
+  testId?: string | undefined;
+}) {
   return (
     <div className="empty" {...(testId ? { "data-testid": testId } : {})}>
       {title ? <h2 className="t-section">{title}</h2> : null}
@@ -87,7 +116,17 @@ export function EmptyState({ title, children, actions, testId }: { title?: strin
 }
 
 /** Balken mit echtem Wert (0..1). Kein Spinner: ist der Wert unbekannt, steht Text da. */
-export function Bar({ value, label, valueText, thin }: { value: number; label: string; valueText: string; thin?: boolean | undefined }) {
+export function Bar({
+  value,
+  label,
+  valueText,
+  thin,
+}: {
+  value: number;
+  label: string;
+  valueText: string;
+  thin?: boolean | undefined;
+}) {
   const pct = Math.max(0, Math.min(1, value)) * 100;
   return (
     <div

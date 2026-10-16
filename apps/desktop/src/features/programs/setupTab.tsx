@@ -1,6 +1,13 @@
 import { Fragment, useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import type { ConflictResolution, ProgramOverview, SetupComponent, SetupComponentStatus, SetupEvent, SetupRecord } from "@contract";
+import type {
+  ConflictResolution,
+  ProgramOverview,
+  SetupComponent,
+  SetupComponentStatus,
+  SetupEvent,
+  SetupRecord,
+} from "@contract";
 import { call } from "../../ipc/commands";
 import { channel } from "../../ipc/channel";
 import { useCmd } from "../../ipc/queries";
@@ -61,7 +68,10 @@ function summaryLabel(plan: { packLabel: string; components: SetupComponent[] })
  * Einrichtung je Programm (CONCEPT.md 6.3): Bausteine als Tabelle, Konflikte pro Zeile, Ausgangsleiste mit Rückgängig.
  * Gibt Inhalt und Ausgangsleiste getrennt zurück, weil die Leiste im Gerüst unter der ganzen Seite liegt.
  */
-export function useSetupTab(program: ProgramOverview | undefined, active: boolean): { body: ReactNode; output: ReactNode } {
+export function useSetupTab(
+  program: ProgramOverview | undefined,
+  active: boolean,
+): { body: ReactNode; output: ReactNode } {
   const qc = useQueryClient();
   const push = useToasts((st) => st.push);
   const openInstall = useInstallUi((st) => st.open);
@@ -70,7 +80,11 @@ export function useSetupTab(program: ProgramOverview | undefined, active: boolea
   const scope = scopes.find((x) => x.scopeId === scopeId) ?? scopes[0];
   const packId = program?.setup?.packId ?? "";
   const enabled = active && !!scope && !!program;
-  const planQuery = useCmd("setup_preview", { req: { packId, scopeId: scope?.scopeId ?? "" } }, { enabled, staleTime: 0 });
+  const planQuery = useCmd(
+    "setup_preview",
+    { req: { packId, scopeId: scope?.scopeId ?? "" } },
+    { enabled, staleTime: 0 },
+  );
   const plan = planQuery.data;
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [resolutions, setResolutions] = useState<Record<string, ConflictResolution>>({});
@@ -81,7 +95,7 @@ export function useSetupTab(program: ProgramOverview | undefined, active: boolea
   useEffect(() => {
     if (!plan) return;
     setSelected(new Set(plan.components.filter((c) => c.defaultSelected).map((c) => c.id)));
-    setResolutions(Object.fromEntries(plan.conflicts.map((c) => [c.conflictId, "keepBoth" as ConflictResolution])));
+    setResolutions(Object.fromEntries(plan.conflicts.map((c) => [c.conflictId, "keepBoth"])));
   }, [plan?.planId]); // eslint-disable-line react-hooks/exhaustive-deps -- Auswahl nur beim Eintreffen eines neuen Plans zurücksetzen
 
   const toggle = (id: string, on: boolean) => {
@@ -96,7 +110,10 @@ export function useSetupTab(program: ProgramOverview | undefined, active: boolea
 
   const apply = useCallback(() => {
     if (!plan || progress) return;
-    setProgress({ index: 0, total: plan.components.filter((c) => selected.has(c.id)).reduce((n, c) => n + c.operations.length, 0) });
+    setProgress({
+      index: 0,
+      total: plan.components.filter((c) => selected.has(c.id)).reduce((n, c) => n + c.operations.length, 0),
+    });
     setDone(null);
     call("setup_apply", {
       req: { planId: plan.planId, components: [...selected], resolutions },
@@ -122,7 +139,12 @@ export function useSetupTab(program: ProgramOverview | undefined, active: boolea
     setUndoing(true);
     call("setup_undo", { req: { setupId: record.setupId } })
       .then((report) => {
-        push({ kind: "info", text: s.undone(report.restored, report.removed) + (report.keptModified.length ? ` ${s.keptModified(report.keptModified.length)}` : "") });
+        push({
+          kind: "info",
+          text:
+            s.undone(report.restored, report.removed) +
+            (report.keptModified.length ? ` ${s.keptModified(report.keptModified.length)}` : ""),
+        });
         setDone(null);
         void qc.invalidateQueries({ queryKey: ["programs_list"] });
         void qc.invalidateQueries({ queryKey: ["setup_history"] });
@@ -156,12 +178,24 @@ export function useSetupTab(program: ProgramOverview | undefined, active: boolea
   const chosen = plan?.components.filter((c) => selected.has(c.id)) ?? [];
   const toApply = chosen.filter((c) => c.status !== "current");
   const newCount = toApply.filter((c) => c.status === "new").length;
-  const updCount = toApply.filter((c) => c.status === "outdated" || c.status === "partial" || c.status === "userModified").length;
-  const backups = (plan?.previous ? 1 : 0) + chosen.filter((c) => c.status === "userModified" && plan?.conflicts.some((cf) => cf.componentId === c.id && resolutions[cf.conflictId] === "overwrite")).length;
+  const updCount = toApply.filter(
+    (c) => c.status === "outdated" || c.status === "partial" || c.status === "userModified",
+  ).length;
+  const backups =
+    (plan?.previous ? 1 : 0) +
+    chosen.filter(
+      (c) =>
+        c.status === "userModified" &&
+        plan?.conflicts.some((cf) => cf.componentId === c.id && resolutions[cf.conflictId] === "overwrite"),
+    ).length;
 
   let state: OutputState;
   if (progress) {
-    state = { kind: "running", label: s.applying, progress: progress.total > 0 ? progress.index / progress.total : null };
+    state = {
+      kind: "running",
+      label: s.applying,
+      progress: progress.total > 0 ? progress.index / progress.total : null,
+    };
   } else if (done) {
     const restart = plan?.restartHint ? s.restartHint(program.name) : null;
     state = {
@@ -193,7 +227,9 @@ export function useSetupTab(program: ProgramOverview | undefined, active: boolea
     { label: t.common.labels.status, value: `${toApply.length} ${toApply.length === 1 ? "Baustein" : "Bausteine"}` },
     ...(newCount > 0 ? [{ label: s.status.new, value: `${newCount} ${s.status.new}` }] : []),
     ...(updCount > 0 ? [{ label: s.status.outdated, value: `${updCount} aktualisiert` }] : []),
-    ...(backups > 0 || toApply.some((c) => c.status === "outdated") ? [{ label: "Sicherung", value: s.summaryBackup }] : []),
+    ...(backups > 0 || toApply.some((c) => c.status === "outdated")
+      ? [{ label: "Sicherung", value: s.summaryBackup }]
+      : []),
   ];
 
   const failureFor = (c: SetupComponent) => done?.failures.find((f) => c.operations.some((o) => o.target === f.target));
@@ -208,14 +244,23 @@ export function useSetupTab(program: ProgramOverview | undefined, active: boolea
       </div>
       {scopes.length > 1 ? (
         <div className="setup__scope">
-          <SelectField label={s.scopeLabel} value={scope?.scopeId ?? ""} onChange={setScopeId} options={scopes.map((x) => ({ value: x.scopeId, label: s.scope[x.scopeKind] }))} />
+          <SelectField
+            label={s.scopeLabel}
+            value={scope?.scopeId ?? ""}
+            onChange={setScopeId}
+            options={scopes.map((x) => ({ value: x.scopeId, label: s.scope[x.scopeKind] }))}
+          />
         </div>
       ) : null}
       {plan?.programRunning ? (
         <Notice kind="warn" title={s.runningHint(program.name)} role="status" testId="setup-running" />
       ) : null}
       {planQuery.isError ? (
-        <Notice kind="error" title={errorText(planQuery.error).title} actions={<Button onClick={() => void planQuery.refetch()}>{t.common.retry}</Button>}>
+        <Notice
+          kind="error"
+          title={errorText(planQuery.error).title}
+          actions={<Button onClick={() => void planQuery.refetch()}>{t.common.retry}</Button>}
+        >
           {errorText(planQuery.error).text}
         </Notice>
       ) : null}
@@ -226,10 +271,18 @@ export function useSetupTab(program: ProgramOverview | undefined, active: boolea
             <th scope="col" className="stable__sel">
               <span className="sr-only">{s.selectAll}</span>
             </th>
-            <th scope="col" className="t-label">{s.columns.block}</th>
-            <th scope="col" className="t-label">{s.columns.preview}</th>
-            <th scope="col" className="t-label">{s.columns.target}</th>
-            <th scope="col" className="t-label">{s.columns.status}</th>
+            <th scope="col" className="t-label">
+              {s.columns.block}
+            </th>
+            <th scope="col" className="t-label">
+              {s.columns.preview}
+            </th>
+            <th scope="col" className="t-label">
+              {s.columns.target}
+            </th>
+            <th scope="col" className="t-label">
+              {s.columns.status}
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -239,54 +292,69 @@ export function useSetupTab(program: ProgramOverview | undefined, active: boolea
             const target = c.operations[0]?.target ?? "";
             return (
               <Fragment key={c.id}>
-              <tr className="stable__row" data-testid={`setup-row-${c.id}`} data-status={c.status}>
-                <td className="stable__sel">
-                  <Checkbox checked={selected.has(c.id)} onChange={(on) => toggle(c.id, on)} describedBy={undefined}>
-                    <span className="sr-only">{c.label}</span>
-                  </Checkbox>
-                </td>
-                <td>
-                  <span className="t-strong">{c.label}</span>
-                  {c.optional ? <span className="t-label stable__opt"> {s.optional}</span> : null}
-                </td>
-                <td>
-                  <Preview c={c} />
-                </td>
-                <td>
-                  <span className="t-data stable__target selectable" title={target}>
-                    {ellipsizePath(target, 40)}
-                  </span>
-                </td>
-                <td>
-                  <Status kind={fail ? "error" : statusKind(c.status)}>{fail ? t.jobs.outcome.failed : s.status[c.status]}</Status>
-                </td>
-              </tr>
+                <tr className="stable__row" data-testid={`setup-row-${c.id}`} data-status={c.status}>
+                  <td className="stable__sel">
+                    <Checkbox checked={selected.has(c.id)} onChange={(on) => toggle(c.id, on)} describedBy={undefined}>
+                      <span className="sr-only">{c.label}</span>
+                    </Checkbox>
+                  </td>
+                  <td>
+                    <span className="t-strong">{c.label}</span>
+                    {c.optional ? <span className="t-label stable__opt"> {s.optional}</span> : null}
+                  </td>
+                  <td>
+                    <Preview c={c} />
+                  </td>
+                  <td>
+                    <span className="t-data stable__target selectable" title={target}>
+                      {ellipsizePath(target, 40)}
+                    </span>
+                  </td>
+                  <td>
+                    <Status kind={fail ? "error" : statusKind(c.status)}>
+                      {fail ? t.jobs.outcome.failed : s.status[c.status]}
+                    </Status>
+                  </td>
+                </tr>
                 {conflict && selected.has(c.id) && c.status === "userModified" ? (
-                  <tr className="stable__extra"><td className="stable__conflict" colSpan={5}>
-                    <fieldset className="conflict">
-                      <legend className="t-label">{s.conflict.choose(c.label)}</legend>
-                      {(
-                        [
-                          ["overwrite", s.conflict.overwrite],
-                          ["keepBoth", s.conflict.keepBoth(conflict.keepBothName)],
-                          ["skip", s.conflict.skip],
-                        ] as [ConflictResolution, string][]
-                      ).map(([value, label]) => (
-                        <label key={value} className="conflict__opt">
-                          <input type="radio" name={`res-${conflict.conflictId}`} className="conflict__radio" checked={(resolutions[conflict.conflictId] ?? "keepBoth") === value} onChange={() => { setDone(null); setResolutions((r) => ({ ...r, [conflict.conflictId]: value })); }} />
-                          <span>{label}</span>
-                        </label>
-                      ))}
-                      <p className="t-meta t-mute">{s.conflict.hint}</p>
-                    </fieldset>
-                  </td></tr>
+                  <tr className="stable__extra">
+                    <td className="stable__conflict" colSpan={5}>
+                      <fieldset className="conflict">
+                        <legend className="t-label">{s.conflict.choose(c.label)}</legend>
+                        {(
+                          [
+                            ["overwrite", s.conflict.overwrite],
+                            ["keepBoth", s.conflict.keepBoth(conflict.keepBothName)],
+                            ["skip", s.conflict.skip],
+                          ] as [ConflictResolution, string][]
+                        ).map(([value, label]) => (
+                          <label key={value} className="conflict__opt">
+                            <input
+                              type="radio"
+                              name={`res-${conflict.conflictId}`}
+                              className="conflict__radio"
+                              checked={(resolutions[conflict.conflictId] ?? "keepBoth") === value}
+                              onChange={() => {
+                                setDone(null);
+                                setResolutions((r) => ({ ...r, [conflict.conflictId]: value }));
+                              }}
+                            />
+                            <span>{label}</span>
+                          </label>
+                        ))}
+                        <p className="t-meta t-mute">{s.conflict.hint}</p>
+                      </fieldset>
+                    </td>
+                  </tr>
                 ) : null}
                 {fail ? (
-                  <tr className="stable__extra"><td className="stable__conflict" colSpan={5}>
-                    <p className="field__error t-meta" role="alert" data-testid="setup-failure">
-                      {s.lockedFile(fail.target.split(/[\\/]/).filter(Boolean).pop() ?? fail.target, program.name)}
-                    </p>
-                  </td></tr>
+                  <tr className="stable__extra">
+                    <td className="stable__conflict" colSpan={5}>
+                      <p className="field__error t-meta" role="alert" data-testid="setup-failure">
+                        {s.lockedFile(fail.target.split(/[\\/]/).filter(Boolean).pop() ?? fail.target, program.name)}
+                      </p>
+                    </td>
+                  </tr>
                 ) : null}
               </Fragment>
             );

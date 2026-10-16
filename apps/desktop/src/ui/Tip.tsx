@@ -11,7 +11,17 @@ export function TipProvider({ children }: { children: ReactNode }) {
 }
 
 /** Tooltip mit Name und Kürzel. Der Name steht zusätzlich als zugänglicher Name am Auslöser. */
-export function Tip({ label, combo, children, side = "top" }: { label: string; combo?: string | undefined; children: ReactNode; side?: "top" | "right" | "bottom" | "left" }) {
+export function Tip({
+  label,
+  combo,
+  children,
+  side = "top",
+}: {
+  label: string;
+  combo?: string | undefined;
+  children: ReactNode;
+  side?: "top" | "right" | "bottom" | "left";
+}) {
   return (
     <Tooltip.Root>
       <Tooltip.Trigger asChild>{children}</Tooltip.Trigger>

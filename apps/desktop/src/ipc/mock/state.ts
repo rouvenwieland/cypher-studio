@@ -34,7 +34,19 @@ import type {
 } from "@contract";
 import { compareVersions } from "../../lib/version";
 import { now, nowIso } from "../../lib/clock";
-import { CATALOG, COLLECTIONS, defaultSettings, fakeSha, GIB, LIBRARY_ROOT, LINKS, MIB, PALETTES, PROGRAMS_DIR, type CatalogProgram } from "./fixtures";
+import {
+  CATALOG,
+  COLLECTIONS,
+  defaultSettings,
+  fakeSha,
+  GIB,
+  LIBRARY_ROOT,
+  LINKS,
+  MIB,
+  PALETTES,
+  PROGRAMS_DIR,
+  type CatalogProgram,
+} from "./fixtures";
 import { generateLibrary, projectsSeed, templatesSeed, type LibraryModel } from "./library";
 import { uuid } from "./rng";
 
@@ -103,44 +115,164 @@ export const PACKS: Record<string, PackDef> = {
     packId: "krita",
     programId: "krita",
     components: [
-      { id: "palette", kind: "palette", label: "Palette „Cypher Kollektionen“", optional: false, targets: [`${ROAMING}\\krita\\palettes\\cypher.kpl`], bytes: 2_400, preview: { colors: PALETTE_COLORS, formats: [], fonts: [] } },
-      { id: "fonts", kind: "fonts", label: "Schriften", optional: false, targets: [`${ROAMING}\\krita\\fonts\\cypher\\`], bytes: 1_240_000, preview: { colors: [], formats: [], fonts: FONT_NAMES } },
-      { id: "templates", kind: "templates", label: "Vorlagen", optional: false, targets: [`${ROAMING}\\krita\\template\\cypher\\`], bytes: 4_800_000, preview: { colors: [], formats: ["Shirt vorne 330 × 450 mm", "Hoodie vorne 330 × 280 mm", "Post 1080 × 1350", "Story 1080 × 1920"], fonts: [] } },
-      { id: "workspace", kind: "workspace", label: "Arbeitsfläche „Cypher“", optional: true, targets: [`${ROAMING}\\krita\\workspaces\\cypher.kws`], bytes: 18_000, preview: { colors: [], formats: [], fonts: [] } },
+      {
+        id: "palette",
+        kind: "palette",
+        label: "Palette „Cypher Kollektionen“",
+        optional: false,
+        targets: [`${ROAMING}\\krita\\palettes\\cypher.kpl`],
+        bytes: 2_400,
+        preview: { colors: PALETTE_COLORS, formats: [], fonts: [] },
+      },
+      {
+        id: "fonts",
+        kind: "fonts",
+        label: "Schriften",
+        optional: false,
+        targets: [`${ROAMING}\\krita\\fonts\\cypher\\`],
+        bytes: 1_240_000,
+        preview: { colors: [], formats: [], fonts: FONT_NAMES },
+      },
+      {
+        id: "templates",
+        kind: "templates",
+        label: "Vorlagen",
+        optional: false,
+        targets: [`${ROAMING}\\krita\\template\\cypher\\`],
+        bytes: 4_800_000,
+        preview: {
+          colors: [],
+          formats: ["Shirt vorne 330 × 450 mm", "Hoodie vorne 330 × 280 mm", "Post 1080 × 1350", "Story 1080 × 1920"],
+          fonts: [],
+        },
+      },
+      {
+        id: "workspace",
+        kind: "workspace",
+        label: "Arbeitsfläche „Cypher“",
+        optional: true,
+        targets: [`${ROAMING}\\krita\\workspaces\\cypher.kws`],
+        bytes: 18_000,
+        preview: { colors: [], formats: [], fonts: [] },
+      },
     ],
   },
   inkscape: {
     packId: "inkscape",
     programId: "inkscape",
     components: [
-      { id: "palette", kind: "palette", label: "Palette „Cypher Kollektionen“", optional: false, targets: [`${ROAMING}\\inkscape\\palettes\\cypher.gpl`], bytes: 1_100, preview: { colors: PALETTE_COLORS, formats: [], fonts: [] } },
-      { id: "fonts", kind: "fonts", label: "Schriften", optional: false, targets: [`${ROAMING}\\inkscape\\fonts\\`], bytes: 1_240_000, preview: { colors: [], formats: [], fonts: FONT_NAMES } },
-      { id: "templates", kind: "templates", label: "Vorlagen mit Druckfläche in Millimetern", optional: false, targets: [`${ROAMING}\\inkscape\\templates\\`], bytes: 90_000, preview: { colors: [], formats: ["Shirt 330 × 450 mm", "Hoodie 330 × 280 mm", "Post 1080 × 1350 px", "Story 1080 × 1920 px"], fonts: [] } },
+      {
+        id: "palette",
+        kind: "palette",
+        label: "Palette „Cypher Kollektionen“",
+        optional: false,
+        targets: [`${ROAMING}\\inkscape\\palettes\\cypher.gpl`],
+        bytes: 1_100,
+        preview: { colors: PALETTE_COLORS, formats: [], fonts: [] },
+      },
+      {
+        id: "fonts",
+        kind: "fonts",
+        label: "Schriften",
+        optional: false,
+        targets: [`${ROAMING}\\inkscape\\fonts\\`],
+        bytes: 1_240_000,
+        preview: { colors: [], formats: [], fonts: FONT_NAMES },
+      },
+      {
+        id: "templates",
+        kind: "templates",
+        label: "Vorlagen mit Druckfläche in Millimetern",
+        optional: false,
+        targets: [`${ROAMING}\\inkscape\\templates\\`],
+        bytes: 90_000,
+        preview: {
+          colors: [],
+          formats: ["Shirt 330 × 450 mm", "Hoodie 330 × 280 mm", "Post 1080 × 1350 px", "Story 1080 × 1920 px"],
+          fonts: [],
+        },
+      },
     ],
   },
   blender: {
     packId: "blender",
     programId: "blender",
     components: [
-      { id: "appTemplate", kind: "appTemplate", label: "App-Vorlage „cypher_ps2“", optional: false, targets: [`${PROGRAMS_DIR}\\blender\\5.2.2\\portable\\scripts\\startup\\bl_app_templates_user\\cypher_ps2\\`], bytes: 3_200_000, preview: { colors: [], formats: [], fonts: [] } },
-      { id: "extension", kind: "extension", label: "Erweiterung „Cypher Export“", optional: false, targets: [`${PROGRAMS_DIR}\\blender\\5.2.2\\portable\\extensions\\cypher_export\\`], bytes: 220_000, preview: { colors: [], formats: [], fonts: [] } },
-      { id: "assetLibrary", kind: "assetLibrary", label: "Asset-Bibliothek auf „3D“ im gemeinsamen Ordner", optional: false, targets: [`${LIBRARY_ROOT}\\3D\\`], bytes: 600, preview: { colors: [], formats: [], fonts: [] } },
+      {
+        id: "appTemplate",
+        kind: "appTemplate",
+        label: "App-Vorlage „cypher_ps2“",
+        optional: false,
+        targets: [`${PROGRAMS_DIR}\\blender\\5.2.2\\portable\\scripts\\startup\\bl_app_templates_user\\cypher_ps2\\`],
+        bytes: 3_200_000,
+        preview: { colors: [], formats: [], fonts: [] },
+      },
+      {
+        id: "extension",
+        kind: "extension",
+        label: "Erweiterung „Cypher Export“",
+        optional: false,
+        targets: [`${PROGRAMS_DIR}\\blender\\5.2.2\\portable\\extensions\\cypher_export\\`],
+        bytes: 220_000,
+        preview: { colors: [], formats: [], fonts: [] },
+      },
+      {
+        id: "assetLibrary",
+        kind: "assetLibrary",
+        label: "Asset-Bibliothek auf „3D“ im gemeinsamen Ordner",
+        optional: false,
+        targets: [`${LIBRARY_ROOT}\\3D\\`],
+        bytes: 600,
+        preview: { colors: [], formats: [], fonts: [] },
+      },
     ],
   },
   kdenlive: {
     packId: "kdenlive",
     programId: "kdenlive",
     components: [
-      { id: "titles", kind: "titles", label: "Titelvorlagen mit Cypher-Schriften", optional: false, targets: [`${ROAMING}\\kdenlive\\titles\\`], bytes: 140_000, preview: { colors: [], formats: [], fonts: FONT_NAMES } },
-      { id: "videoProfiles", kind: "videoProfiles", label: "Projektprofile 1080 × 1920 und 1080 × 1350", optional: false, targets: [`${ROAMING}\\kdenlive\\profiles\\`], bytes: 2_100, preview: { colors: [], formats: ["1080 × 1920 · 30 fps", "1080 × 1350 · 30 fps"], fonts: [] } },
-      { id: "renderPreset", kind: "renderPreset", label: "Render-Profil „Reel (H.264, 1080 × 1920)“", optional: true, targets: [`${ROAMING}\\kdenlive\\export\\`], bytes: 1_800, preview: { colors: [], formats: [], fonts: [] } },
+      {
+        id: "titles",
+        kind: "titles",
+        label: "Titelvorlagen mit Cypher-Schriften",
+        optional: false,
+        targets: [`${ROAMING}\\kdenlive\\titles\\`],
+        bytes: 140_000,
+        preview: { colors: [], formats: [], fonts: FONT_NAMES },
+      },
+      {
+        id: "videoProfiles",
+        kind: "videoProfiles",
+        label: "Projektprofile 1080 × 1920 und 1080 × 1350",
+        optional: false,
+        targets: [`${ROAMING}\\kdenlive\\profiles\\`],
+        bytes: 2_100,
+        preview: { colors: [], formats: ["1080 × 1920 · 30 fps", "1080 × 1350 · 30 fps"], fonts: [] },
+      },
+      {
+        id: "renderPreset",
+        kind: "renderPreset",
+        label: "Render-Profil „Reel (H.264, 1080 × 1920)“",
+        optional: true,
+        targets: [`${ROAMING}\\kdenlive\\export\\`],
+        bytes: 1_800,
+        preview: { colors: [], formats: [], fonts: [] },
+      },
     ],
   },
   fonts: {
     packId: "fonts",
     programId: null,
     components: [
-      { id: "fonts", kind: "fonts", label: "Cypher-Schriften für alle Programme", optional: false, targets: [`C:\\Users\\Lena\\AppData\\Local\\Microsoft\\Windows\\Fonts\\`], bytes: 1_240_000, preview: { colors: [], formats: [], fonts: FONT_NAMES } },
+      {
+        id: "fonts",
+        kind: "fonts",
+        label: "Cypher-Schriften für alle Programme",
+        optional: false,
+        targets: [`C:\\Users\\Lena\\AppData\\Local\\Microsoft\\Windows\\Fonts\\`],
+        bytes: 1_240_000,
+        preview: { colors: [], formats: [], fonts: FONT_NAMES },
+      },
     ],
   },
 };
@@ -154,6 +286,8 @@ export interface PackState {
 
 export interface MockDb {
   scenario: ScenarioName;
+  /** Alle Teile eines zusammengesetzten Szenarios („fresh+installNetworkFail“) */
+  flags: Set<string>;
   speed: number;
   settings: Settings;
   catalog: CatalogStatus;
@@ -177,7 +311,7 @@ export interface MockDb {
 
 export let db: MockDb = createDb("default");
 
-export function resetDb(scenario: ScenarioName): MockDb {
+export function resetDb(scenario: string): MockDb {
   db = createDb(scenario);
   return db;
 }
@@ -199,12 +333,24 @@ export function iso(minutesFromNow: number): string {
 }
 
 function winPath(program: CatalogProgram, version: string): string {
-  const exe = program.id === "kdenlive" ? "bin\\kdenlive.exe" : program.id === "blender" ? "blender.exe" : program.id === "krita" ? "bin\\krita.exe" : "bin\\inkscape.exe";
+  const exe =
+    program.id === "kdenlive"
+      ? "bin\\kdenlive.exe"
+      : program.id === "blender"
+        ? "blender.exe"
+        : program.id === "krita"
+          ? "bin\\krita.exe"
+          : "bin\\inkscape.exe";
   return `${PROGRAMS_DIR}\\${program.id}\\${version}\\${exe}`;
 }
 
-export function makeInstallation(program: CatalogProgram, version: string, kind: Installation["kind"] = "cypher"): Installation {
-  const location = kind === "cypher" ? winPath(program, version) : `C:\\Program Files\\${program.name}\\${program.id}.exe`;
+export function makeInstallation(
+  program: CatalogProgram,
+  version: string,
+  kind: Installation["kind"] = "cypher",
+): Installation {
+  const location =
+    kind === "cypher" ? winPath(program, version) : `C:\\Program Files\\${program.name}\\${program.id}.exe`;
   const stale = compareVersions(version, program.latest) < 0;
   return {
     id: kind === "cypher" ? `cypher:${program.id}:${version}` : `system:${program.id}:${program.id.length}a`,
@@ -217,7 +363,10 @@ export function makeInstallation(program: CatalogProgram, version: string, kind:
     problems: stale ? [{ kind: "staleCatalogVersion", latest: program.latest }] : [],
     installedAt: kind === "cypher" ? iso(-60 * 24 * 6) : null,
     detectedAt: iso(-12),
-    verified: kind === "cypher" ? { sha256: fakeSha(`${program.id}${version}`), catalogSequence: 42, signatureChecked: false } : null,
+    verified:
+      kind === "cypher"
+        ? { sha256: fakeSha(`${program.id}${version}`), catalogSequence: 42, signatureChecked: false }
+        : null,
     setupScopeId: `scope:${program.id}:${kind}`,
   };
 }
@@ -235,13 +384,34 @@ function allNew(packId: string): Record<string, SetupComponentStatus> {
   return out;
 }
 
-export function createDb(scenario: ScenarioName): MockDb {
-  const speed = typeof window !== "undefined" ? (Number((window as unknown as { __CYPHER_MOCK_SPEED__?: number }).__CYPHER_MOCK_SPEED__) || 1) : 1;
+export function createDb(scenarioText: string): MockDb {
+  const parts = scenarioText.split("+");
+  const flags = new Set(parts);
+  const first = parts[0] ?? "default";
+  const scenario: ScenarioName = (SCENARIOS as readonly string[]).includes(first) ? (first as ScenarioName) : "default";
+  const speed =
+    typeof window !== "undefined"
+      ? Number((window as unknown as { __CYPHER_MOCK_SPEED__?: number }).__CYPHER_MOCK_SPEED__) || 1
+      : 1;
   const stamp = nowIso();
   const settings = defaultSettings(stamp);
   const fresh = scenario === "fresh";
-  if (fresh) settings.onboarding = { status: "notStarted", step: 0, selectedPrograms: ["krita", "inkscape"], applySetup: true, updatedAt: null };
-  if (scenario === "onboardingPartial") settings.onboarding = { status: "inProgress", step: 4, selectedPrograms: ["krita", "inkscape"], applySetup: true, updatedAt: stamp };
+  if (fresh)
+    settings.onboarding = {
+      status: "notStarted",
+      step: 0,
+      selectedPrograms: ["krita", "inkscape"],
+      applySetup: true,
+      updatedAt: null,
+    };
+  if (scenario === "onboardingPartial")
+    settings.onboarding = {
+      status: "inProgress",
+      step: 4,
+      selectedPrograms: ["krita", "inkscape"],
+      applySetup: true,
+      updatedAt: stamp,
+    };
   if (fresh || scenario === "libraryEmpty") settings.libraryRoot = null;
   const installations: Record<string, Installation[]> = { krita: [], inkscape: [], blender: [], kdenlive: [] };
   const setup: Record<string, PackState> = {};
@@ -257,7 +427,12 @@ export function createDb(scenario: ScenarioName): MockDb {
       installations["blender"] = [makeInstallation(b, "5.2.2")];
       installations["kdenlive"] = [makeInstallation(d, "26.08.2")];
       installations["inkscape"] = [makeInstallation(i, "1.5.0")];
-    } else if (scenario === "default" || scenario === "busy" || scenario === "setupConflicts" || scenario === "setupLocked") {
+    } else if (
+      scenario === "default" ||
+      scenario === "busy" ||
+      scenario === "setupConflicts" ||
+      scenario === "setupLocked"
+    ) {
       installations["blender"] = [makeInstallation(b, "4.2.3", "system")];
       installations["blender"] = [];
     }
@@ -269,7 +444,11 @@ export function createDb(scenario: ScenarioName): MockDb {
       setup["kdenlive"] = { components: allCurrent("kdenlive"), history: [], before: null };
     }
     if (scenario === "setupConflicts" || scenario === "setupLocked") {
-      setup["krita"] = { components: { palette: "current", fonts: "outdated", templates: "new", workspace: "userModified" }, history: [], before: null };
+      setup["krita"] = {
+        components: { palette: "current", fonts: "outdated", templates: "new", workspace: "userModified" },
+        history: [],
+        before: null,
+      };
     }
   }
   const projects = fresh || scenario === "libraryEmpty" ? [] : projectsSeed(now());
@@ -290,9 +469,24 @@ export function createDb(scenario: ScenarioName): MockDb {
         watching: true,
         collections: COLLECTIONS,
       }
-    : { configured: false, root: null, initialized: false, formatVersion: null, entryCount: 0, totalBytes: 0, projectCount: 0, conflictCount: 0, lastScanAt: null, syncTool: null, watching: false, collections: COLLECTIONS };
+    : {
+        configured: false,
+        root: null,
+        initialized: false,
+        formatVersion: null,
+        entryCount: 0,
+        totalBytes: 0,
+        projectCount: 0,
+        conflictCount: 0,
+        lastScanAt: null,
+        syncTool: null,
+        watching: false,
+        collections: COLLECTIONS,
+      };
   const offline = scenario === "offline";
-  const lastError: AppError | null = offline ? { kind: "network", host: "studio.cypherxcypher.de", message: "Keine Verbindung", retryable: true } : null;
+  const lastError: AppError | null = offline
+    ? { kind: "network", host: "studio.cypherxcypher.de", message: "Keine Verbindung", retryable: true }
+    : null;
   const catalog: CatalogStatus = {
     sourceUrl: "https://studio.cypherxcypher.de/catalog/v1/catalog.json",
     schemaVersion: 1,
@@ -306,10 +500,19 @@ export function createDb(scenario: ScenarioName): MockDb {
   };
   const update: UpdateCheck =
     scenario === "updateAvailable"
-      ? { available: true, currentVersion: "0.4.0", version: "0.5.0", date: iso(-60 * 5), notes: "Mockups: Kontaktbogen für alle Textilfarben.\nSocial: neue Vorlage „Termin“.\nDruckprüfer: dünne Linien werden jetzt gemessen.", checkedAt: iso(-3) }
+      ? {
+          available: true,
+          currentVersion: "0.4.0",
+          version: "0.5.0",
+          date: iso(-60 * 5),
+          notes:
+            "Mockups: Kontaktbogen für alle Textilfarben.\nSocial: neue Vorlage „Termin“.\nDruckprüfer: dünne Linien werden jetzt gemessen.",
+          checkedAt: iso(-3),
+        }
       : { available: false, currentVersion: "0.4.0", version: null, date: null, notes: null, checkedAt: iso(-90) };
   const db: MockDb = {
     scenario,
+    flags,
     speed,
     settings,
     catalog,
@@ -334,7 +537,11 @@ export function createDb(scenario: ScenarioName): MockDb {
         {
           id: "isnet-general-use",
           name: "IS-Net general use",
-          license: { spdx: "Apache-2.0", name: "Apache License 2.0", url: "https://www.apache.org/licenses/LICENSE-2.0" },
+          license: {
+            spdx: "Apache-2.0",
+            name: "Apache License 2.0",
+            url: "https://www.apache.org/licenses/LICENSE-2.0",
+          },
           size: 176 * MIB,
           installed: false,
           notice: "Das Modell wurde mit Bildern unklarer Herkunft trainiert. Die Ergebnisse gehören dir.",
@@ -359,7 +566,16 @@ export function emitJobs(finished: JobRecord | null): void {
 
 export function startJob(kind: JobKind, subject: string, programId: string | null, cancellable = true): ActiveJob {
   const job: ActiveJob = {
-    info: { id: newId(), kind, subject, startedAt: nowIso(), cancellable, progress: 0, phase: null, needsAttention: false },
+    info: {
+      id: newId(),
+      kind,
+      subject,
+      startedAt: nowIso(),
+      cancellable,
+      progress: 0,
+      phase: null,
+      needsAttention: false,
+    },
     cancelled: false,
     programId,
     lastEmit: 0,
@@ -378,9 +594,20 @@ export function progressJob(job: ActiveJob, progress: number | null, phase: stri
   }
 }
 
-export function finishJob(job: ActiveJob, outcome: JobRecord["outcome"], error: AppError | null, result: JobRecord["result"]): void {
+export function finishJob(
+  job: ActiveJob,
+  outcome: JobRecord["outcome"],
+  error: AppError | null,
+  result: JobRecord["result"],
+): void {
   db.jobs.delete(job.info.id);
-  const record: JobRecord = { info: { ...job.info, progress: outcome === "succeeded" ? 1 : job.info.progress }, finishedAt: nowIso(), outcome, error, result };
+  const record: JobRecord = {
+    info: { ...job.info, progress: outcome === "succeeded" ? 1 : job.info.progress },
+    finishedAt: nowIso(),
+    outcome,
+    error,
+    result,
+  };
   db.recent.unshift(record);
   emitJobs(record);
 }
@@ -391,7 +618,9 @@ export function setupStatusOf(packId: string, installed: boolean): SetupStatus {
   if (!installed) return "notApplied";
   const st = db.setup[packId];
   if (!st) return "unsupported";
-  const required = (PACKS[packId]?.components ?? []).filter((c) => !c.optional).map((c) => st.components[c.id] ?? "new");
+  const required = (PACKS[packId]?.components ?? [])
+    .filter((c) => !c.optional)
+    .map((c) => st.components[c.id] ?? "new");
   if (required.every((s) => s === "current")) return "applied";
   if (required.every((s) => s === "new")) return "notApplied";
   if (required.some((s) => s === "outdated")) return "outdated";
@@ -400,7 +629,7 @@ export function setupStatusOf(packId: string, installed: boolean): SetupStatus {
 
 export function setupSummary(packId: string, program: CatalogProgram | null): SetupSummary {
   const def = PACKS[packId];
-  const installations = program ? db.installations[program.id] ?? [] : [];
+  const installations = program ? (db.installations[program.id] ?? []) : [];
   const state = db.setup[packId];
   const scopes: SetupScope[] = installations.map((inst) => {
     const status = setupStatusOf(packId, true);
@@ -408,7 +637,9 @@ export function setupSummary(packId: string, program: CatalogProgram | null): Se
     return {
       scopeId: inst.setupScopeId ?? `scope:${inst.id}`,
       scopeKind: inst.kind === "cypher" ? "portableInstall" : "userProfile",
-      componentsApplied: Object.entries(state?.components ?? {}).filter(([, s]) => s === "current").map(([id]) => id),
+      componentsApplied: Object.entries(state?.components ?? {})
+        .filter(([, s]) => s === "current")
+        .map(([id]) => id),
       targetRoots: def?.components.flatMap((c) => c.targets).slice(0, 2) ?? [],
       installationIds: [inst.id],
       status,
@@ -418,7 +649,7 @@ export function setupSummary(packId: string, program: CatalogProgram | null): Se
   return {
     packId,
     programId: program?.id ?? null,
-    title: program ? (program.pack.title) : "Cypher-Schriften",
+    title: program ? program.pack.title : "Cypher-Schriften",
     packVersion: program?.pack.version ?? "2026.10.0",
     requiresPacks: packId === "fonts" ? [] : ["fonts"],
     scopes,
@@ -438,8 +669,20 @@ export function programOverview(p: CatalogProgram): ProgramOverview {
     description: p.description,
     license: p.license,
     supportedOnThisPlatform: true,
-    latest: { version: p.latest, channel: p.channel, releasedAt: p.releasedAt, downloadSize: p.downloadSize, availableForThisPlatform: true },
-    installations: installs.map((x) => ({ ...x, problems: x.kind === "cypher" && x.version && compareVersions(x.version, p.latest) < 0 ? [{ kind: "staleCatalogVersion" as const, latest: p.latest }] : x.problems })),
+    latest: {
+      version: p.latest,
+      channel: p.channel,
+      releasedAt: p.releasedAt,
+      downloadSize: p.downloadSize,
+      availableForThisPlatform: true,
+    },
+    installations: installs.map((x) => ({
+      ...x,
+      problems:
+        x.kind === "cypher" && x.version && compareVersions(x.version, p.latest) < 0
+          ? [{ kind: "staleCatalogVersion" as const, latest: p.latest }]
+          : x.problems,
+    })),
     preferredInstallationId: preferred,
     updateAvailable,
     setup: setupSummary(p.pack.packId, p),
@@ -476,7 +719,13 @@ export function buildSetupPlan(packId: string, scopeId: string): SetupPlan {
           return { ...base, kind: "update" as const };
         case "userModified": {
           const conflictId = `c-${packId}-${c.id}`;
-          conflicts.push({ conflictId, componentId: c.id, target, reason: "userModified", keepBothName: `cypher-2026-10${target.includes(".") ? target.slice(target.lastIndexOf(".")) : ""}` });
+          conflicts.push({
+            conflictId,
+            componentId: c.id,
+            target,
+            reason: "userModified",
+            keepBothName: `cypher-2026-10${target.includes(".") ? target.slice(target.lastIndexOf(".")) : ""}`,
+          });
           return { ...base, kind: "conflict" as const, conflictId };
         }
       }
@@ -503,7 +752,7 @@ export function buildSetupPlan(packId: string, scopeId: string): SetupPlan {
     previous: last,
     components,
     conflicts,
-    programRunning: packId === "krita" && db.scenario === "setupConflicts",
+    programRunning: packId === "krita" && db.flags.has("setupConflicts"),
     restartHint: packId !== "fonts",
     createdAt: nowIso(),
     expiresAt: iso(10),

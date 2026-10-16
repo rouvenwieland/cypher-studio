@@ -1,0 +1,129 @@
+/* Mockups: Shirt auf unbuntem Umfeld, Kontaktbogen 3 × 2. */
+
+.mock__stage {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--s-6);
+  outline: none;
+}
+
+.mock__stage:focus-visible {
+  outline: var(--focus-w) solid var(--focus);
+  outline-offset: var(--focus-offset-inset);
+}
+
+.mock__shirt {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+
+.mock__canvas {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+
+.mock__loading {
+  width: 60%;
+  height: 80%;
+  background: var(--panel);
+}
+
+.mock__tools {
+  position: absolute;
+  top: var(--s-3);
+  right: var(--s-4);
+  z-index: 2;
+  display: flex;
+  gap: var(--s-1);
+  padding: var(--s-1);
+  border: var(--hair) solid var(--control);
+  background: var(--panel);
+}
+
+.mock__tools .iconbtn {
+  border-color: transparent;
+  background: transparent;
+}
+
+.mock__tools .iconbtn[aria-pressed="true"] {
+  background: var(--select-bg);
+  color: var(--select-fg);
+}
+
+.mock__hint {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  width: min(320px, 70%);
+  padding: var(--s-5);
+  border: var(--hair) solid var(--fg);
+  background: var(--field);
+  color: var(--fg);
+  text-align: left;
+}
+
+.mock__empty {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: var(--s-6);
+}
+
+.mock__contact {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-rows: minmax(0, 1fr);
+  gap: var(--s-4);
+  width: 100%;
+  height: 100%;
+}
+
+.mock__tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-1);
+  min-height: 0;
+}
+
+.mock__tile-img {
+  display: grid;
+  place-items: center;
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+}
+
+.mock__export {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.mock__low {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  margin-left: var(--s-2);
+  color: var(--warn-text);
+  font-weight: 400;
+}

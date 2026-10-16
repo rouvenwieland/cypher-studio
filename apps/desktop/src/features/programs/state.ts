@@ -5,7 +5,16 @@ import type { Installation, JobInfo, ProgramOverview } from "@contract";
  * Status-Wörter: nicht installiert · wird geladen · wird geprüft · wird installiert · installiert · eingerichtet ·
  * Update verfügbar · gefunden (außerhalb von Studio) · Fehler (CONCEPT.md 6.2).
  */
-export type ProgramStatusId = "notInstalled" | "downloading" | "verifying" | "installing" | "installed" | "setUp" | "updateAvailable" | "found" | "error";
+export type ProgramStatusId =
+  | "notInstalled"
+  | "downloading"
+  | "verifying"
+  | "installing"
+  | "installed"
+  | "setUp"
+  | "updateAvailable"
+  | "found"
+  | "error";
 
 export type ProgramAction = "install" | "update" | "launch" | "cancel";
 
@@ -36,7 +45,12 @@ export function deriveProgramState(p: ProgramOverview, jobs: readonly JobInfo[])
 
   if (job) {
     const phase = job.phase;
-    const status: ProgramStatusId = phase && VERIFY_PHASES.has(phase) ? "verifying" : phase === "extract" || phase === "checkContent" || phase === "register" ? "installing" : "downloading";
+    const status: ProgramStatusId =
+      phase && VERIFY_PHASES.has(phase)
+        ? "verifying"
+        : phase === "extract" || phase === "checkContent" || phase === "register"
+          ? "installing"
+          : "downloading";
     return { ...base, status, kind: "plain", versionLabel: "", progress: job.progress, action: "cancel" };
   }
   if (!installation) {
@@ -50,10 +64,25 @@ export function deriveProgramState(p: ProgramOverview, jobs: readonly JobInfo[])
     return { ...base, status: "found", kind: "info", versionLabel: version, progress: null, action: "launch" };
   }
   if (p.updateAvailable && p.latest) {
-    return { ...base, status: "updateAvailable", kind: "warn", versionLabel: `${version} → ${p.latest.version}`, progress: null, action: "update" };
+    return {
+      ...base,
+      status: "updateAvailable",
+      kind: "warn",
+      versionLabel: `${version} → ${p.latest.version}`,
+      progress: null,
+      action: "update",
+    };
   }
-  const applied = p.setup?.scopes.some((s) => s.installationIds.includes(installation.id) && s.status === "applied") ?? false;
-  return { ...base, status: applied ? "setUp" : "installed", kind: applied ? "ok" : "info", versionLabel: version, progress: null, action: "launch" };
+  const applied =
+    p.setup?.scopes.some((s) => s.installationIds.includes(installation.id) && s.status === "applied") ?? false;
+  return {
+    ...base,
+    status: applied ? "setUp" : "installed",
+    kind: applied ? "ok" : "info",
+    versionLabel: version,
+    progress: null,
+    action: "launch",
+  };
 }
 
 /** Sortierung der Tafel bleibt fest (Reihenfolge des Katalogs), damit sich nichts verschiebt. */

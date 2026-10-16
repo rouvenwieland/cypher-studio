@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { t } from "../i18n/de";
 import { IconClose } from "./icons";
 import { IconButton } from "./Button";
@@ -23,11 +23,25 @@ interface DialogProps {
  * Modaler Dialog über das native <dialog> mit showModal() (ARCHITEKTUR 6.2): Fokusfalle und Esc kommen vom Browser,
  * der Startfokus liegt auf der Überschrift (DESIGN.md §9).
  */
-export function Dialog({ open, title, onClose, dismissible = true, wide, children, footer, footerStart, describedBy, testId, onKeyDown }: DialogProps) {
+export function Dialog({
+  open,
+  title,
+  onClose,
+  dismissible = true,
+  wide,
+  children,
+  footer,
+  footerStart,
+  describedBy,
+  testId,
+  onKeyDown,
+}: DialogProps) {
   const ref = useRef<HTMLDialogElement>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const titleId = useId();
   const previous = useRef<Element | null>(null);
+  const bodyRef = useRef<HTMLDivElement>(null);
+  const [scrollable, setScrollable] = useState(false);
 
   useEffect(() => {
     const el = ref.current;
@@ -54,6 +68,17 @@ export function Dialog({ open, title, onClose, dismissible = true, wide, childre
     return () => el.removeEventListener("cancel", onCancel);
   }, [dismissible, onClose]);
 
+  // Scrollbarer Inhalt muss per Tastatur erreichbar sein (WCAG 2.1.1)
+  useEffect(() => {
+    const el = bodyRef.current;
+    if (!el || !open) return;
+    const check = () => setScrollable(el.scrollHeight > el.clientHeight + 1);
+    check();
+    const ro = new ResizeObserver(check);
+    ro.observe(el);
+    return () => ro.disconnect();
+  });
+
   return (
     <dialog
       ref={ref}
@@ -71,7 +96,13 @@ export function Dialog({ open, title, onClose, dismissible = true, wide, childre
             </h2>
             {dismissible ? <IconButton icon={IconClose} label={t.common.close} onClick={onClose} bare /> : null}
           </header>
-          <div className="dialog__body">{children}</div>
+          <div
+            className="dialog__body"
+            ref={bodyRef}
+            {...(scrollable ? { tabIndex: 0, role: "region", "aria-labelledby": titleId } : {})}
+          >
+            {children}
+          </div>
           {footer || footerStart ? (
             <footer className="dialog__foot">
               {footerStart ? <div className="dialog__foot-start">{footerStart}</div> : null}

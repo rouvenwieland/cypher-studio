@@ -23,7 +23,11 @@ export function Toasts() {
   return (
     <section className="toasts" aria-label={t.shell.toasts}>
       {toasts.map((toast) => (
-        <div key={toast.id} className={toast.kind === "error" ? "toast toast--error" : "toast"} role={toast.kind === "error" ? "alert" : "status"}>
+        <div
+          key={toast.id}
+          className={toast.kind === "error" ? "toast toast--error" : "toast"}
+          role={toast.kind === "error" ? "alert" : "status"}
+        >
           <span>{toast.text}</span>
           {toast.actionLabel && toast.onAction ? (
             <Button variant="text" small onClick={toast.onAction}>
@@ -53,8 +57,11 @@ export function Palette() {
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    if (open && !el.open) el.showModal();
-    else if (!open && el.open) el.close();
+    if (open && !el.open) {
+      el.showModal();
+      // Der Browser fokussiert sonst die Wurzel von cmdk (tabindex -1): Eingabefeld gezielt fokussieren
+      requestAnimationFrame(() => el.querySelector<HTMLInputElement>("[cmdk-input]")?.focus());
+    } else if (!open && el.open) el.close();
   }, [open]);
 
   useEffect(() => {
@@ -74,8 +81,14 @@ export function Palette() {
   const setUi = (patch: Record<string, unknown>) =>
     call("settings_update", { req: { ui: patch } }).then(() => qc.invalidateQueries({ queryKey: ["settings_get"] }));
   const surround = settings.data?.ui.surround;
-  const dark = document.documentElement.getAttribute("data-theme") === "dark" || (document.documentElement.getAttribute("data-theme") !== "light" && window.matchMedia("(prefers-color-scheme: dark)").matches);
-  const setSurround = (v: "light" | "mid" | "dark") => setUi({ surround: dark ? { paper: surround?.paper ?? "light", ink: v } : { paper: v, ink: surround?.ink ?? "dark" } });
+  const dark =
+    document.documentElement.getAttribute("data-theme") === "dark" ||
+    (document.documentElement.getAttribute("data-theme") !== "light" &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches);
+  const setSurround = (v: "light" | "mid" | "dark") =>
+    setUi({
+      surround: dark ? { paper: surround?.paper ?? "light", ink: v } : { paper: v, ink: surround?.ink ?? "dark" },
+    });
   const p = t.shell.palette;
 
   return (
@@ -91,7 +104,12 @@ export function Palette() {
             <Command.Empty className="palette__empty t-meta">{p.empty}</Command.Empty>
             <Command.Group heading={p.groups.modules}>
               {MODULES.map((m) => (
-                <Command.Item key={m.id} value={`${m.name} ${p.openModule(m.name)}`} onSelect={() => run(() => void navigate(m.path))} className="palette__item">
+                <Command.Item
+                  key={m.id}
+                  value={`${m.name} ${p.openModule(m.name)}`}
+                  onSelect={() => run(() => void navigate(m.path))}
+                  className="palette__item"
+                >
                   <m.icon size={16} />
                   <span>{p.openModule(m.name)}</span>
                   <kbd className="kbd">{formatCombo(`mod+${m.digit}`)}</kbd>
@@ -99,47 +117,100 @@ export function Palette() {
               ))}
             </Command.Group>
             <Command.Group heading={p.groups.actions}>
-              <Command.Item value={p.checkUpdates} className="palette__item" onSelect={() => run(() => void navigate(`${SETTINGS_PATH}/updates?check=1`))}>
+              <Command.Item
+                value={p.checkUpdates}
+                className="palette__item"
+                onSelect={() => run(() => void navigate(`${SETTINGS_PATH}/updates?check=1`))}
+              >
                 <span>{p.checkUpdates}</span>
               </Command.Item>
-              <Command.Item value={p.newProject} className="palette__item" onSelect={() => run(() => void navigate("/start?neu=1"))}>
+              <Command.Item
+                value={p.newProject}
+                className="palette__item"
+                onSelect={() => run(() => void navigate("/start?neu=1"))}
+              >
                 <span>{p.newProject}</span>
                 <kbd className="kbd">{formatCombo("mod+n")}</kbd>
               </Command.Item>
-              <Command.Item value={p.openFile} className="palette__item" onSelect={() => run(() => { window.dispatchEvent(new CustomEvent("cypher:open-file")); })}>
+              <Command.Item
+                value={p.openFile}
+                className="palette__item"
+                onSelect={() =>
+                  run(() => {
+                    window.dispatchEvent(new CustomEvent("cypher:open-file"));
+                  })
+                }
+              >
                 <span>{p.openFile}</span>
                 <kbd className="kbd">{formatCombo("mod+o")}</kbd>
               </Command.Item>
-              <Command.Item value={p.surround.hell} className="palette__item" onSelect={() => run(() => setSurround("light"))}>
+              <Command.Item
+                value={p.surround.hell}
+                className="palette__item"
+                onSelect={() => run(() => setSurround("light"))}
+              >
                 <span>{p.surround.hell}</span>
               </Command.Item>
-              <Command.Item value={p.surround.mittel} className="palette__item" onSelect={() => run(() => setSurround("mid"))}>
+              <Command.Item
+                value={p.surround.mittel}
+                className="palette__item"
+                onSelect={() => run(() => setSurround("mid"))}
+              >
                 <span>{p.surround.mittel}</span>
               </Command.Item>
-              <Command.Item value={p.surround.dunkel} className="palette__item" onSelect={() => run(() => setSurround("dark"))}>
+              <Command.Item
+                value={p.surround.dunkel}
+                className="palette__item"
+                onSelect={() => run(() => setSurround("dark"))}
+              >
                 <span>{p.surround.dunkel}</span>
               </Command.Item>
-              <Command.Item value={p.theme.system} className="palette__item" onSelect={() => run(() => setUi({ theme: "system" }))}>
+              <Command.Item
+                value={p.theme.system}
+                className="palette__item"
+                onSelect={() => run(() => setUi({ theme: "system" }))}
+              >
                 <span>{p.theme.system}</span>
               </Command.Item>
-              <Command.Item value={p.theme.paper} className="palette__item" onSelect={() => run(() => setUi({ theme: "paper" }))}>
+              <Command.Item
+                value={p.theme.paper}
+                className="palette__item"
+                onSelect={() => run(() => setUi({ theme: "paper" }))}
+              >
                 <span>{p.theme.paper}</span>
               </Command.Item>
-              <Command.Item value={p.theme.ink} className="palette__item" onSelect={() => run(() => setUi({ theme: "ink" }))}>
+              <Command.Item
+                value={p.theme.ink}
+                className="palette__item"
+                onSelect={() => run(() => setUi({ theme: "ink" }))}
+              >
                 <span>{p.theme.ink}</span>
               </Command.Item>
-              <Command.Item value={p.shortcuts} className="palette__item" onSelect={() => run(() => useUi.getState().setHelp(true))}>
+              <Command.Item
+                value={p.shortcuts}
+                className="palette__item"
+                onSelect={() => run(() => useUi.getState().setHelp(true))}
+              >
                 <span>{p.shortcuts}</span>
                 <kbd className="kbd">F1</kbd>
               </Command.Item>
-              <Command.Item value={p.jobs} className="palette__item" onSelect={() => run(() => useUi.getState().setJobs(true))}>
+              <Command.Item
+                value={p.jobs}
+                className="palette__item"
+                onSelect={() => run(() => useUi.getState().setJobs(true))}
+              >
                 <span>{p.jobs}</span>
                 <kbd className="kbd">{formatCombo("mod+j")}</kbd>
               </Command.Item>
               {(programs.data?.programs ?? [])
                 .filter((pr) => pr.installations.length > 0)
                 .map((pr) => (
-                  <Command.Item key={pr.id} value={p.launch(pr.name)} className="palette__item" onSelect={() => run(() => void call("program_launch", { req: { programId: pr.id } }))}>
+                  <Command.Item
+                    key={pr.id}
+                    value={p.launch(pr.name)}
+                    className="palette__item"
+                    onSelect={() => run(() => void call("program_launch", { req: { programId: pr.id } }))}
+                  >
                     <span>{p.launch(pr.name)}</span>
                   </Command.Item>
                 ))}
@@ -150,7 +221,12 @@ export function Palette() {
                   .filter((pr) => pr.lastFile)
                   .slice(0, 6)
                   .map((pr) => (
-                    <Command.Item key={pr.id} value={`${pr.name} ${pr.lastFile?.relPath ?? ""}`} className="palette__item" onSelect={() => run(() => void navigate(`/bibliothek?projekt=${encodeURIComponent(pr.id)}`))}>
+                    <Command.Item
+                      key={pr.id}
+                      value={`${pr.name} ${pr.lastFile?.relPath ?? ""}`}
+                      className="palette__item"
+                      onSelect={() => run(() => void navigate(`/bibliothek?projekt=${encodeURIComponent(pr.id)}`))}
+                    >
                       <span className="t-trunc">{pr.lastFile?.relPath.split("/").pop()}</span>
                       <span className="t-mute t-meta">{pr.name}</span>
                     </Command.Item>
@@ -214,7 +290,14 @@ export function HelpDialog() {
     { title: h.groups.onboarding, rows: [{ keys: formatCombo("enter"), text: h.keys.skip }] },
   ];
   return (
-    <Dialog open={open} title={h.title} onClose={() => setOpen(false)} wide testId="help-dialog" footer={<Button onClick={() => setOpen(false)}>{t.common.close}</Button>}>
+    <Dialog
+      open={open}
+      title={h.title}
+      onClose={() => setOpen(false)}
+      wide
+      testId="help-dialog"
+      footer={<Button onClick={() => setOpen(false)}>{t.common.close}</Button>}
+    >
       <p className="t-read help__intro">{h.intro}</p>
       {groups.map((g) => (
         <section key={g.title} className="help__group">

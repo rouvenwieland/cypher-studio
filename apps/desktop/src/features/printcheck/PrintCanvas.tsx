@@ -39,7 +39,10 @@ interface Props {
 function Chip({ x, y, text, className }: { x: number; y: number; text: string; className?: string }) {
   const w = text.length * 8.7 + 12;
   return (
-    <g className={className ? `pc__chip ${className}` : "pc__chip"} transform={`translate(${x.toFixed(1)} ${y.toFixed(1)})`}>
+    <g
+      className={className ? `pc__chip ${className}` : "pc__chip"}
+      transform={`translate(${x.toFixed(1)} ${y.toFixed(1)})`}
+    >
       <rect className="pc__chip-bg" width={w} height={18} />
       <text className="pc__chip-text" x={6} y={13}>
         {text}
@@ -61,7 +64,13 @@ function Frame({ x, y, w, h, dashed }: { x: number; y: number; w: number; h: num
   return (
     <>
       <rect className="pc__gegen pc__frame" x={x} y={y} width={w} height={h} />
-      <rect className={dashed ? "pc__mess pc__frame pc__mess--dash" : "pc__mess pc__frame"} x={x} y={y} width={w} height={h} />
+      <rect
+        className={dashed ? "pc__mess pc__frame pc__mess--dash" : "pc__mess pc__frame"}
+        x={x}
+        y={y}
+        width={w}
+        height={h}
+      />
     </>
   );
 }
@@ -120,7 +129,16 @@ export function PrintCanvas(p: Props) {
     }
     if (!p.singleKeys) return;
     const k = e.key.toLowerCase();
-    const map: Record<string, CanvasKey> = { "0": "fit", "1": "full", e: "actual", u: "surround", g: "grid", s: "zones", p: "marks", m: "measure" };
+    const map: Record<string, CanvasKey> = {
+      "0": "fit",
+      "1": "full",
+      e: "actual",
+      u: "surround",
+      g: "grid",
+      s: "zones",
+      p: "marks",
+      m: "measure",
+    };
     const hit = map[k];
     if (hit) {
       e.preventDefault();
@@ -182,9 +200,22 @@ export function PrintCanvas(p: Props) {
       style={{ ["--pc-garment" as string]: p.garment.hex }}
     >
       {size.width > 0 ? (
-        <svg className="pc__svg" width={size.width} height={size.height} viewBox={`0 0 ${size.width} ${size.height}`} aria-hidden="true" focusable="false">
+        <svg
+          className="pc__svg"
+          width={size.width}
+          height={size.height}
+          viewBox={`0 0 ${size.width} ${size.height}`}
+          aria-hidden="true"
+          focusable="false"
+        >
           <defs>
-            <pattern id={`${uid}-hatch`} width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+            <pattern
+              id={`${uid}-hatch`}
+              width="7"
+              height="7"
+              patternUnits="userSpaceOnUse"
+              patternTransform="rotate(45)"
+            >
               <line className="pc__hatch" x1="0" y1="0" x2="0" y2="7" />
             </pattern>
             <pattern id={`${uid}-cross`} width="8" height="8" patternUnits="userSpaceOnUse">
@@ -213,11 +244,34 @@ export function PrintCanvas(p: Props) {
           {hasMotif && p.handle?.url ? (
             <g clipPath={`url(#${uid}-area)`}>
               {bounds && file ? (
-                <svg x={motifLeft} y={motifTop} width={motifW} height={motifH} viewBox={`${bounds.x} ${bounds.y} ${bounds.width} ${bounds.height}`} preserveAspectRatio="none" overflow="hidden">
-                  <image href={p.handle.url} x={0} y={0} width={file.widthPx} height={file.heightPx} preserveAspectRatio="none" />
+                <svg
+                  x={motifLeft}
+                  y={motifTop}
+                  width={motifW}
+                  height={motifH}
+                  viewBox={`${bounds.x} ${bounds.y} ${bounds.width} ${bounds.height}`}
+                  preserveAspectRatio="none"
+                  overflow="hidden"
+                >
+                  <image
+                    href={p.handle.url}
+                    x={0}
+                    y={0}
+                    width={file.widthPx}
+                    height={file.heightPx}
+                    preserveAspectRatio="none"
+                  />
                 </svg>
               ) : (
-                <image className="pc__pending" href={p.handle.url} x={motifLeft} y={motifTop} width={motifW} height={motifH} preserveAspectRatio="xMidYMin meet" />
+                <image
+                  className="pc__pending"
+                  href={p.handle.url}
+                  x={motifLeft}
+                  y={motifTop}
+                  width={motifW}
+                  height={motifH}
+                  preserveAspectRatio="xMidYMin meet"
+                />
               )}
             </g>
           ) : null}
@@ -227,8 +281,18 @@ export function PrintCanvas(p: Props) {
           <Frame x={X(0)} y={Y(0)} w={area.width * scale} h={area.height * scale} />
           {p.showSafe && p.profile.safeAreaMm ? (
             <>
-              <Frame x={X((area.width - p.profile.safeAreaMm.width) / 2)} y={Y((area.height - p.profile.safeAreaMm.height) / 2)} w={p.profile.safeAreaMm.width * scale} h={p.profile.safeAreaMm.height * scale} dashed />
-              <Chip x={X((area.width - p.profile.safeAreaMm.width) / 2)} y={Y((area.height - p.profile.safeAreaMm.height) / 2) - 22} text={t.print.preview.safeChip(p.profile.safeAreaMm.width, p.profile.safeAreaMm.height)} />
+              <Frame
+                x={X((area.width - p.profile.safeAreaMm.width) / 2)}
+                y={Y((area.height - p.profile.safeAreaMm.height) / 2)}
+                w={p.profile.safeAreaMm.width * scale}
+                h={p.profile.safeAreaMm.height * scale}
+                dashed
+              />
+              <Chip
+                x={X((area.width - p.profile.safeAreaMm.width) / 2)}
+                y={Y((area.height - p.profile.safeAreaMm.height) / 2) - 22}
+                text={t.print.preview.safeChip(p.profile.safeAreaMm.width, p.profile.safeAreaMm.height)}
+              />
             </>
           ) : null}
 
@@ -256,8 +320,20 @@ export function PrintCanvas(p: Props) {
                   const cross = f.ruleId === "detail.thinLines";
                   return (
                     <g key={`${f.ruleId}-${i}`} className="pc__mark">
-                      <rect x={X(r.x)} y={Y(r.y)} width={Math.max(2, r.width * scale)} height={Math.max(4, r.height * scale)} fill={`url(#${uid}-${cross ? "cross" : "hatch"})`} />
-                      <rect className="pc__mark-edge" x={X(r.x)} y={Y(r.y)} width={Math.max(2, r.width * scale)} height={Math.max(4, r.height * scale)} />
+                      <rect
+                        x={X(r.x)}
+                        y={Y(r.y)}
+                        width={Math.max(2, r.width * scale)}
+                        height={Math.max(4, r.height * scale)}
+                        fill={`url(#${uid}-${cross ? "cross" : "hatch"})`}
+                      />
+                      <rect
+                        className="pc__mark-edge"
+                        x={X(r.x)}
+                        y={Y(r.y)}
+                        width={Math.max(2, r.width * scale)}
+                        height={Math.max(4, r.height * scale)}
+                      />
                     </g>
                   );
                 })
@@ -275,7 +351,11 @@ export function PrintCanvas(p: Props) {
               return (
                 <g key={`t${tk.mm}`}>
                   <line className="pc__mess" x1={x} y1={tk.major ? RULER - 9 : RULER - 5} x2={x} y2={RULER} />
-                  {tk.label ? <text className="pc__ruler-num" x={x + 3} y={11}>{tk.mm}</text> : null}
+                  {tk.label ? (
+                    <text className="pc__ruler-num" x={x + 3} y={11}>
+                      {tk.mm}
+                    </text>
+                  ) : null}
                 </g>
               );
             })}
@@ -293,7 +373,9 @@ export function PrintCanvas(p: Props) {
                 </g>
               );
             })}
-            <text className="pc__ruler-unit" x={4} y={RULER - 8}>{t.print.preview.unit}</text>
+            <text className="pc__ruler-unit" x={4} y={RULER - 8}>
+              {t.print.preview.unit}
+            </text>
           </g>
         </svg>
       ) : null}

@@ -136,27 +136,6 @@
   justify-content: flex-end;
 }
 
-.coll {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--s-2);
-  min-width: 0;
-}
-
-.coll__sw {
-  flex: 0 0 auto;
-  width: 8px;
-  height: 8px;
-  border: var(--hair) solid var(--fg);
-}
-
-.coll__name {
-  color: inherit;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 /* Programmzeilen auf dem Start */
 .pl {
   display: flex;

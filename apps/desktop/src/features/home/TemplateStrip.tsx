@@ -32,7 +32,17 @@ function targetOf(tpl: TemplateInfo, programName: (id: string) => string): strin
   return tpl.target === "mockup" ? s.opensInModule.mockup : s.opensInModule.social;
 }
 
-function CreatePopover({ tpl, programName, onClose, onNewProject }: { tpl: TemplateInfo; programName: string; onClose: () => void; onNewProject: () => void }) {
+function CreatePopover({
+  tpl,
+  programName,
+  onClose,
+  onNewProject,
+}: {
+  tpl: TemplateInfo;
+  programName: string;
+  onClose: () => void;
+  onNewProject: () => void;
+}) {
   const navigate = useNavigate();
   const projects = useCmd("projects_list", undefined, { retry: false });
   const push = useToasts((st) => st.push);
@@ -56,7 +66,13 @@ function CreatePopover({ tpl, programName, onClose, onNewProject }: { tpl: Templ
       .then((res) => {
         onClose();
         if (res.outcome.kind === "programMissing") {
-          push({ kind: "info", text: s.programMissing(programName), actionLabel: s.install(programName), onAction: () => openInstall({ programId: res.outcome.kind === "programMissing" ? res.outcome.programId : "" }) });
+          push({
+            kind: "info",
+            text: s.programMissing(programName),
+            actionLabel: s.install(programName),
+            onAction: () =>
+              openInstall({ programId: res.outcome.kind === "programMissing" ? res.outcome.programId : "" }),
+          });
         } else if (res.outcome.kind === "module") {
           void navigate(res.outcome.module === "mockup" ? "/mockups" : "/social");
         } else {
@@ -85,14 +101,46 @@ function CreatePopover({ tpl, programName, onClose, onNewProject }: { tpl: Templ
   }
 
   return (
-    <form className="stack" onSubmit={create} onKeyDown={(e) => { if ((e.ctrlKey || e.metaKey) && e.key === "Enter") { e.preventDefault(); e.stopPropagation(); create(); } }} data-testid="template-popover">
+    <form
+      className="stack"
+      onSubmit={create}
+      onKeyDown={(e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+          e.preventDefault();
+          e.stopPropagation();
+          create();
+        }
+      }}
+      data-testid="template-popover"
+    >
       <h3 className="t-section">{s.popover.title(tpl.title)}</h3>
       <Field label={s.popover.fileName}>
-        <input className="input input--mono" value={name} onChange={(e) => setFileName(e.target.value)} aria-label={s.popover.fileName} data-autofocus />
+        <input
+          className="input input--mono"
+          value={name}
+          onChange={(e) => setFileName(e.target.value)}
+          aria-label={s.popover.fileName}
+          data-autofocus
+        />
       </Field>
-      <SelectField label={s.popover.project} value={effectiveProject} onChange={setProjectId} options={list.map((p) => ({ value: p.id, label: p.name }))} />
-      {problem ? <p className="field__error t-meta" role="alert">{problem}</p> : null}
-      <Button variant="action" type="submit" combo="mod+enter" disabled={busy || !project} data-testid="template-create">
+      <SelectField
+        label={s.popover.project}
+        value={effectiveProject}
+        onChange={setProjectId}
+        options={list.map((p) => ({ value: p.id, label: p.name }))}
+      />
+      {problem ? (
+        <p className="field__error t-meta" role="alert">
+          {problem}
+        </p>
+      ) : null}
+      <Button
+        variant="action"
+        type="submit"
+        combo="mod+enter"
+        disabled={busy || !project}
+        data-testid="template-create"
+      >
         {tpl.programId ? s.popover.create(programName) : s.popover.createPlain}
       </Button>
     </form>
@@ -105,7 +153,14 @@ export function TemplateStrip({ onNewProject }: { onNewProject: () => void }) {
   const [openId, setOpenId] = useState<string | null>(null);
   const items = templates.data ?? [];
   const programName = (id: string) => programs.data?.programs.find((p) => p.id === id)?.name ?? id;
-  const roving = useRoving({ count: items.length, horizontal: true, onEnter: (i) => { const tpl = items[i]; if (tpl) setOpenId(tpl.id); } });
+  const roving = useRoving({
+    count: items.length,
+    horizontal: true,
+    onEnter: (i) => {
+      const tpl = items[i];
+      if (tpl) setOpenId(tpl.id);
+    },
+  });
 
   return (
     <section className="panel" aria-labelledby="start-templates">
@@ -117,7 +172,15 @@ export function TemplateStrip({ onNewProject }: { onNewProject: () => void }) {
       {templates.isPending ? (
         <div className="skel skel--strip" role="status" aria-label={t.common.loading} />
       ) : (
-        <ul className="tstrip" role="listbox" aria-label={s.label} aria-orientation="horizontal" aria-describedby="templates-hint" {...roving.containerProps} data-testid="template-strip">
+        <ul
+          className="tstrip"
+          role="toolbar"
+          aria-label={s.label}
+          aria-orientation="horizontal"
+          aria-describedby="templates-hint"
+          {...roving.containerProps}
+          data-testid="template-strip"
+        >
           {items.map((tpl, i) => (
             <li key={tpl.id} role="presentation">
               <Pop
@@ -128,23 +191,32 @@ export function TemplateStrip({ onNewProject }: { onNewProject: () => void }) {
                 trigger={
                   <button
                     type="button"
-                    role="option"
                     className="tile"
-                    {...roving.itemProps(i)}
+                    data-roving-index={i}
+                    tabIndex={roving.active === i ? 0 : -1}
+                    onFocus={() => roving.setActive(i)}
                     onClick={() => setOpenId(openId === tpl.id ? null : tpl.id)}
                     data-testid={`template-${tpl.id.replace("builtin:", "")}`}
-                    aria-label={`${tpl.title}, ${tpl.format.label}, ${s.opensIn(targetOf(tpl, programName))}`}
                   >
                     <span className="tile__img" style={{ width: Math.round(112 * tpl.aspect) }}>
-                      {tpl.previewUrl ? <img src={tpl.previewUrl} alt="" width={Math.round(112 * tpl.aspect)} height={112} /> : null}
+                      {tpl.previewUrl ? (
+                        <img src={tpl.previewUrl} alt="" width={Math.round(112 * tpl.aspect)} height={112} />
+                      ) : null}
                     </span>
                     <span className="tile__name t-strong">{tpl.title}</span>
                     <span className="t-data">{tpl.format.label}</span>
-                    <span className="t-label tile__opens" title={s.opensIn(targetOf(tpl, programName))}>{targetOf(tpl, programName).toUpperCase()}</span>
+                    <span className="t-label tile__opens" title={s.opensIn(targetOf(tpl, programName))}>
+                      {targetOf(tpl, programName).toUpperCase()}
+                    </span>
                   </button>
                 }
               >
-                <CreatePopover tpl={tpl} programName={tpl.programId ? programName(tpl.programId) : ""} onClose={() => setOpenId(null)} onNewProject={onNewProject} />
+                <CreatePopover
+                  tpl={tpl}
+                  programName={tpl.programId ? programName(tpl.programId) : ""}
+                  onClose={() => setOpenId(null)}
+                  onNewProject={onNewProject}
+                />
               </Pop>
             </li>
           ))}

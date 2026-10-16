@@ -20,8 +20,12 @@ export async function bridgeEvents(qc: QueryClient): Promise<() => void> {
   const handles: UnlistenFn[] = [];
   handles.push(
     await onEvent("catalog:updated", () => invalidate("catalog_status", "programs_list")),
-    await onEvent("programs:changed", () => invalidate("programs_list", "setup_packs_list", "setup_status", "setup_history", "setup_preview")),
-    await onEvent("library:changed", () => invalidate("library_status", "library_query", "library_get", "projects_list")),
+    await onEvent("programs:changed", () =>
+      invalidate("programs_list", "setup_packs_list", "setup_status", "setup_history", "setup_preview"),
+    ),
+    await onEvent("library:changed", () =>
+      invalidate("library_status", "library_query", "library_get", "projects_list"),
+    ),
     await onEvent("projects:changed", () => invalidate("projects_list", "library_query")),
     await onEvent("files:dropped", (p) => useDrops.getState().push(p.handles)),
     await onEvent("update:available", (u) => useUpdate.getState().set(u)),

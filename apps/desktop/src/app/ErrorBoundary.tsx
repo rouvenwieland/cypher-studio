@@ -51,7 +51,12 @@ export class ErrorBoundary extends Component<Props, State> {
                 >
                   {b.home}
                 </Button>
-                <Button variant="text" onClick={() => void navigator.clipboard?.writeText(`${error.name}: ${error.message}\n${error.stack ?? ""}`)}>
+                <Button
+                  variant="text"
+                  onClick={() =>
+                    void navigator.clipboard?.writeText(`${error.name}: ${error.message}\n${error.stack ?? ""}`)
+                  }
+                >
                   {b.copyDetails}
                 </Button>
               </>

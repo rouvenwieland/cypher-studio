@@ -1,7 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import type { AppError, FileHandleInfo, Finding, PrintExportEvent, PrintExportOptions, PrintExportResult } from "@contract";
+import type {
+  AppError,
+  FileHandleInfo,
+  Finding,
+  PrintExportEvent,
+  PrintExportOptions,
+  PrintExportResult,
+} from "@contract";
 import { call } from "../../ipc/commands";
 import { channel } from "../../ipc/channel";
 import { useCmd } from "../../ipc/queries";
@@ -16,7 +23,17 @@ import { Button, IconButton } from "../../ui/Button";
 import { Dialog } from "../../ui/Dialog";
 import { Bench } from "../../ui/Frames";
 import { SelectField } from "../../ui/Inputs";
-import { IconActualSize, IconFit, IconGrid, IconClose, GlyphMeasure, GlyphPrintArea, GlyphSafeZone, GlyphSurround, IconSearch } from "../../ui/icons";
+import {
+  IconActualSize,
+  IconFit,
+  IconGrid,
+  IconClose,
+  GlyphMeasure,
+  GlyphPrintArea,
+  GlyphSafeZone,
+  GlyphSurround,
+  IconSearch,
+} from "../../ui/icons";
 import { OutputBar, type OutputState } from "../../ui/OutputBar";
 import { PrintCanvas, type CanvasKey, type ViewState } from "./PrintCanvas";
 import { ExportSection, GarmentSection, ReportSection, SizeSection, VerdictBlock } from "./PrintInspector";
@@ -137,18 +154,30 @@ export default function PrintCheck() {
   const analysisEnabled = !!handle && !!profile && !!garment;
   const analysis = useCmd(
     "printcheck_analyze",
-    { req: { handleId: handle?.id ?? "", profileId: profile?.id ?? "", garmentColorId: garment?.id ?? "schwarz", technique, plannedWidthMm: debouncedWidth } },
+    {
+      req: {
+        handleId: handle?.id ?? "",
+        profileId: profile?.id ?? "",
+        garmentColorId: garment?.id ?? "schwarz",
+        technique,
+        plannedWidthMm: debouncedWidth,
+      },
+    },
     { enabled: analysisEnabled, keepPrevious: true, retry: false },
   );
   const report = analysis.data;
   const analyzing = analysis.isFetching && (!report || report.file.name !== handle?.name);
 
-  const checks: CheckResult[] = useMemo(() => (report && profile ? evaluateChecks(report, profile) : []), [report, profile]);
+  const checks: CheckResult[] = useMemo(
+    () => (report && profile ? evaluateChecks(report, profile) : []),
+    [report, profile],
+  );
   const sum = useMemo(() => summarize(checks), [checks]);
 
   // Standardabstand oben, sobald die Höhe bekannt ist
   const motifHeight = report?.placement.plannedHeightMm ?? heightFor(widthMm, { width: 1, height: 1.1 });
-  const topMm = offsetTop ?? (profile ? defaultTopOffset(profile.printAreaMm, motifHeight, profile.topMarginHintMm) : 0);
+  const topMm =
+    offsetTop ?? (profile ? defaultTopOffset(profile.printAreaMm, motifHeight, profile.topMarginHintMm) : 0);
 
   // Zustände zurücksetzen, wenn sich etwas ändert
   const resetKey = `${handle?.id}|${profile?.id}|${garmentId}|${technique}|${Math.round(widthMm * 10)}|${JSON.stringify(options)}`;
@@ -165,7 +194,10 @@ export default function PrintCheck() {
 
   const surroundKey = theme === "ink" ? "ink" : "paper";
   const surround: Surround = ui?.surround[surroundKey] ?? (theme === "ink" ? "dark" : "light");
-  const setUi = (patch: Record<string, unknown>) => void call("settings_update", { req: { ui: patch } }).then(() => qc.invalidateQueries({ queryKey: ["settings_get"] }));
+  const setUi = (patch: Record<string, unknown>) =>
+    void call("settings_update", { req: { ui: patch } }).then(() =>
+      qc.invalidateQueries({ queryKey: ["settings_get"] }),
+    );
   const cycleSurround = () => {
     const next = SURROUND_CYCLE[(SURROUND_CYCLE.indexOf(surround) + 1) % SURROUND_CYCLE.length] ?? "light";
     setUi({ surround: { ...(ui?.surround ?? { paper: "light", ink: "dark" }), [surroundKey]: next } });
@@ -252,7 +284,9 @@ export default function PrintCheck() {
     const first = projects.data?.[0];
     if (first && !projectId) {
       setProjectId(first.id);
-      setOptions((o) => (o.destination.kind === "dialog" ? { ...o, destination: { kind: "project", projectId: first.id } } : o));
+      setOptions((o) =>
+        o.destination.kind === "dialog" ? { ...o, destination: { kind: "project", projectId: first.id } } : o,
+      );
     }
   }, [projects.data, projectId]);
 
@@ -268,7 +302,12 @@ export default function PrintCheck() {
   };
 
   // Ausgangsleiste
-  const estBytes = report ? Math.round(report.file.fileBytes * Math.min(1.5, Math.max(0.2, (Math.round((widthMm / 25.4) * 300) / (report.trimmedPx?.width || 1)) ** 2))) : 0;
+  const estBytes = report
+    ? Math.round(
+        report.file.fileBytes *
+          Math.min(1.5, Math.max(0.2, (Math.round((widthMm / 25.4) * 300) / (report.trimmedPx?.width || 1)) ** 2)),
+      )
+    : 0;
   const outW = Math.round((widthMm / 25.4) * 300);
   const outH = report?.trimmedPx ? Math.round(outW * (report.trimmedPx.height / report.trimmedPx.width)) : 0;
   const summary = report
@@ -276,7 +315,10 @@ export default function PrintCheck() {
         { label: p.output.format, value: "PNG" },
         { label: p.output.dims, value: fmtPx(outW, outH) },
         { label: p.output.dpi, value: "300 dpi" },
-        { label: p.output.profile, value: options.colorProfile === "adobeRgb" ? p.values.colorProfile.adobeRgb : p.values.colorProfile.srgb },
+        {
+          label: p.output.profile,
+          value: options.colorProfile === "adobeRgb" ? p.values.colorProfile.adobeRgb : p.values.colorProfile.srgb,
+        },
         { label: p.output.size, value: `${p.output.estimated} ${fmtBytes(estBytes)}` },
       ]
     : [{ label: p.output.format, value: "—" }];
@@ -292,10 +334,19 @@ export default function PrintCheck() {
       announce: p.output.announceSaved(r.output.name),
       actions: (
         <>
-          <Button onClick={() => void call("app_reveal", { req: { target: { kind: "fileHandle", handleId: r.output.id } } })} data-testid="reveal-output">
+          <Button
+            onClick={() => void call("app_reveal", { req: { target: { kind: "fileHandle", handleId: r.output.id } } })}
+            data-testid="reveal-output"
+          >
             {p.output.reveal}
           </Button>
-          <Button onClick={() => void call("app_open_external", { req: { target: { kind: "catalogLink", linkId: "shirtigo" } } })}>{p.output.openShirtigo} ↗</Button>
+          <Button
+            onClick={() =>
+              void call("app_open_external", { req: { target: { kind: "catalogLink", linkId: "shirtigo" } } })
+            }
+          >
+            {p.output.openShirtigo} ↗
+          </Button>
         </>
       ),
     };
@@ -311,64 +362,122 @@ export default function PrintCheck() {
   } else if (!report || analyzing) {
     state = { kind: "blocked", label: p.output.label, reason: p.output.pending, onJump: () => undefined };
   } else if (sum.errors > 0) {
-    state = { kind: "blocked", label: p.output.label, reason: p.output.errorsFirst(sum.errors), onJump: jumpToFirstError, forceLabel: p.forceExport, onForce: () => setForce(true) };
+    state = {
+      kind: "blocked",
+      label: p.output.label,
+      reason: p.output.errorsFirst(sum.errors),
+      onJump: jumpToFirstError,
+      forceLabel: p.forceExport,
+      onForce: () => setForce(true),
+    };
   } else {
     state = { kind: "ready", label: p.output.label, onRun: doExport };
   }
 
   const surroundAttr = surround === "light" ? "hell" : surround === "mid" ? "mittel" : "dunkel";
   const unreadable = analysis.isError ? analysis.error : null;
-  const summaryText = report && handle ? p.preview.summary(handle.name, fmtNumber(report.placement.plannedWidthMm, 1), fmtNumber(report.placement.plannedHeightMm, 1), profile?.printAreaMm.width ?? 0, profile?.printAreaMm.height ?? 0) : p.empty.areaLabel(profile?.printAreaMm.width ?? 0, profile?.printAreaMm.height ?? 0);
+  const summaryText =
+    report && handle
+      ? p.preview.summary(
+          handle.name,
+          fmtNumber(report.placement.plannedWidthMm, 1),
+          fmtNumber(report.placement.plannedHeightMm, 1),
+          profile?.printAreaMm.width ?? 0,
+          profile?.printAreaMm.height ?? 0,
+        )
+      : p.empty.areaLabel(profile?.printAreaMm.width ?? 0, profile?.printAreaMm.height ?? 0);
   const measure = ui?.measureColor ?? "cyan";
 
   const toolbar = (
     <div className="pc__tools" role="toolbar" aria-label={p.preview.tools.group}>
       <IconButton icon={IconFit} label={p.preview.tools.fit} combo="0" onClick={() => onKey("fit")} />
-      <IconButton icon={IconSearch} label={p.preview.tools.full} combo="1" onClick={() => onKey("full")} disabled={!report} />
+      <IconButton
+        icon={IconSearch}
+        label={p.preview.tools.full}
+        combo="1"
+        onClick={() => onKey("full")}
+        disabled={!report}
+      />
       <IconButton icon={IconActualSize} label={p.preview.tools.actual} combo="e" onClick={() => onKey("actual")} />
       <span className="pc__sep" aria-hidden="true" />
-      <IconButton icon={GlyphSurround} label={`${p.preview.tools.surround} (${p.preview.surround[surroundAttr]})`} combo="u" onClick={() => onKey("surround")} data-testid="tool-surround" />
-      <IconButton icon={IconGrid} label={p.preview.tools.grid} combo="g" onClick={() => onKey("grid")} pressed={grid} data-testid="tool-grid" />
-      <IconButton icon={GlyphSafeZone} label={p.preview.tools.zones} combo="s" onClick={() => onKey("zones")} pressed={safe} disabled={!profile?.safeAreaMm} data-testid="tool-zones" />
-      <IconButton icon={GlyphPrintArea} label={p.preview.tools.marks} combo="p" onClick={() => onKey("marks")} pressed={marks} data-testid="tool-marks" />
-      <IconButton icon={GlyphMeasure} label={`${p.preview.tools.measureColor} (${p.preview.measureColors[measure]})`} combo="m" onClick={() => onKey("measure")} />
+      <IconButton
+        icon={GlyphSurround}
+        label={`${p.preview.tools.surround} (${p.preview.surround[surroundAttr]})`}
+        combo="u"
+        onClick={() => onKey("surround")}
+        data-testid="tool-surround"
+      />
+      <IconButton
+        icon={IconGrid}
+        label={p.preview.tools.grid}
+        combo="g"
+        onClick={() => onKey("grid")}
+        pressed={grid}
+        data-testid="tool-grid"
+      />
+      <IconButton
+        icon={GlyphSafeZone}
+        label={p.preview.tools.zones}
+        combo="s"
+        onClick={() => onKey("zones")}
+        pressed={safe}
+        disabled={!profile?.safeAreaMm}
+        data-testid="tool-zones"
+      />
+      <IconButton
+        icon={GlyphPrintArea}
+        label={p.preview.tools.marks}
+        combo="p"
+        onClick={() => onKey("marks")}
+        pressed={marks}
+        data-testid="tool-marks"
+      />
+      <IconButton
+        icon={GlyphMeasure}
+        label={`${p.preview.tools.measureColor} (${p.preview.measureColors[measure]})`}
+        combo="m"
+        onClick={() => onKey("measure")}
+      />
     </div>
   );
 
-  const emptyOverlay =
-    !handle ? (
-      <div className="pc__empty" data-testid="print-empty">
-        <p className="t-section">{p.empty.drop}</p>
-        <div className="cluster">
-          <Button variant="action" combo="mod+o" onClick={pick} data-testid="print-pick">
-            {p.empty.choose}
-          </Button>
-        </div>
-        <p className="t-meta">
-          {p.empty.orLibrary}{" "}
-          <button type="button" className="linkbtn" onClick={() => void navigate("/bibliothek")}>
-            {p.empty.library}
-          </button>
-        </p>
+  const emptyOverlay = !handle ? (
+    <div className="pc__empty" data-testid="print-empty">
+      <p className="t-section">{p.empty.drop}</p>
+      <div className="cluster">
+        <Button variant="action" combo="mod+o" onClick={pick} data-testid="print-pick">
+          {p.empty.choose}
+        </Button>
       </div>
-    ) : unreadable ? (
-      <div className="pc__empty" data-testid="print-unreadable">
-        <Notice
-          kind="error"
-          title={unreadable.kind === "unsupportedFormat" ? p.errors.unsupportedFormat(handle.name, unreadable.format) : p.errors.unreadable(handle.name, errorText(unreadable).text)}
-          actions={
-            <>
-              <Button onClick={pick}>{p.empty.choose}</Button>
-              <Button variant="text" onClick={() => setHandle(null)}>
-                {t.common.cancel}
-              </Button>
-            </>
-          }
-        >
-          {errorText(unreadable).safe}
-        </Notice>
-      </div>
-    ) : null;
+      <p className="t-meta">
+        {p.empty.orLibrary}{" "}
+        <button type="button" className="linkbtn" onClick={() => void navigate("/bibliothek")}>
+          {p.empty.library}
+        </button>
+      </p>
+    </div>
+  ) : unreadable ? (
+    <div className="pc__empty" data-testid="print-unreadable">
+      <Notice
+        kind="error"
+        title={
+          unreadable.kind === "unsupportedFormat"
+            ? p.errors.unsupportedFormat(handle.name, unreadable.format)
+            : p.errors.unreadable(handle.name, errorText(unreadable).text)
+        }
+        actions={
+          <>
+            <Button onClick={pick}>{p.empty.choose}</Button>
+            <Button variant="text" onClick={() => setHandle(null)}>
+              {t.common.cancel}
+            </Button>
+          </>
+        }
+      >
+        {errorText(unreadable).safe}
+      </Notice>
+    </div>
+  ) : null;
 
   const tools = (
     <>
@@ -387,7 +496,10 @@ export default function PrintCheck() {
                 setOptions((o) => ({ ...o, plannedWidthMm: next.defaultWidthMm }));
               }
             }}
-            options={(profiles.data ?? []).map((x) => ({ value: x.id, label: p.profileOption(x.title, x.printAreaMm.width, x.printAreaMm.height) }))}
+            options={(profiles.data ?? []).map((x) => ({
+              value: x.id,
+              label: p.profileOption(x.title, x.printAreaMm.width, x.printAreaMm.height),
+            }))}
             data-testid="print-profile"
           />
         </div>
@@ -414,84 +526,127 @@ export default function PrintCheck() {
 
   return (
     <>
-    <Bench
-      title={p.title}
-      testId="screen-print"
-      context={context}
-      tools={tools}
-      surround={surroundAttr}
-      previewLabel={p.preview.label}
-      previewNote={p.preview.disclaimer}
-      preview={
-        <>
-          {profile && garment ? (
-            <PrintCanvas
-              profile={profile}
-              garment={garment}
-              handle={handle}
-              report={unreadable ? undefined : report}
-              plannedWidthMm={widthMm}
-              offsetTopMm={topMm}
-              offsetCenterMm={0}
-              showGrid={grid}
-              showSafe={safe}
-              showMarks={marks}
-              view={view}
-              onView={setView}
-              summary={summaryText}
-              singleKeys={ui?.singleKeyShortcuts ?? true}
-              onKey={onKey}
-            />
-          ) : null}
-          {emptyOverlay}
-          {toolbar}
-          <div className="sr-only" aria-live="polite" data-testid="print-live">
-            {announce}
-          </div>
-        </>
-      }
-      inspector={
-        <>
-          <div className="section">
-            <VerdictBlock report={unreadable ? undefined : report} checks={checks} hasFile={!!handle} loading={analyzing} />
-          </div>
-          {profile && garment ? (
-            <>
-              <div className="section">
-                <GarmentSection garments={garments} value={garment.id} onChange={setGarmentId} />
-              </div>
-              <div className="section">
-                <SizeSection profile={profile} widthMm={widthMm} onWidth={(v) => { setWidth(v); setOptions((o) => ({ ...o, plannedWidthMm: v })); }} technique={technique} onTechnique={setTechnique} report={report} offsetTop={topMm} onOffsetTop={setOffsetTop} />
-              </div>
-              {handle && !unreadable ? (
+      <Bench
+        title={p.title}
+        testId="screen-print"
+        context={context}
+        tools={tools}
+        surround={surroundAttr}
+        previewLabel={p.preview.label}
+        previewNote={p.preview.disclaimer}
+        preview={
+          <>
+            {profile && garment ? (
+              <PrintCanvas
+                profile={profile}
+                garment={garment}
+                handle={handle}
+                report={unreadable ? undefined : report}
+                plannedWidthMm={widthMm}
+                offsetTopMm={topMm}
+                offsetCenterMm={0}
+                showGrid={grid}
+                showSafe={safe}
+                showMarks={marks}
+                view={view}
+                onView={setView}
+                summary={summaryText}
+                singleKeys={ui?.singleKeyShortcuts ?? true}
+                onKey={onKey}
+              />
+            ) : null}
+            {emptyOverlay}
+            {toolbar}
+            <div className="sr-only" aria-live="polite" data-testid="print-live">
+              {announce}
+            </div>
+          </>
+        }
+        inspector={
+          <>
+            <div className="section">
+              <VerdictBlock
+                report={unreadable ? undefined : report}
+                checks={checks}
+                hasFile={!!handle}
+                loading={analyzing}
+              />
+            </div>
+            {profile && garment ? (
+              <>
                 <div className="section">
-                  <ReportSection report={report} checks={checks} profile={profile} loading={analyzing} expandedId={expanded} setExpandedId={setExpanded} onFix={onFix} fixed={fixed} headRefs={headRefs} />
+                  <GarmentSection garments={garments} value={garment.id} onChange={setGarmentId} />
                 </div>
-              ) : null}
-              <div className="section">
-                <ExportSection options={options} onChange={setOptions} projects={projects.data ?? []} projectId={projectId} onProject={setProjectId} />
-              </div>
-              {profile.assumption ? <p className="section t-meta t-mute">{p.assumption}</p> : null}
-            </>
-          ) : null}
-        </>
-      }
-      output={<OutputBar target={p.output.target} summary={summary} state={state} testId="print-output" />}
-    />
-    <ForceDialog
-      open={force}
-      errors={sum.errors}
-      onCancel={() => setForce(false)}
-      onConfirm={() => {
-        setForce(false);
-        doExport();
-      }}
-    />
+                <div className="section">
+                  <SizeSection
+                    profile={profile}
+                    widthMm={widthMm}
+                    onWidth={(v) => {
+                      setWidth(v);
+                      setOptions((o) => ({ ...o, plannedWidthMm: v }));
+                    }}
+                    technique={technique}
+                    onTechnique={setTechnique}
+                    report={report}
+                    offsetTop={topMm}
+                    onOffsetTop={setOffsetTop}
+                  />
+                </div>
+                {handle && !unreadable ? (
+                  <div className="section">
+                    <ReportSection
+                      report={report}
+                      checks={checks}
+                      profile={profile}
+                      loading={analyzing}
+                      expandedId={expanded}
+                      setExpandedId={setExpanded}
+                      onFix={onFix}
+                      fixed={fixed}
+                      headRefs={headRefs}
+                    />
+                  </div>
+                ) : null}
+                <div className="section">
+                  <ExportSection
+                    options={options}
+                    onChange={setOptions}
+                    projects={projects.data ?? []}
+                    projectId={projectId}
+                    onProject={setProjectId}
+                  />
+                </div>
+                {profile.assumption ? <p className="section t-meta t-mute">{p.assumption}</p> : null}
+              </>
+            ) : null}
+          </>
+        }
+        output={<OutputBar target={p.output.target} summary={summary} state={state} testId="print-output" />}
+      />
+      <ForceDialog
+        open={force}
+        errors={sum.errors}
+        onCancel={() => setForce(false)}
+        onConfirm={() => {
+          setForce(false);
+          doExport();
+        }}
+      />
     </>
   );
 }
 
-export function ForceDialog({ open, errors, onCancel, onConfirm }: { open: boolean; errors: number; onCancel: () => void; onConfirm: () => void }) {
+export function ForceDialog({
+  open,
+  errors,
+  onCancel,
+  onConfirm,
+}: {
+  open: boolean;
+  errors: number;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
   return (
     <Dialog
       open={open}
@@ -511,4 +666,3 @@ export function ForceDialog({ open, errors, onCancel, onConfirm }: { open: boole
     </Dialog>
   );
 }
-

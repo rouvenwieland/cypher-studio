@@ -3,6 +3,8 @@ import { create } from "zustand";
 export interface InstallRequest {
   programId: string;
   version?: string | undefined;
+  /** Freistell-Modell statt Programm: gleicher Dialog mit denselben sechs Feldern (CONCEPT.md 6.8) */
+  modelId?: string | undefined;
 }
 
 interface InstallUi {

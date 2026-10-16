@@ -7,7 +7,7 @@ import { channel } from "../../ipc/channel";
 import { useCmd } from "../../ipc/queries";
 import { toAppError } from "../../ipc/errors";
 import { errorText } from "../../i18n/errors";
-import { fmtBytes, fmtDate, fmtDateTime, fmtRelative, fmtTime } from "../../i18n/format";
+import { fmtBytes, fmtDate, fmtDateTime, fmtRelative } from "../../i18n/format";
 import { t } from "../../i18n/de";
 import { useJobs, useToasts, useUi, useUpdate } from "../../app/stores";
 import { useSettings } from "../../app/theme";
@@ -23,7 +23,17 @@ import "./settings.css";
 
 const s = t.settings;
 type SectionKey = keyof typeof s.sections;
-const ORDER: SectionKey[] = ["darstellung", "arbeitsflaeche", "programme", "bibliothek", "profile", "updates", "netzwerk", "kuerzel", "ueber"];
+const ORDER: SectionKey[] = [
+  "darstellung",
+  "arbeitsflaeche",
+  "programme",
+  "bibliothek",
+  "profile",
+  "updates",
+  "netzwerk",
+  "kuerzel",
+  "ueber",
+];
 
 /** Einstellung ändern: sofort im Zwischenspeicher, dann über den Command speichern (Rust prüft und liefert die gültige Fassung). */
 function useUpdateSettings() {
@@ -47,11 +57,25 @@ function mergeSettings(old: Settings, p: SettingsPatch): Settings {
   return {
     ...old,
     updates: { ...old.updates, ...(p.updates?.frequency ? { frequency: p.updates.frequency } : {}) },
-    catalog: { ...old.catalog, ...(p.catalog?.autoRefresh !== undefined ? { autoRefresh: p.catalog.autoRefresh } : {}) },
-    downloads: { ...old.downloads, ...(p.downloads?.keepCache !== undefined ? { keepCache: p.downloads.keepCache } : {}), ...(p.downloads?.maxParallel !== undefined ? { maxParallel: p.downloads.maxParallel } : {}) },
-    linux: { ...old.linux, ...(p.linux?.appImageMode ? { appImageMode: p.linux.appImageMode } : {}), ...(p.linux?.graphicsCompat !== undefined ? { graphicsCompat: p.linux.graphicsCompat } : {}) },
-    profile: { ...old.profile, ...(p.profile?.displayName !== undefined ? { displayName: p.profile.displayName } : {}) },
-    ui: { ...old.ui, ...(p.ui as Partial<Settings["ui"]> | undefined) },
+    catalog: {
+      ...old.catalog,
+      ...(p.catalog?.autoRefresh !== undefined ? { autoRefresh: p.catalog.autoRefresh } : {}),
+    },
+    downloads: {
+      ...old.downloads,
+      ...(p.downloads?.keepCache !== undefined ? { keepCache: p.downloads.keepCache } : {}),
+      ...(p.downloads?.maxParallel !== undefined ? { maxParallel: p.downloads.maxParallel } : {}),
+    },
+    linux: {
+      ...old.linux,
+      ...(p.linux?.appImageMode ? { appImageMode: p.linux.appImageMode } : {}),
+      ...(p.linux?.graphicsCompat !== undefined ? { graphicsCompat: p.linux.graphicsCompat } : {}),
+    },
+    profile: {
+      ...old.profile,
+      ...(p.profile?.displayName !== undefined ? { displayName: p.profile.displayName } : {}),
+    },
+    ui: { ...old.ui, ...p.ui },
   };
 }
 
@@ -73,21 +97,52 @@ function Appearance({ settings }: { settings: Settings }) {
   return (
     <div className="stack stack--loose">
       <Row label={a.theme} help={a.themeHelp}>
-        <Segmented label={a.theme} value={ui.theme} onChange={(theme) => update({ ui: { theme } })} options={(["system", "paper", "ink"] as const).map((v) => ({ value: v, label: a.themeOptions[v] }))} />
+        <Segmented
+          label={a.theme}
+          value={ui.theme}
+          onChange={(theme) => update({ ui: { theme } })}
+          options={(["system", "paper", "ink"] as const).map((v) => ({ value: v, label: a.themeOptions[v] }))}
+        />
       </Row>
       <Row label={a.density} help={a.densityHelp}>
-        <Segmented label={a.density} value={ui.density} onChange={(density) => update({ ui: { density } })} options={(["compact", "normal", "large"] as const).map((v) => ({ value: v, label: a.densityOptions[v] }))} />
+        <Segmented
+          label={a.density}
+          value={ui.density}
+          onChange={(density) => update({ ui: { density } })}
+          options={(["compact", "normal", "large"] as const).map((v) => ({ value: v, label: a.densityOptions[v] }))}
+        />
       </Row>
       <Row label={a.motion} help={a.motionHelp}>
-        <Segmented label={a.motion} value={ui.motion} onChange={(motion) => update({ ui: { motion } })} options={(["system", "reduced", "full"] as const).map((v) => ({ value: v, label: a.motionOptions[v] }))} />
+        <Segmented
+          label={a.motion}
+          value={ui.motion}
+          onChange={(motion) => update({ ui: { motion } })}
+          options={(["system", "reduced", "full"] as const).map((v) => ({ value: v, label: a.motionOptions[v] }))}
+        />
       </Row>
       <Row label={a.zoom} help={a.zoomHelp}>
         <div className="zoomrow">
-          <IconButton icon={IconMinus} label={a.zoomOut} onClick={() => update({ ui: { zoomPercent: Math.max(50, ui.zoomPercent - 10) } })} />
+          <IconButton
+            icon={IconMinus}
+            label={a.zoomOut}
+            onClick={() => update({ ui: { zoomPercent: Math.max(50, ui.zoomPercent - 10) } })}
+          />
           <div className="zoomrow__slider">
-            <Slider value={ui.zoomPercent} min={50} max={200} step={10} onChange={(v) => update({ ui: { zoomPercent: v } })} label={a.zoom} valueText={a.zoomValue(ui.zoomPercent)} />
+            <Slider
+              value={ui.zoomPercent}
+              min={50}
+              max={200}
+              step={10}
+              onChange={(v) => update({ ui: { zoomPercent: v } })}
+              label={a.zoom}
+              valueText={a.zoomValue(ui.zoomPercent)}
+            />
           </div>
-          <IconButton icon={IconPlus} label={a.zoomIn} onClick={() => update({ ui: { zoomPercent: Math.min(200, ui.zoomPercent + 10) } })} />
+          <IconButton
+            icon={IconPlus}
+            label={a.zoomIn}
+            onClick={() => update({ ui: { zoomPercent: Math.min(200, ui.zoomPercent + 10) } })}
+          />
           <span className="t-data zoomrow__val" data-testid="zoom-value">
             {a.zoomValue(ui.zoomPercent)}
           </span>
@@ -111,20 +166,52 @@ function Workspace({ settings }: { settings: Settings }) {
       <Row label={w.surround} help={w.surroundHelp}>
         <div className="stack">
           <span className="t-meta">{w.surroundPaper}</span>
-          <Segmented label={w.surroundPaper} value={ui.surround.paper} onChange={(paper) => update({ ui: { surround: { ...ui.surround, paper } } })} options={surroundOptions} />
+          <Segmented
+            label={w.surroundPaper}
+            value={ui.surround.paper}
+            onChange={(paper) => update({ ui: { surround: { ...ui.surround, paper } } })}
+            options={surroundOptions}
+          />
           <span className="t-meta">{w.surroundInk}</span>
-          <Segmented label={w.surroundInk} value={ui.surround.ink} onChange={(ink) => update({ ui: { surround: { ...ui.surround, ink } } })} options={surroundOptions} />
+          <Segmented
+            label={w.surroundInk}
+            value={ui.surround.ink}
+            onChange={(ink) => update({ ui: { surround: { ...ui.surround, ink } } })}
+            options={surroundOptions}
+          />
         </div>
       </Row>
       <Row label={w.measureColor} help={w.measureHelp}>
-        <Segmented label={w.measureColor} value={ui.measureColor} onChange={(measureColor) => update({ ui: { measureColor } })} options={(["cyan", "magenta", "ink", "paper"] as const).map((v) => ({ value: v, label: w.measureOptions[v] }))} />
+        <Segmented
+          label={w.measureColor}
+          value={ui.measureColor}
+          onChange={(measureColor) => update({ ui: { measureColor } })}
+          options={(["cyan", "magenta", "ink", "paper"] as const).map((v) => ({
+            value: v,
+            label: w.measureOptions[v],
+          }))}
+        />
       </Row>
       <Row label={w.calibrate} help={w.calibrateHelp}>
         <div className="stack">
-          <div className="calib" style={{ width: px }} role="img" aria-label={w.calibrateValue(px)} data-testid="calib-bar">
-            <span className="calib__label t-data">100 mm</span>
+          <div
+            className="calib"
+            style={{ width: px }}
+            role="img"
+            aria-label={w.calibrateValue(px)}
+            data-testid="calib-bar"
+          >
+            <span className="calib__label t-data">{t.common.hundredMm}</span>
           </div>
-          <Slider value={Math.round(px)} min={200} max={600} step={1} onChange={setPx} label={w.calibrateSlider} valueText={w.calibrateValue(px)} />
+          <Slider
+            value={Math.round(px)}
+            min={200}
+            max={600}
+            step={1}
+            onChange={setPx}
+            label={w.calibrateSlider}
+            valueText={w.calibrateValue(px)}
+          />
           <p className="t-data">{w.calibrateValue(px)}</p>
           <div className="cluster">
             <Button onClick={() => update({ ui: { calibrationPxPerMm: px / 100 } })} data-testid="calib-save">
@@ -140,7 +227,9 @@ function Workspace({ settings }: { settings: Settings }) {
               {w.calibrateReset}
             </Button>
           </div>
-          <p className="t-meta t-mute">{ui.calibrationPxPerMm ? w.calibrated(ui.calibrationPxPerMm) : w.notCalibrated}</p>
+          <p className="t-meta t-mute">
+            {ui.calibrationPxPerMm ? w.calibrated(ui.calibrationPxPerMm) : w.notCalibrated}
+          </p>
         </div>
       </Row>
     </div>
@@ -162,7 +251,11 @@ function ProgramsSection({ settings }: { settings: Settings }) {
         <div className="cluster">
           <span className="t-data selectable">{settings.programsDir}</span>
           <Button
-            onClick={() => void call("settings_choose_dir", { req: { which: "programsDir" } }).then(() => qc.invalidateQueries({ queryKey: ["settings_get"] }))}
+            onClick={() =>
+              void call("settings_choose_dir", { req: { which: "programsDir" } }).then(() =>
+                qc.invalidateQueries({ queryKey: ["settings_get"] }),
+              )
+            }
           >
             {p.change}
           </Button>
@@ -175,12 +268,19 @@ function ProgramsSection({ settings }: { settings: Settings }) {
               { label: p.manifestRows.source, value: <span className="t-data selectable">{c.sourceUrl ?? "—"}</span> },
               { label: p.manifestRows.sequence, value: <span className="t-data">{c.sequence}</span> },
               { label: p.manifestRows.origin, value: p.origin[c.source] },
-              { label: p.manifestRows.checked, value: <span className="t-data">{c.lastCheckAt ? fmtDateTime(c.lastCheckAt) : "—"}</span> },
+              {
+                label: p.manifestRows.checked,
+                value: <span className="t-data">{c.lastCheckAt ? fmtDateTime(c.lastCheckAt) : "—"}</span>,
+              },
               { label: p.manifestRows.expires, value: <span className="t-data">{fmtDate(c.expiresAt)}</span> },
             ]}
           />
         ) : null}
-        {c?.lastError ? <Notice kind="warn" title={errorText(c.lastError).title}>{errorText(c.lastError).text}</Notice> : null}
+        {c?.lastError ? (
+          <Notice kind="warn" title={errorText(c.lastError).title}>
+            {errorText(c.lastError).text}
+          </Notice>
+        ) : null}
         <div className="cluster">
           <Button
             disabled={busy !== null}
@@ -211,9 +311,18 @@ function ProgramsSection({ settings }: { settings: Settings }) {
         </div>
       </Row>
       <Row label={p.parallel}>
-        <Segmented label={p.parallel} value={String(settings.downloads.maxParallel)} onChange={(v) => update({ downloads: { maxParallel: Number(v) as 1 | 2 | 3 } })} options={["1", "2", "3"].map((v) => ({ value: v, label: v }))} />
+        <Segmented
+          label={p.parallel}
+          value={String(settings.downloads.maxParallel)}
+          onChange={(v) => update({ downloads: { maxParallel: Number(v) as 1 | 2 | 3 } })}
+          options={["1", "2", "3"].map((v) => ({ value: v, label: v }))}
+        />
       </Row>
-      <Checkbox checked={settings.downloads.keepCache} onChange={(keepCache) => update({ downloads: { keepCache } })} describedBy="keepcache-help">
+      <Checkbox
+        checked={settings.downloads.keepCache}
+        onChange={(keepCache) => update({ downloads: { keepCache } })}
+        describedBy="keepcache-help"
+      >
         {p.keepCache}
       </Checkbox>
       <p className="t-meta t-mute" id="keepcache-help">
@@ -222,8 +331,16 @@ function ProgramsSection({ settings }: { settings: Settings }) {
       {info.data?.os === "linux" ? (
         <div className="stack">
           <h3 className="t-section">{p.linux}</h3>
-          <SelectField label={p.appImageMode} value={settings.linux.appImageMode} onChange={(v) => update({ linux: { appImageMode: v as Settings["linux"]["appImageMode"] } })} options={(["auto", "extract", "direct"] as const).map((v) => ({ value: v, label: p.appImageOptions[v] }))} />
-          <Checkbox checked={settings.linux.graphicsCompat} onChange={(graphicsCompat) => update({ linux: { graphicsCompat } })}>
+          <SelectField
+            label={p.appImageMode}
+            value={settings.linux.appImageMode}
+            onChange={(v) => update({ linux: { appImageMode: v as Settings["linux"]["appImageMode"] } })}
+            options={(["auto", "extract", "direct"] as const).map((v) => ({ value: v, label: p.appImageOptions[v] }))}
+          />
+          <Checkbox
+            checked={settings.linux.graphicsCompat}
+            onChange={(graphicsCompat) => update({ linux: { graphicsCompat } })}
+          >
             {p.graphicsCompat}
           </Checkbox>
         </div>
@@ -251,7 +368,15 @@ function LibrarySection({ settings }: { settings: Settings }) {
       <Row label={l.projectsDir}>
         <div className="cluster">
           <span className="t-data selectable">{settings.projectsDir}</span>
-          <Button onClick={() => void call("settings_choose_dir", { req: { which: "projectsDir" } }).then(() => qc.invalidateQueries({ queryKey: ["settings_get"] }))}>{s.programs.change}</Button>
+          <Button
+            onClick={() =>
+              void call("settings_choose_dir", { req: { which: "projectsDir" } }).then(() =>
+                qc.invalidateQueries({ queryKey: ["settings_get"] }),
+              )
+            }
+          >
+            {s.programs.change}
+          </Button>
         </div>
       </Row>
       <Row label={l.thumbs} help={l.thumbsHelp}>
@@ -260,16 +385,29 @@ function LibrarySection({ settings }: { settings: Settings }) {
             disabled={scanning || !settings.libraryRoot}
             onClick={() => {
               setScanning(true);
-              void call("library_scan", { onEvent: channel<ScanEvent>(() => undefined) }).finally(() => setScanning(false));
+              void call("library_scan", { onEvent: channel<ScanEvent>(() => undefined) }).finally(() =>
+                setScanning(false),
+              );
             }}
           >
             {scanning ? l.rebuilding : l.rebuild}
           </Button>
-          <Button onClick={() => void call("library_thumbnails_clear").then(() => push({ kind: "info", text: l.cleared }))}>{l.clear}</Button>
+          <Button
+            onClick={() => void call("library_thumbnails_clear").then(() => push({ kind: "info", text: l.cleared }))}
+          >
+            {l.clear}
+          </Button>
         </div>
       </Row>
       <Row label={l.displayName} help={l.displayNameHelp}>
-        <input className="input" value={name} onChange={(e) => setName(e.target.value)} onBlur={() => update({ profile: { displayName: name } })} aria-label={l.displayName} maxLength={60} />
+        <input
+          className="input"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          onBlur={() => update({ profile: { displayName: name } })}
+          aria-label={l.displayName}
+          maxLength={60}
+        />
       </Row>
       <p className="t-meta t-mute">{l.packsHelp}</p>
       {choose.dialog}
@@ -290,11 +428,21 @@ function ProfilesSection() {
           <caption className="sr-only">{p.print}</caption>
           <thead>
             <tr>
-              <th scope="col" className="t-label">{p.columns.profile}</th>
-              <th scope="col" className="t-label">{p.columns.area}</th>
-              <th scope="col" className="t-label">{p.columns.safe}</th>
-              <th scope="col" className="t-label">{p.columns.dpi}</th>
-              <th scope="col" className="t-label">{p.columns.checked}</th>
+              <th scope="col" className="t-label">
+                {p.columns.profile}
+              </th>
+              <th scope="col" className="t-label">
+                {p.columns.area}
+              </th>
+              <th scope="col" className="t-label">
+                {p.columns.safe}
+              </th>
+              <th scope="col" className="t-label">
+                {p.columns.dpi}
+              </th>
+              <th scope="col" className="t-label">
+                {p.columns.checked}
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -320,9 +468,18 @@ function ProfilesSection() {
           <tbody>
             {(
               [
-                [p.socialRows.conservative, `${p.socialValue.top} ${g.verticalConservative.top} · ${p.socialValue.bottom} ${g.verticalConservative.bottom} · ${p.socialValue.left}/${p.socialValue.right} ${g.verticalConservative.left} px`],
-                [p.socialRows.instagram, `${p.socialValue.top} ${g.instagramVertical.top} · ${p.socialValue.bottom} ${g.instagramVertical.bottom} · ${p.socialValue.left}/${p.socialValue.right} ${g.instagramVertical.left} px`],
-                [p.socialRows.coverGrid, `${g.reelCoverGridBox.width} × ${g.reelCoverGridBox.height} px, ab y ${g.reelCoverGridBox.y}`],
+                [
+                  p.socialRows.conservative,
+                  `${p.socialValue.top} ${g.verticalConservative.top} · ${p.socialValue.bottom} ${g.verticalConservative.bottom} · ${p.socialValue.left}/${p.socialValue.right} ${g.verticalConservative.left} px`,
+                ],
+                [
+                  p.socialRows.instagram,
+                  `${p.socialValue.top} ${g.instagramVertical.top} · ${p.socialValue.bottom} ${g.instagramVertical.bottom} · ${p.socialValue.left}/${p.socialValue.right} ${g.instagramVertical.left} px`,
+                ],
+                [
+                  p.socialRows.coverGrid,
+                  `${g.reelCoverGridBox.width} × ${g.reelCoverGridBox.height} px, ab y ${g.reelCoverGridBox.y}`,
+                ],
                 [p.socialRows.postKeep, `x ${g.postGridKeepX.from}–${g.postGridKeepX.to} px`],
               ] as const
             ).map(([label, value]) => (
@@ -336,7 +493,9 @@ function ProfilesSection() {
         <p className="t-meta t-mute">{p.socialNote}</p>
       </section>
       <div>
-        <Button onClick={() => void call("app_reveal", { req: { target: { kind: "printProfiles" } } })}>{p.openFolder}</Button>
+        <Button onClick={() => void call("app_reveal", { req: { target: { kind: "printProfiles" } } })}>
+          {p.openFolder}
+        </Button>
       </div>
     </div>
   );
@@ -401,7 +560,11 @@ function UpdatesSection({ settings }: { settings: Settings }) {
     <div className="stack stack--loose">
       <div className="stack">
         <p className="t-section" data-testid="app-version-line">
-          {available?.available && available.version ? u.available(available.version) : last ? u.current(version, fmtRelative(last)) : `Cypher Studio ${version} · ${u.never}`}
+          {available?.available && available.version
+            ? u.available(available.version)
+            : last
+              ? u.current(version, fmtRelative(last))
+              : `Cypher Studio ${version} · ${u.never}`}
         </p>
         <div className="cluster">
           <Button onClick={check} disabled={checking} data-testid="update-check">
@@ -415,7 +578,9 @@ function UpdatesSection({ settings }: { settings: Settings }) {
         <div className="stack" data-testid="update-available">
           <h3 className="t-section">{u.notes}</h3>
           <pre className="notes t-meta selectable">{available.notes ?? ""}</pre>
-          {progress !== null ? <Bar value={progress} label={u.installing} valueText={`${Math.round(progress * 100)} %`} /> : null}
+          {progress !== null ? (
+            <Bar value={progress} label={u.installing} valueText={`${Math.round(progress * 100)} %`} />
+          ) : null}
           {jobs.length > 0 ? <p className="t-meta">{u.restartWhenDone(jobs.length)}</p> : null}
           <div className="cluster">
             <Button variant="action" onClick={install} disabled={progress !== null} data-testid="update-install">
@@ -424,12 +589,31 @@ function UpdatesSection({ settings }: { settings: Settings }) {
           </div>
         </div>
       ) : null}
-      {failed === "signature" ? <Notice kind="error" title={u.signatureInvalid} testId="update-signature-error" /> : null}
+      {failed === "signature" ? (
+        <Notice kind="error" title={u.signatureInvalid} testId="update-signature-error" />
+      ) : null}
       {failed === "replace" ? (
-        <Notice kind="warn" title={u.cannotReplace} actions={<Button onClick={() => void call("app_open_external", { req: { target: { kind: "appPage", page: "downloads" } } })}>{u.website}</Button>} />
+        <Notice
+          kind="warn"
+          title={u.cannotReplace}
+          actions={
+            <Button
+              onClick={() =>
+                void call("app_open_external", { req: { target: { kind: "appPage", page: "downloads" } } })
+              }
+            >
+              {u.website}
+            </Button>
+          }
+        />
       ) : null}
       <Row label={u.frequency} help={u.signed}>
-        <Segmented label={u.frequency} value={settings.updates.frequency} onChange={(frequency) => update({ updates: { frequency } })} options={(["daily", "weekly", "never"] as const).map((v) => ({ value: v, label: u.frequencyOptions[v] }))} />
+        <Segmented
+          label={u.frequency}
+          value={settings.updates.frequency}
+          onChange={(frequency) => update({ updates: { frequency } })}
+          options={(["daily", "weekly", "never"] as const).map((v) => ({ value: v, label: u.frequencyOptions[v] }))}
+        />
       </Row>
       <section className="stack">
         <h3 className="t-section">{u.programsTitle}</h3>
@@ -440,15 +624,33 @@ function UpdatesSection({ settings }: { settings: Settings }) {
             <ul className="ilist">
               {pending.map((p) => (
                 <li key={p.id} className="ilist__row">
-                  <span className="t-data">{u.programLine(p.name, p.installations.find((i) => i.kind === "cypher")?.version ?? "—", p.latest?.version ?? "—")}</span>
-                  <Button small onClick={() => openInstall({ programId: p.id, ...(p.latest ? { version: p.latest.version } : {}) })}>
+                  <span className="t-data">
+                    {u.programLine(
+                      p.name,
+                      p.installations.find((i) => i.kind === "cypher")?.version ?? "—",
+                      p.latest?.version ?? "—",
+                    )}
+                  </span>
+                  <Button
+                    small
+                    onClick={() => openInstall({ programId: p.id, ...(p.latest ? { version: p.latest.version } : {}) })}
+                  >
                     {t.programs.actions.update}
                   </Button>
                 </li>
               ))}
             </ul>
             <div>
-              <Button onClick={() => useInstallUi.getState().openQueue(pending.map((p) => ({ programId: p.id, ...(p.latest ? { version: p.latest.version } : {}) })))} data-testid="update-all">
+              <Button
+                onClick={() =>
+                  useInstallUi
+                    .getState()
+                    .openQueue(
+                      pending.map((p) => ({ programId: p.id, ...(p.latest ? { version: p.latest.version } : {}) })),
+                    )
+                }
+                data-testid="update-all"
+              >
                 {u.programsAll}
               </Button>
             </div>
@@ -472,10 +674,18 @@ function NetworkSection({ settings }: { settings: Settings }) {
           <caption className="sr-only">{n.title}</caption>
           <thead>
             <tr>
-              <th scope="col" className="t-label">{n.columns.purpose}</th>
-              <th scope="col" className="t-label">{n.columns.host}</th>
-              <th scope="col" className="t-label">{n.columns.when}</th>
-              <th scope="col" className="t-label">{n.columns.on}</th>
+              <th scope="col" className="t-label">
+                {n.columns.purpose}
+              </th>
+              <th scope="col" className="t-label">
+                {n.columns.host}
+              </th>
+              <th scope="col" className="t-label">
+                {n.columns.when}
+              </th>
+              <th scope="col" className="t-label">
+                {n.columns.on}
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -508,11 +718,21 @@ function NetworkSection({ settings }: { settings: Settings }) {
             <caption className="sr-only">{n.recent}</caption>
             <thead>
               <tr>
-                <th scope="col" className="t-label">{n.recentColumns.at}</th>
-                <th scope="col" className="t-label">{n.recentColumns.host}</th>
-                <th scope="col" className="t-label">{n.recentColumns.purpose}</th>
-                <th scope="col" className="t-label">{n.recentColumns.status}</th>
-                <th scope="col" className="t-label">{n.recentColumns.bytes}</th>
+                <th scope="col" className="t-label">
+                  {n.recentColumns.at}
+                </th>
+                <th scope="col" className="t-label">
+                  {n.recentColumns.host}
+                </th>
+                <th scope="col" className="t-label">
+                  {n.recentColumns.purpose}
+                </th>
+                <th scope="col" className="t-label">
+                  {n.recentColumns.status}
+                </th>
+                <th scope="col" className="t-label">
+                  {n.recentColumns.bytes}
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -539,7 +759,11 @@ function ShortcutsSection({ settings }: { settings: Settings }) {
   return (
     <div className="stack stack--loose">
       <p className="t-read">{k.intro}</p>
-      <Checkbox checked={settings.ui.singleKeyShortcuts} onChange={(v) => update({ ui: { singleKeyShortcuts: v } })} describedBy="singlekeys-help">
+      <Checkbox
+        checked={settings.ui.singleKeyShortcuts}
+        onChange={(v) => update({ ui: { singleKeyShortcuts: v } })}
+        describedBy="singlekeys-help"
+      >
         {k.singleKeys}
       </Checkbox>
       <p className="t-meta t-mute" id="singlekeys-help">
@@ -617,15 +841,34 @@ function AboutSection() {
           ))}
         </ul>
         <div className="cluster">
-          <Button onClick={() => void call("app_open_external", { req: { target: { kind: "appPage", page: "sourceCode" } } })}>{a.sourceCode}</Button>
-          <Button onClick={() => void call("app_open_external", { req: { target: { kind: "appPage", page: "thirdParty" } } })}>{a.thirdParty}</Button>
+          <Button
+            onClick={() => void call("app_open_external", { req: { target: { kind: "appPage", page: "sourceCode" } } })}
+          >
+            {a.sourceCode}
+          </Button>
+          <Button
+            onClick={() => void call("app_open_external", { req: { target: { kind: "appPage", page: "thirdParty" } } })}
+          >
+            {a.thirdParty}
+          </Button>
           <Button onClick={() => setBrands(true)}>{a.brands}</Button>
         </div>
       </section>
-      <Dialog open={license !== null} title={license?.name ?? ""} onClose={() => setLicense(null)} wide footer={<Button onClick={() => setLicense(null)}>{t.common.close}</Button>}>
+      <Dialog
+        open={license !== null}
+        title={license?.name ?? ""}
+        onClose={() => setLicense(null)}
+        wide
+        footer={<Button onClick={() => setLicense(null)}>{t.common.close}</Button>}
+      >
         <pre className="notes t-data selectable">{license?.text}</pre>
       </Dialog>
-      <Dialog open={brands} title={t.programs.trademarkTitle} onClose={() => setBrands(false)} footer={<Button onClick={() => setBrands(false)}>{t.common.close}</Button>}>
+      <Dialog
+        open={brands}
+        title={t.programs.trademarkTitle}
+        onClose={() => setBrands(false)}
+        footer={<Button onClick={() => setBrands(false)}>{t.common.close}</Button>}
+      >
         <p className="t-read">{t.programs.trademarkText}</p>
       </Dialog>
     </div>
@@ -635,7 +878,12 @@ function AboutSection() {
 function Content() {
   const settings = useSettings();
   const navigate = useNavigate();
-  if (settings.isPending) return <p className="t-meta t-mute" role="status">{t.common.loading}</p>;
+  if (settings.isPending)
+    return (
+      <p className="t-meta t-mute" role="status">
+        {t.common.loading}
+      </p>
+    );
   if (!settings.data) return null;
   const st = settings.data;
   void navigate;
@@ -664,7 +912,11 @@ export default function SettingsPage() {
           <ul>
             {ORDER.map((key) => (
               <li key={key}>
-                <NavLink to={`/einstellungen/${key}`} className={({ isActive }) => (isActive ? "snav snav--on" : "snav")} data-testid={`settings-nav-${key}`}>
+                <NavLink
+                  to={`/einstellungen/${key}`}
+                  className={({ isActive }) => (isActive ? "snav snav--on" : "snav")}
+                  data-testid={`settings-nav-${key}`}
+                >
                   {s.sections[key]}
                 </NavLink>
               </li>

@@ -7,7 +7,10 @@ import { watchJobBriefly } from "../../app/stores";
  * Nach der Installation: Einrichtungsvorschau holen und, wenn es keine Konflikte gibt, die vorgewählten Bausteine anwenden.
  * Konflikte entscheidet immer der Mensch (Programm-Detail → Einrichtung): Cypher Studio überschreibt nichts still.
  */
-export async function applyDefaultSetup(programId: string, installationId: string): Promise<{ count: number; needsYou: boolean }> {
+export async function applyDefaultSetup(
+  programId: string,
+  installationId: string,
+): Promise<{ count: number; needsYou: boolean }> {
   const view = await call("programs_list");
   const program = view.programs.find((p) => p.id === programId);
   const summary = program?.setup;

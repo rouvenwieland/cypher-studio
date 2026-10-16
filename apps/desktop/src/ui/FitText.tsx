@@ -62,7 +62,16 @@ interface FitTextProps {
   label?: string | undefined;
 }
 
-export function FitText({ text, size, minSize = 12, maxSize = 160, weight = 800, snap, className, label }: FitTextProps) {
+export function FitText({
+  text,
+  size,
+  minSize = 12,
+  maxSize = 160,
+  weight = 800,
+  snap,
+  className,
+  label,
+}: FitTextProps) {
   const box = useRef<HTMLSpanElement>(null);
   const span = useRef<HTMLSpanElement>(null);
   const [width, setWidth] = useState(0);
@@ -104,16 +113,31 @@ export function FitText({ text, size, minSize = 12, maxSize = 160, weight = 800,
     el.style.fontStretch = `${fit.stretch.toFixed(2)}%`;
     if (snap && fonts > 0 && snapped.current !== text) {
       snapped.current = text;
-      const dur = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--dur-einrasten")) || 0;
+      const dur =
+        Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--dur-einrasten")) || 0;
       if (dur > 0 && typeof el.animate === "function") {
-        el.animate([{ fontStretch: "50%" }, { fontStretch: `${fit.stretch.toFixed(2)}%` }], { duration: dur, easing: "cubic-bezier(.16,1,.3,1)" });
+        el.animate([{ fontStretch: "50%" }, { fontStretch: `${fit.stretch.toFixed(2)}%` }], {
+          duration: dur,
+          easing: "cubic-bezier(.16,1,.3,1)",
+        });
       }
     }
   }, [text, size, minSize, maxSize, weight, width, fonts, snap]);
 
   return (
-    <span ref={box} className={className ? `fit ${className}` : "fit"} {...(label ? { role: "img", "aria-label": label } : {})}>
-      <span ref={span} className="fit__text" aria-hidden={label ? "true" : undefined} style={{ fontSize: size, fontWeight: weight }}>
+    <span
+      ref={box}
+      className={className ? `fit ${className}` : "fit"}
+      // bis die Schrift da ist, bleibt das Wort unsichtbar (Platz bleibt): so springt nichts von der Ersatzschrift zur Kennung
+      style={fonts === 0 ? { visibility: "hidden" } : undefined}
+      {...(label ? { role: "img", "aria-label": label } : {})}
+    >
+      <span
+        ref={span}
+        className="fit__text"
+        aria-hidden={label ? "true" : undefined}
+        style={{ fontSize: size, fontWeight: weight }}
+      >
         {text}
       </span>
     </span>

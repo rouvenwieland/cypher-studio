@@ -17,7 +17,8 @@ export const settings = {
   appearance: {
     theme: "Thema",
     themeOptions: { system: "System", paper: "Papier", ink: "Tinte" },
-    themeHelp: "Papier ist hell, Tinte ist dunkel und unbunt für lange Bildsitzungen. System folgt deinem Betriebssystem.",
+    themeHelp:
+      "Papier ist hell, Tinte ist dunkel und unbunt für lange Bildsitzungen. System folgt deinem Betriebssystem.",
     density: "Dichte",
     densityOptions: { compact: "Kompakt", normal: "Normal", large: "Groß" },
     densityHelp: "Zeilenhöhe, Abstände und Vorschaubilder wachsen gemeinsam. Groß hilft Einsteigern und am Beamer.",
@@ -26,14 +27,15 @@ export const settings = {
     motionHelp: "Reduziert schaltet jede Bewegung ab: kein Suchlauf, kein Einrasten, Fortschritt als Zahl.",
     zoom: "App-Zoom",
     zoomValue: (pct: number) => `${pct} %`,
-    zoomReset: "100 %",
+    zoomReset: "Zurücksetzen",
     zoomOut: "Verkleinern",
     zoomIn: "Vergrößern",
     zoomHelp: "Zwischen 50 und 200 Prozent. Auch mit Strg + / Strg - / Strg 0.",
   },
   workspace: {
     surround: "Umfeld der Vorschau",
-    surroundHelp: "Ein unbuntes Umfeld ist Messbedingung: Bildfarben lassen sich nur auf Grau beurteilen. Taste U in der Vorschau wechselt.",
+    surroundHelp:
+      "Ein unbuntes Umfeld ist Messbedingung: Bildfarben lassen sich nur auf Grau beurteilen. Taste U in der Vorschau wechselt.",
     surroundPaper: "Im Thema Papier",
     surroundInk: "Im Thema Tinte",
     surroundOptions: { light: "Hell", mid: "Mittel", dark: "Dunkel" },
@@ -96,7 +98,14 @@ export const settings = {
   profiles: {
     print: "Druckprofile",
     social: "Social-Hilfslinien",
-    columns: { profile: "Profil", area: "Druckfläche", safe: "Sicherheitsfläche", dpi: "Ziel", source: "Quelle", checked: "Abruf" },
+    columns: {
+      profile: "Profil",
+      area: "Druckfläche",
+      safe: "Sicherheitsfläche",
+      dpi: "Ziel",
+      source: "Quelle",
+      checked: "Abruf",
+    },
     checkedAt: (d: string | null) => d ?? "offen",
     assumption: "Annahme",
     help: "Alle Werte stammen aus den Hilfeseiten der Anbieter und stehen als Daten im Profilordner. Du kannst sie ohne Code ändern.",
@@ -122,11 +131,13 @@ export const settings = {
     notes: "Was neu ist",
     install: "Jetzt aktualisieren",
     installing: "Wird geladen",
-    restartWhenDone: (n: number) => (n === 1 ? "Neu starten, sobald der 1 Auftrag fertig ist" : `Neu starten, sobald die ${n} Aufträge fertig sind`),
+    restartWhenDone: (n: number) =>
+      n === 1 ? "Neu starten, sobald der 1 Auftrag fertig ist" : `Neu starten, sobald die ${n} Aufträge fertig sind`,
     restartLater: "Dann neu starten",
     installed: (v: string) => `Cypher Studio ${v} ist installiert. Was neu ist:`,
     signatureInvalid: "Das Update ist nicht mit dem Schlüssel des Kollektivs signiert und wurde verworfen.",
-    cannotReplace: "Dieses Update lässt sich hier nicht einspielen, zum Beispiel weil die App durch einen Administrator installiert wurde. Lade die neue Version von der Webseite.",
+    cannotReplace:
+      "Dieses Update lässt sich hier nicht einspielen, zum Beispiel weil die App durch einen Administrator installiert wurde. Lade die neue Version von der Webseite.",
     website: "Zur Webseite",
     programsTitle: "Programm-Updates",
     programsNone: "Alle Programme sind aktuell.",
@@ -139,9 +150,15 @@ export const settings = {
   },
   network: {
     title: "Alle Adressen, die Cypher Studio anfragt",
-    intro: "Keine Telemetrie, keine Konten. Cypher Studio fragt nur die Adressen unten an. Das Netzwerkprotokoll deines ersten Starts besteht aus genau dieser Liste.",
+    intro:
+      "Keine Telemetrie, keine Konten. Cypher Studio fragt nur die Adressen unten an. Das Netzwerkprotokoll deines ersten Starts besteht aus genau dieser Liste.",
     columns: { purpose: "Zweck", host: "Adresse", when: "Wann", on: "Aktiv" },
-    purpose: { catalog: "Katalog", appUpdate: "App-Update", programDownload: "Programm laden", modelDownload: "Modell laden" },
+    purpose: {
+      catalog: "Katalog",
+      appUpdate: "App-Update",
+      programDownload: "Programm laden",
+      modelDownload: "Modell laden",
+    },
     when: { onStart: "beim Start", onDemand: "auf Wunsch", afterConsent: "nach Zustimmung" },
     recent: "Letzte Anfragen",
     recentNone: "Noch keine Anfragen.",
@@ -154,7 +171,8 @@ export const settings = {
   shortcuts: {
     intro: "Die Kürzel gelten überall. Einzeltasten wirken nur, wenn die Vorschau den Fokus hat.",
     singleKeys: "Einzeltasten in der Vorschau erlauben",
-    singleKeysHelp: "0, 1, E, U, G, S, P und M. Wer lieber nur mit Strg-Kürzeln arbeitet, schaltet sie ab (WCAG 2.1.4).",
+    singleKeysHelp:
+      "0, 1, E, U, G, S, P und M. Wer lieber nur mit Strg-Kürzeln arbeitet, schaltet sie ab (WCAG 2.1.4).",
     openHelp: "Alle Kürzel anzeigen",
   },
   about: {

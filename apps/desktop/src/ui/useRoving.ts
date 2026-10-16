@@ -17,7 +17,15 @@ interface RovingOptions {
  * Listen und Raster mit einer Tab-Stelle (roving tabindex): Pfeiltasten wählen, Enter öffnet, Strg+Enter führt die Hauptaktion aus.
  * Die Auswahl bleibt beim Verlassen der Liste erhalten.
  */
-export function useRoving({ count, columns = 1, horizontal = false, onEnter, onModEnter, onMove, onKey }: RovingOptions) {
+export function useRoving({
+  count,
+  columns = 1,
+  horizontal = false,
+  onEnter,
+  onModEnter,
+  onMove,
+  onKey,
+}: RovingOptions) {
   const [active, setActiveState] = useState(0);
   const root = useRef<HTMLElement | null>(null);
   const index = clamp(active, 0, Math.max(0, count - 1));

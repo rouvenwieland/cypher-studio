@@ -25,14 +25,22 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
   { variant = "default", small, block, combo, icon: Icon, softDisabled, children, type = "button", onClick, ...rest },
   ref,
 ) {
-  const cls = ["btn", variant !== "default" ? `btn--${variant}` : "", small ? "btn--sm" : "", block ? "btn--block" : ""].filter(Boolean).join(" ");
+  const cls = ["btn", variant !== "default" ? `btn--${variant}` : "", small ? "btn--sm" : "", block ? "btn--block" : ""]
+    .filter(Boolean)
+    .join(" ");
   return (
     <button
       ref={ref}
       type={type}
       className={cls}
       {...(softDisabled ? { "aria-disabled": true } : {})}
-      onClick={softDisabled ? (e) => { onClick?.(e); } : onClick}
+      onClick={
+        softDisabled
+          ? (e) => {
+              onClick?.(e);
+            }
+          : onClick
+      }
       {...rest}
     >
       {Icon ? <Icon size={16} /> : null}
@@ -42,7 +50,10 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
   );
 });
 
-interface IconButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "className" | "children" | "aria-label"> {
+interface IconButtonProps extends Omit<
+  ButtonHTMLAttributes<HTMLButtonElement>,
+  "className" | "children" | "aria-label"
+> {
   icon: IconComponent;
   label: string;
   combo?: string | undefined;

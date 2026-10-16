@@ -18,7 +18,8 @@ export const shell = {
   },
   help: {
     title: "Tastenkürzel",
-    intro: "Alles geht ohne Maus. Einzeltasten wirken nur, wenn die Vorschau den Fokus hat; du kannst sie in den Einstellungen abschalten.",
+    intro:
+      "Alles geht ohne Maus. Einzeltasten wirken nur, wenn die Vorschau den Fokus hat; du kannst sie in den Einstellungen abschalten.",
     groups: {
       global: "Überall",
       preview: "In der Vorschau",
@@ -60,7 +61,10 @@ export const shell = {
   },
   closing: {
     title: "Aufträge laufen noch",
-    text: (n: number) => (n === 1 ? "Noch 1 Auftrag läuft. Wenn du jetzt beendest, wird er abgebrochen und aufgeräumt." : `Noch ${n} Aufträge laufen. Wenn du jetzt beendest, werden sie abgebrochen und aufgeräumt.`),
+    text: (n: number) =>
+      n === 1
+        ? "Noch 1 Auftrag läuft. Wenn du jetzt beendest, wird er abgebrochen und aufgeräumt."
+        : `Noch ${n} Aufträge laufen. Wenn du jetzt beendest, werden sie abgebrochen und aufgeräumt.`,
     keep: "Weiterarbeiten",
     quit: "Abbrechen und beenden",
   },

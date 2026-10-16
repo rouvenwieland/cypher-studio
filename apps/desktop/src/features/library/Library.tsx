@@ -64,15 +64,32 @@ export default function Library() {
   const thumb = useThumb();
 
   const projectId = params.get("projekt");
-  const effective: LibraryFilters = useMemo(() => ({ ...filters, ...(debounced.trim() ? { text: debounced.trim() } : {}), ...(projectId ? { projectId } : {}) }), [filters, debounced, projectId]);
+  const effective: LibraryFilters = useMemo(
+    () => ({
+      ...filters,
+      ...(debounced.trim() ? { text: debounced.trim() } : {}),
+      ...(projectId ? { projectId } : {}),
+    }),
+    [filters, debounced, projectId],
+  );
 
-  const columns = view === "list" ? 1 : Math.max(1, Math.floor((size.width - 2 * GAP + GAP) / (thumb + GAP)));
-  const imgH = Math.round(thumb * 0.75);
-  const rowH = view === "list" ? 36 : imgH + 76;
+  const columns = view === "list" ? 1 : Math.max(1, Math.round((size.width - GAP) / (thumb + GAP)));
+  // Zellen füllen die Breite gleichmäßig aus (statt links zu kleben und rechts Leere zu lassen)
+  const cellW = view === "list" ? thumb : Math.floor((size.width - 2 * GAP - (columns - 1) * GAP) / columns);
+  const imgH = Math.round(cellW * 0.75);
+  const rowH = view === "list" ? 36 : imgH + 52;
   const [visiblePages, setVisiblePages] = useState<number[]>([0]);
   const data = useLibraryPages(effective, visiblePages);
   const rowCount = Math.ceil(data.total / columns);
-  const virt = useVirtualizer({ count: rowCount, getScrollElement: () => scroller.current, estimateSize: () => rowH, overscan: 4, gap: view === "list" ? 0 : GAP, paddingStart: GAP, paddingEnd: GAP });
+  const virt = useVirtualizer({
+    count: rowCount,
+    getScrollElement: () => scroller.current,
+    estimateSize: () => rowH,
+    overscan: 4,
+    gap: view === "list" ? 0 : GAP,
+    paddingStart: GAP,
+    paddingEnd: GAP,
+  });
   const items = virt.getVirtualItems();
   const firstIndex = (items[0]?.index ?? 0) * columns;
   const lastIndex = Math.min(data.total - 1, ((items[items.length - 1]?.index ?? 0) + 1) * columns - 1);
@@ -94,7 +111,7 @@ export default function Library() {
   const entryAt = (i: number) => data.at(i);
   const selectedEntries = data.loaded().filter((e) => selected.has(e.id));
   const single = selectedEntries.length === 1 ? selectedEntries[0] : undefined;
-  const collections = status.data?.collections ?? [];
+  const collections = useMemo(() => status.data?.collections ?? [], [status.data]);
 
   // Suche per Strg+F
   useEffect(() => {
@@ -260,7 +277,8 @@ export default function Library() {
   const chips = useMemo(() => {
     const out: { id: string; label: string }[] = [];
     for (const k of filters.kinds ?? []) out.push({ id: `k:${k}`, label: L.kinds[k] });
-    for (const c of filters.collections ?? []) out.push({ id: `c:${c}`, label: collections.find((x) => x.id === c)?.name ?? c });
+    for (const c of filters.collections ?? [])
+      out.push({ id: `c:${c}`, label: collections.find((x) => x.id === c)?.name ?? c });
     for (const tg of filters.tags ?? []) out.push({ id: `t:${tg}`, label: tg });
     if (filters.modifiedAfter) out.push({ id: "mod", label: L.filters.period });
     if (filters.onlyConflicts) out.push({ id: "conf", label: L.filters.conflicts });
@@ -298,14 +316,29 @@ export default function Library() {
 
   const configured = status.data?.configured ?? true;
   const total = status.data?.entryCount ?? 0;
-  const scanText = scanJob ? L.grid.scanning(fmtCount(Math.round((scanJob.progress ?? 0) * total)), fmtCount(total)) : null;
-  const surroundAttr = (settings.data?.ui.surround[theme === "ink" ? "ink" : "paper"] ?? (theme === "ink" ? "dark" : "light")) === "light" ? "hell" : (settings.data?.ui.surround[theme === "ink" ? "ink" : "paper"] ?? "dark") === "mid" ? "mittel" : "dunkel";
+  const scanText = scanJob
+    ? L.grid.scanning(fmtCount(Math.round((scanJob.progress ?? 0) * total)), fmtCount(total))
+    : null;
+  const surroundAttr =
+    (settings.data?.ui.surround[theme === "ink" ? "ink" : "paper"] ?? (theme === "ink" ? "dark" : "light")) === "light"
+      ? "hell"
+      : (settings.data?.ui.surround[theme === "ink" ? "ink" : "paper"] ?? "dark") === "mid"
+        ? "mittel"
+        : "dunkel";
 
   const tools = (
     <>
       <div className="lib-search">
         <IconSearch size={16} />
-        <input ref={searchRef} className="lib-search__input" value={search} onChange={(e) => setSearch(e.target.value)} placeholder={L.searchPlaceholder(fmtCount(total))} aria-label={L.searchLabel} data-testid="library-search" />
+        <input
+          ref={searchRef}
+          className="lib-search__input"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder={L.searchPlaceholder(fmtCount(total))}
+          aria-label={L.searchLabel}
+          data-testid="library-search"
+        />
       </div>
       <Segmented
         label={L.view.label}
@@ -319,7 +352,16 @@ export default function Library() {
           { value: "list", label: L.view.list },
         ]}
       />
-      <SelectField label={L.sort.label} hideLabel value={filters.sort ?? "modifiedDesc"} onChange={(v) => setFilters((f) => ({ ...f, sort: v as NonNullable<LibraryFilters["sort"]> }))} options={(["modifiedDesc", "nameAsc", "kind", "sizeDesc"] as const).map((s) => ({ value: s, label: L.sort[s] }))} />
+      <SelectField
+        label={L.sort.label}
+        hideLabel
+        value={filters.sort ?? "modifiedDesc"}
+        onChange={(v) => setFilters((f) => ({ ...f, sort: v as NonNullable<LibraryFilters["sort"]> }))}
+        options={(["modifiedDesc", "nameAsc", "kind", "sizeDesc"] as const).map((s) => ({
+          value: s,
+          label: L.sort[s],
+        }))}
+      />
     </>
   );
   void IconGrid;
@@ -328,13 +370,37 @@ export default function Library() {
   // Leer: kein Ordner
   if (status.data && !configured) {
     return (
-      <Bench title={L.title} testId="screen-library" surround={surroundAttr} preview={<div className="lib-empty"><EmptyState title={L.empty.noFolder.title} testId="library-empty" actions={<ChooseRootButton variant="action" />}>{L.empty.noFolder.text}</EmptyState></div>} inspector={<p className="section t-meta t-mute">{L.inspector.empty}</p>} inspectorTitle={L.inspector.title} />
+      <Bench
+        title={L.title}
+        testId="screen-library"
+        surround={surroundAttr}
+        preview={
+          <div className="lib-empty">
+            <EmptyState
+              title={L.empty.noFolder.title}
+              testId="library-empty"
+              actions={<ChooseRootButton variant="action" />}
+            >
+              {L.empty.noFolder.text}
+            </EmptyState>
+          </div>
+        }
+        inspector={<p className="section t-meta t-mute">{L.inspector.empty}</p>}
+        inspectorTitle={L.inspector.title}
+      />
     );
   }
 
   const multi = selectedEntries.length > 1;
   const bar = multi ? (
-    <div className="outbar multibar" role="region" aria-label={L.grid.selectedCount(selectedEntries.length)} data-testid="multibar" data-region="output" tabIndex={-1}>
+    <div
+      className="outbar multibar"
+      role="region"
+      aria-label={L.grid.selectedCount(selectedEntries.length)}
+      data-testid="multibar"
+      data-region="output"
+      tabIndex={-1}
+    >
       <span className="t-section">{L.grid.selectedCount(selectedEntries.length)}</span>
       <span className="spacer" />
       <Button onClick={() => setTagsDialog(true)} data-testid="bulk-tags">
@@ -344,11 +410,23 @@ export default function Library() {
         label={L.multi.collection}
         entries={[
           ...collections.map((c) => ({ id: c.id, label: c.name, onSelect: () => bulk({ collection: c.id }) })),
-          { id: "none", label: L.multi.noCollection, onSelect: () => bulk({ collection: null }), separatorBefore: true },
+          {
+            id: "none",
+            label: L.multi.noCollection,
+            onSelect: () => bulk({ collection: null }),
+            separatorBefore: true,
+          },
         ]}
       />
       <Button onClick={() => selectedEntries[0] && toModule(selectedEntries[0], "/druck")}>{L.multi.checkPrint}</Button>
-      <Button onClick={() => selectedEntries[0] && void call("app_reveal", { req: { target: { kind: "libraryEntry", entryId: selectedEntries[0].id } } })}>{L.multi.reveal}</Button>
+      <Button
+        onClick={() =>
+          selectedEntries[0] &&
+          void call("app_reveal", { req: { target: { kind: "libraryEntry", entryId: selectedEntries[0].id } } })
+        }
+      >
+        {L.multi.reveal}
+      </Button>
       <Button variant="text" onClick={() => setSelected(new Set())}>
         {L.multi.clear}
       </Button>
@@ -371,14 +449,31 @@ export default function Library() {
         </div>
         {showError ? (
           <div className="lib-empty">
-            <Notice kind="error" title={L.empty.folderLost(status.data?.root ?? "")} actions={<><Button onClick={() => void qc.invalidateQueries({ queryKey: ["library_query"] })}>{L.empty.retry}</Button><ChooseRootButton label={L.empty.other} /></>} testId="library-error">
+            <Notice
+              kind="error"
+              title={L.empty.folderLost(status.data?.root ?? "")}
+              actions={
+                <>
+                  <Button onClick={() => void qc.invalidateQueries({ queryKey: ["library_query"] })}>
+                    {L.empty.retry}
+                  </Button>
+                  <ChooseRootButton label={L.empty.other} />
+                </>
+              }
+              testId="library-error"
+            >
               {data.error ? errorText(data.error).safe : ""}
             </Notice>
           </div>
         ) : noMatch ? (
           <div className="lib-empty">
             <EmptyState testId="library-nomatch" actions={<Button onClick={clearAll}>{L.empty.clearFilters}</Button>}>
-              {L.empty.noMatch(chips.map((c) => `‚${c.label}‘`).concat(search.trim() ? [`‚${search.trim()}‘`] : []).join(" + "))}
+              {L.empty.noMatch(
+                chips
+                  .map((c) => `‚${c.label}‘`)
+                  .concat(search.trim() ? [`‚${search.trim()}‘`] : [])
+                  .join(" + "),
+              )}
             </EmptyState>
           </div>
         ) : (
@@ -394,25 +489,64 @@ export default function Library() {
             tabIndex={-1}
             onFocus={(e) => {
               if (e.target === e.currentTarget) {
-                const el = e.currentTarget.querySelector<HTMLElement>(`[data-roving-index="${active}"]`) ?? e.currentTarget.querySelector<HTMLElement>("[data-roving-index]");
+                const el =
+                  e.currentTarget.querySelector<HTMLElement>(`[data-roving-index="${active}"]`) ??
+                  e.currentTarget.querySelector<HTMLElement>("[data-roving-index]");
                 el?.focus();
               }
             }}
           >
             <div className="lib__space" style={{ height: virt.getTotalSize() }}>
               {items.map((row) => (
-                <div key={row.key} className={view === "list" ? "lib__row lib__row--list" : "lib__row"} style={{ transform: `translateY(${row.start}px)`, height: row.size, ...(view === "grid" ? { ["--cols" as string]: columns, ["--thumb-w" as string]: `${thumb}px`, ["--img-h" as string]: `${imgH}px` } : {}) }}>
+                <div
+                  key={row.key}
+                  className={view === "list" ? "lib__row lib__row--list" : "lib__row"}
+                  style={{
+                    transform: `translateY(${row.start}px)`,
+                    height: row.size,
+                    ...(view === "grid"
+                      ? {
+                          ["--cols" as string]: columns,
+                          ["--thumb-w" as string]: `${cellW}px`,
+                          ["--lib-gap" as string]: `${GAP}px`,
+                          ["--img-h" as string]: `${imgH}px`,
+                        }
+                      : {}),
+                  }}
+                >
                   {Array.from({ length: columns }, (_, c) => {
                     const index = row.index * columns + c;
                     if (index >= data.total) return null;
                     const entry = entryAt(index);
-                    if (!entry) return view === "grid" ? <Skeleton key={index} /> : <div key={index} className="lrow lrow--skel" aria-hidden="true" />;
+                    if (!entry)
+                      return view === "grid" ? (
+                        <Skeleton key={index} />
+                      ) : (
+                        <div key={index} className="lrow lrow--skel" aria-hidden="true" />
+                      );
                     const isSel = selected.has(entry.id);
                     const onClick = (e: MouseEvent) => select(index, e);
                     return view === "grid" ? (
-                      <Cell key={entry.id} entry={entry} selected={isSel} active={index === active} index={index} onClick={onClick} onDoubleClick={() => open(entry)} />
+                      <Cell
+                        key={entry.id}
+                        entry={entry}
+                        selected={isSel}
+                        active={index === active}
+                        index={index}
+                        onClick={onClick}
+                        onDoubleClick={() => open(entry)}
+                      />
                     ) : (
-                      <ListRow key={entry.id} entry={entry} selected={isSel} active={index === active} index={index} collections={collections} onClick={onClick} onDoubleClick={() => open(entry)} />
+                      <ListRow
+                        key={entry.id}
+                        entry={entry}
+                        selected={isSel}
+                        active={index === active}
+                        index={index}
+                        collections={collections}
+                        onClick={onClick}
+                        onDoubleClick={() => open(entry)}
+                      />
                     );
                   })}
                 </div>
@@ -440,12 +574,16 @@ export default function Library() {
             <EntryInspector
               entry={single}
               collections={collections}
-              programName={single.openWith ? (programs.data?.programs.find((p) => p.id === single.openWith)?.name ?? null) : null}
+              programName={
+                single.openWith ? (programs.data?.programs.find((p) => p.id === single.openWith)?.name ?? null) : null
+              }
               onOpen={() => open(single)}
               onToPrint={() => toModule(single, "/druck")}
               onToMockup={() => toModule(single, "/mockups")}
               onToCutout={() => toModule(single, "/freistellen")}
-              onReveal={() => void call("app_reveal", { req: { target: { kind: "libraryEntry", entryId: single.id } } })}
+              onReveal={() =>
+                void call("app_reveal", { req: { target: { kind: "libraryEntry", entryId: single.id } } })
+              }
               onTags={(tags) => patch(single, { tags })}
               onStatus={(s: LibraryEntryStatus) => patch(single, { status: s })}
               onCollection={(id) => patch(single, { collection: id })}
@@ -471,8 +609,16 @@ export default function Library() {
         }}
         footer={
           <>
-            <IconButton icon={IconBack} label={L.quick.previous} onClick={() => quick !== null && setQuick(Math.max(0, quick - 1))} />
-            <IconButton icon={IconNext} label={L.quick.next} onClick={() => quick !== null && setQuick(Math.min(data.total - 1, quick + 1))} />
+            <IconButton
+              icon={IconBack}
+              label={L.quick.previous}
+              onClick={() => quick !== null && setQuick(Math.max(0, quick - 1))}
+            />
+            <IconButton
+              icon={IconNext}
+              label={L.quick.next}
+              onClick={() => quick !== null && setQuick(Math.min(data.total - 1, quick + 1))}
+            />
             <Button onClick={() => setQuick(null)}>{L.quick.close}</Button>
           </>
         }
@@ -495,7 +641,10 @@ export default function Library() {
               variant="action"
               combo="mod+enter"
               onClick={() => {
-                const tags = bulkText.split(/[,\s]+/).map((x) => x.trim().toLowerCase()).filter(Boolean);
+                const tags = bulkText
+                  .split(/[,\s]+/)
+                  .map((x) => x.trim().toLowerCase())
+                  .filter(Boolean);
                 if (tags.length) bulk({ addTags: tags });
                 setBulkText("");
                 setTagsDialog(false);
@@ -509,7 +658,14 @@ export default function Library() {
       >
         <div className="stack">
           <p className="t-meta">{L.multi.tagsHelp}</p>
-          <input className="input" value={bulkText} onChange={(e) => setBulkText(e.target.value)} placeholder={L.multi.addTagPlaceholder} aria-label={L.multi.addTagPlaceholder} autoFocus />
+          <input
+            className="input"
+            value={bulkText}
+            onChange={(e) => setBulkText(e.target.value)}
+            placeholder={L.multi.addTagPlaceholder}
+            aria-label={L.multi.addTagPlaceholder}
+            autoFocus
+          />
         </div>
       </Dialog>
     </>

@@ -1,4 +1,13 @@
-import { IconCutout, IconHome, IconLibrary, IconMockup, IconPrint, IconPrograms, IconSocial, type IconComponent } from "../ui/icons";
+import {
+  IconCutout,
+  IconHome,
+  IconLibrary,
+  IconMockup,
+  IconPrint,
+  IconPrograms,
+  IconSocial,
+  type IconComponent,
+} from "../ui/icons";
 import { t } from "../i18n/de";
 
 export type ModuleId = "start" | "library" | "programs" | "print" | "mockup" | "social" | "cutout";

@@ -179,37 +179,6 @@
   align-items: center;
 }
 
-.slider {
-  position: relative;
-  display: flex;
-  align-items: center;
-  height: var(--control-h);
-  touch-action: none;
-  user-select: none;
-}
-
-.slider__track {
-  position: relative;
-  flex: 1 1 auto;
-  height: var(--s-1);
-  background: var(--control);
-}
-
-.slider__range {
-  position: absolute;
-  height: 100%;
-  background: var(--fg);
-}
-
-.slider__thumb {
-  display: block;
-  width: var(--s-4);
-  height: var(--s-6);
-  border: 0;
-  border-radius: 0;
-  background: var(--fg);
-}
-
 .rlist {
   display: flex;
   flex-direction: column;

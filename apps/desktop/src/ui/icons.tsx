@@ -130,16 +130,40 @@ export const IconHand = wrap(Hand);
 export const IconScissors = wrap(Scissors);
 
 /** Status-Glyphen, Gewicht „fill“ nur hier (DESIGN.md icons.gewichte). */
-export const GlyphOk: IconComponent = ({ size = 16, className }) => <CheckSquare size={size} weight="fill" aria-hidden="true" focusable="false" {...(className ? { className } : {})} />;
-export const GlyphWarn: IconComponent = ({ size = 16, className }) => <Warning size={size} weight="fill" aria-hidden="true" focusable="false" {...(className ? { className } : {})} />;
-export const GlyphError: IconComponent = ({ size = 16, className }) => <WarningOctagon size={size} weight="fill" aria-hidden="true" focusable="false" {...(className ? { className } : {})} />;
+export const GlyphOk: IconComponent = ({ size = 16, className }) => (
+  <CheckSquare size={size} weight="fill" aria-hidden="true" focusable="false" {...(className ? { className } : {})} />
+);
+export const GlyphWarn: IconComponent = ({ size = 16, className }) => (
+  <Warning size={size} weight="fill" aria-hidden="true" focusable="false" {...(className ? { className } : {})} />
+);
+export const GlyphError: IconComponent = ({ size = 16, className }) => (
+  <WarningOctagon
+    size={size}
+    weight="fill"
+    aria-hidden="true"
+    focusable="false"
+    {...(className ? { className } : {})}
+  />
+);
 export const GlyphInfo = wrap(Info);
 
 type SvgProps = SVGProps<SVGSVGElement> & { size?: number };
 
 function Glyph({ size = 16, children, ...rest }: SvgProps) {
   return (
-    <svg width={size} height={size} viewBox="0 0 256 256" fill="none" stroke="currentColor" strokeWidth={16} strokeLinecap="butt" strokeLinejoin="miter" aria-hidden="true" focusable="false" {...rest}>
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 256 256"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={16}
+      strokeLinecap="butt"
+      strokeLinejoin="miter"
+      aria-hidden="true"
+      focusable="false"
+      {...rest}
+    >
       {children}
     </svg>
   );

@@ -3,6 +3,8 @@ export const common = {
   appName: "Cypher Studio",
   windowTitle: (module: string) => `${module} – Cypher Studio`,
   close: "Schließen",
+  unitMm: "mm",
+  hundredMm: "100 mm",
   cancel: "Abbrechen",
   back: "Zurück",
   next: "Weiter",
@@ -57,7 +59,8 @@ export const common = {
     home: "Zur Startseite",
     copyDetails: "Details kopieren",
   },
-  contractWarning: (app: string, expected: string) => `Vertragsversion ${app} passt nicht zum Frontend (${expected}). Nur Entwicklung.`,
+  contractWarning: (app: string, expected: string) =>
+    `Vertragsversion ${app} passt nicht zum Frontend (${expected}). Nur Entwicklung.`,
   mockBanner: "Mock-Modus: Beispieldaten, keine echten Dateien",
 } as const;
 
@@ -75,6 +78,7 @@ export const nav = {
   optional: "optional",
   brandHome: "Cypher Studio · Start",
   brandName: "Cypher Studio",
+  brandShort: "CS",
   updateReady: (v: string) => `Update ${v} bereit`,
   restart: "Neu starten",
   jobsLamp: { idle: "keine Aufträge", running: "läuft", attention: "braucht dich", failed: "gescheitert" },

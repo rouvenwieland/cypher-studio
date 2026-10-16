@@ -45,17 +45,42 @@ interface BenchProps {
 }
 
 /** Arbeitsmodul: Titelzeile · Vorschau (Monitor) · Messung (Inspektor) · Ausgang (Leiste), CONCEPT.md 5. */
-export function Bench({ title, context, tools, preview, inspector, inspectorTitle, inspectorHeadExtra, output, surround, previewLabel, previewNote, testId }: BenchProps) {
+export function Bench({
+  title,
+  context,
+  tools,
+  preview,
+  inspector,
+  inspectorTitle,
+  inspectorHeadExtra,
+  output,
+  surround,
+  previewLabel,
+  previewNote,
+  testId,
+}: BenchProps) {
   useDocumentTitle(title);
   return (
     <div className={output ? "stage" : "stage stage--plain"} {...(testId ? { "data-testid": testId } : {})}>
       <TitleBar title={title} context={context} tools={tools} />
       <div className="bench">
-        <main className="preview" id="main" data-region="preview" tabIndex={-1} aria-label={previewLabel ?? t.common.region.preview} {...(surround ? { "data-umfeld": surround } : {})}>
+        <main
+          className="preview"
+          id="main"
+          data-region="preview"
+          tabIndex={-1}
+          aria-label={previewLabel ?? t.common.region.preview}
+          {...(surround ? { "data-umfeld": surround } : {})}
+        >
           <div className="preview__stage">{preview}</div>
           {previewNote ? <p className="preview__note t-meta">{previewNote}</p> : null}
         </main>
-        <aside className="inspector" data-region="inspector" tabIndex={-1} aria-label={inspectorTitle ?? t.common.region.inspector}>
+        <aside
+          className="inspector"
+          data-region="inspector"
+          tabIndex={-1}
+          aria-label={inspectorTitle ?? t.common.region.inspector}
+        >
           <div className="inspector__head">
             <h2 className="t-label">{inspectorTitle ?? t.common.labels.measurement}</h2>
             {inspectorHeadExtra}
@@ -84,7 +109,13 @@ export function PlainPage({ title, context, tools, children, flush, output, test
   return (
     <div className={output ? "stage" : "stage stage--plain"} {...(testId ? { "data-testid": testId } : {})}>
       <TitleBar title={title} context={context} tools={tools} />
-      <main className={flush ? "page page--flush" : "page"} id="main" data-region="preview" tabIndex={-1} aria-label={t.common.region.main}>
+      <main
+        className={flush ? "page page--flush" : "page"}
+        id="main"
+        data-region="preview"
+        tabIndex={-1}
+        aria-label={t.common.region.main}
+      >
         {children}
       </main>
       {output}

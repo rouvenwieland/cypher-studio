@@ -11,7 +11,15 @@ import { Button } from "../../ui/Button";
 import { PlainPage } from "../../ui/Frames";
 import { useRoving } from "../../ui/useRoving";
 import { useChooseRoot } from "../library/ChooseRoot";
-import { ProgramName, RowActionButton, StatusCell, useProgramActions, useProgramRows, ProgressText, roleOf } from "../programs/parts";
+import {
+  ProgramName,
+  RowActionButton,
+  StatusCell,
+  useProgramActions,
+  useProgramRows,
+  ProgressText,
+  roleOf,
+} from "../programs/parts";
 import { NewProjectDialog } from "./NewProjectDialog";
 import { ProjectsPanel } from "./ProjectsPanel";
 import { TemplateStrip } from "./TemplateStrip";
@@ -51,19 +59,34 @@ function ProgramsPanel() {
           ))}
         </div>
       ) : (
-        <ul className="pl" role="listbox" aria-label={s.programs.title} {...roving.containerProps} data-testid="start-programs">
+        <ul
+          className="pl"
+          role="grid"
+          aria-label={s.programs.title}
+          {...roving.containerProps}
+          data-testid="start-programs"
+        >
           {rows.map((row, i) => (
-            <li key={row.program.id} role="option" className="pl__row" {...roving.itemProps(i)} onClick={() => void navigate(`/programme/${row.program.id}`)} data-testid={`start-program-${row.program.id}`} aria-label={`${row.program.name}, ${row.state.versionLabel}`}>
-              <div className="pl__name">
+            <li
+              key={row.program.id}
+              role="row"
+              className="pl__row"
+              {...roving.itemProps(i)}
+              onClick={() => void navigate(`/programme/${row.program.id}`)}
+              data-testid={`start-program-${row.program.id}`}
+            >
+              <div className="pl__name" role="gridcell">
                 <ProgramName name={row.program.name} size={34} maxSize={44} />
                 <span className="t-label">{roleOf(row.program)}</span>
               </div>
-              <div className="pl__state">
+              <div className="pl__state" role="gridcell">
                 <span className="t-data t-trunc">{row.state.progress !== null ? "" : row.state.versionLabel}</span>
                 <StatusCell row={row} />
                 {row.state.progress !== null ? <ProgressText row={row} /> : null}
               </div>
-              <RowActionButton row={row} onRun={run} small />
+              <div role="gridcell">
+                <RowActionButton row={row} onRun={run} small />
+              </div>
             </li>
           ))}
         </ul>
@@ -147,7 +170,11 @@ export default function Start() {
           <Button onClick={() => setNewOpen(true)} combo="mod+n" data-testid="new-project">
             {s.newProject}
           </Button>
-          <Button onClick={() => window.dispatchEvent(new CustomEvent("cypher:open-file"))} combo="mod+o" data-testid="open-file">
+          <Button
+            onClick={() => window.dispatchEvent(new CustomEvent("cypher:open-file"))}
+            combo="mod+o"
+            data-testid="open-file"
+          >
             {s.openFile}
           </Button>
         </>

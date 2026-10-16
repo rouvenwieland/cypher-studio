@@ -48,7 +48,15 @@ export function OutputBar({ target, summary, state, secondary, testId }: OutputB
   }
 
   return (
-    <div className="outbar" data-state={state.kind} role="region" aria-label={t.common.region.output} data-region="output" tabIndex={-1} {...(testId ? { "data-testid": testId } : {})}>
+    <div
+      className="outbar"
+      data-state={state.kind}
+      role="region"
+      aria-label={t.common.region.output}
+      data-region="output"
+      tabIndex={-1}
+      {...(testId ? { "data-testid": testId } : {})}
+    >
       <span className="t-label">{t.common.labels.output}</span>
       {state.kind === "done" || state.kind === "error" ? (
         <>
@@ -75,7 +83,13 @@ export function OutputBar({ target, summary, state, secondary, testId }: OutputB
               </Button>
             ) : null}
             {state.kind === "blocked" ? (
-              <Button variant="action" combo="mod+enter" softDisabled onClick={state.onJump} data-testid="output-action">
+              <Button
+                variant="action"
+                combo="mod+enter"
+                softDisabled
+                onClick={state.onJump}
+                data-testid="output-action"
+              >
                 {state.label}
               </Button>
             ) : null}

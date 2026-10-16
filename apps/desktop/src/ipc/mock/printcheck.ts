@@ -38,7 +38,14 @@ export interface SampleImage {
 }
 
 const SRGB = { profile: "srgb", iccDescription: "sRGB IEC61966-2.1", srgbChunk: true } as const;
-const ALPHA_CLEAN = { present: true, transparentShare: 0.42, opaqueShare: 0.58, semiShareOfVisible: 0.0004, semiAreaShareOfVisible: 0.0002, ghostPixelCount: 0 };
+const ALPHA_CLEAN = {
+  present: true,
+  transparentShare: 0.42,
+  opaqueShare: 0.58,
+  semiShareOfVisible: 0.0004,
+  semiAreaShareOfVisible: 0.0002,
+  ghostPixelCount: 0,
+};
 
 export const SAMPLES: Record<string, SampleImage> = {
   "signal_v3.png": {
@@ -53,7 +60,14 @@ export const SAMPLES: Record<string, SampleImage> = {
     fileBytes: 9_856_000,
     dpi: { x: 300, y: 300, source: "pHYs" },
     color: SRGB,
-    alpha: { present: true, transparentShare: 0.31, opaqueShare: 0.64, semiShareOfVisible: 0.011, semiAreaShareOfVisible: 0.0042, ghostPixelCount: 0 },
+    alpha: {
+      present: true,
+      transparentShare: 0.31,
+      opaqueShare: 0.64,
+      semiShareOfVisible: 0.011,
+      semiAreaShareOfVisible: 0.0042,
+      ghostPixelCount: 0,
+    },
     margins: { top: 12, right: 12, bottom: 12, left: 12 },
     minStrokePx: 7,
     tone: "light",
@@ -91,7 +105,14 @@ export const SAMPLES: Record<string, SampleImage> = {
     fileBytes: 2_940_000,
     dpi: { x: 72, y: 72, source: "jfif" },
     color: { profile: "none", iccDescription: null, srgbChunk: false },
-    alpha: { present: false, transparentShare: 0, opaqueShare: 1, semiShareOfVisible: 0, semiAreaShareOfVisible: 0, ghostPixelCount: 0 },
+    alpha: {
+      present: false,
+      transparentShare: 0,
+      opaqueShare: 1,
+      semiShareOfVisible: 0,
+      semiAreaShareOfVisible: 0,
+      ghostPixelCount: 0,
+    },
     margins: { top: 0, right: 0, bottom: 0, left: 0 },
     minStrokePx: null,
     tone: "mixed",
@@ -172,7 +193,14 @@ export interface AnalyzeInput {
   technique: PrintTechnique;
   plannedWidthMm: number;
   /** Zustand der Datei nach einem Export (Korrekturen angewendet) */
-  after?: { widthPx: number; heightPx: number; dpiFromMeta: boolean; profile: "adobeRgb" | "srgb"; semi: boolean; ghost: boolean };
+  after?: {
+    widthPx: number;
+    heightPx: number;
+    dpiFromMeta: boolean;
+    profile: "adobeRgb" | "srgb";
+    semi: boolean;
+    ghost: boolean;
+  };
 }
 
 export function analyze(input: AnalyzeInput, nowIso: string): PrintReport {
@@ -198,37 +226,132 @@ export function analyze(input: AnalyzeInput, nowIso: string): PrintReport {
     if (after.semi) alpha.semiAreaShareOfVisible = 0.0002;
     if (after.ghost) alpha.ghostPixelCount = 0;
   }
-  const color = after ? { profile: after.profile, iccDescription: after.profile === "adobeRgb" ? "Adobe RGB (1998)" : "sRGB IEC61966-2.1", srgbChunk: after.profile === "srgb" } : sample.color;
+  const color = after
+    ? {
+        profile: after.profile,
+        iccDescription: after.profile === "adobeRgb" ? "Adobe RGB (1998)" : "sRGB IEC61966-2.1",
+        srgbChunk: after.profile === "srgb",
+      }
+    : sample.color;
   const dpi = after ? { x: 300, y: 300, source: "pHYs" as const } : sample.dpi;
-  const fileBytes = after ? Math.round(sample.fileBytes * Math.min(1.4, (after.widthPx * after.heightPx) / (sample.widthPx * sample.heightPx))) : sample.fileBytes;
+  const fileBytes = after
+    ? Math.round(
+        sample.fileBytes * Math.min(1.4, (after.widthPx * after.heightPx) / (sample.widthPx * sample.heightPx)),
+      )
+    : sample.fileBytes;
 
   const findings: Finding[] = [];
   const add = (f: Finding) => findings.push(f);
   const region = (r: Rect): Rect => r;
 
-  if (sample.format === "jpeg") add({ ruleId: "format.jpegNoAlpha", severity: "warning", params: {}, region: null, fix: null });
-  if (sample.bitDepth === 16) add({ ruleId: "format.bitDepth16", severity: "warning", params: { bitDepth: 16 }, region: null, fix: null });
+  if (sample.format === "jpeg")
+    add({ ruleId: "format.jpegNoAlpha", severity: "warning", params: {}, region: null, fix: null });
+  if (sample.bitDepth === 16)
+    add({ ruleId: "format.bitDepth16", severity: "warning", params: { bitDepth: 16 }, region: null, fix: null });
   if (!alpha.present) add({ ruleId: "alpha.missing", severity: "error", params: {}, region: null, fix: null });
 
   const small = Math.min(widthPx, heightPx);
   if (small < profile.minPxPerSide) {
-    add({ ruleId: "size.belowMinPixels", severity: Math.max(widthPx, heightPx) < profile.minPxPerSide ? "error" : "warning", params: { widthPx, heightPx, minPx: profile.minPxPerSide }, region: null, fix: null });
+    add({
+      ruleId: "size.belowMinPixels",
+      severity: Math.max(widthPx, heightPx) < profile.minPxPerSide ? "error" : "warning",
+      params: { widthPx, heightPx, minPx: profile.minPxPerSide },
+      region: null,
+      fix: null,
+    });
   }
-  if (Math.max(widthPx, heightPx) > profile.maxPxPerSide) add({ ruleId: "size.aboveMaxPixels", severity: "error", params: { widthPx, heightPx, maxPx: profile.maxPxPerSide }, region: null, fix: null });
-  if (fileBytes > profile.maxFileBytes) add({ ruleId: "file.tooLarge", severity: "error", params: { fileBytes, limitBytes: profile.maxFileBytes }, region: null, fix: null });
-  else if (fileBytes > profile.warnFileBytes) add({ ruleId: "file.tooLarge", severity: "warning", params: { fileBytes, limitBytes: profile.warnFileBytes }, region: null, fix: null });
+  if (Math.max(widthPx, heightPx) > profile.maxPxPerSide)
+    add({
+      ruleId: "size.aboveMaxPixels",
+      severity: "error",
+      params: { widthPx, heightPx, maxPx: profile.maxPxPerSide },
+      region: null,
+      fix: null,
+    });
+  if (fileBytes > profile.maxFileBytes)
+    add({
+      ruleId: "file.tooLarge",
+      severity: "error",
+      params: { fileBytes, limitBytes: profile.maxFileBytes },
+      region: null,
+      fix: null,
+    });
+  else if (fileBytes > profile.warnFileBytes)
+    add({
+      ruleId: "file.tooLarge",
+      severity: "warning",
+      params: { fileBytes, limitBytes: profile.warnFileBytes },
+      region: null,
+      fix: null,
+    });
 
-  if (effectiveDpi < profile.errorBelowDpi) add({ ruleId: "resolution.tooLow", severity: "error", params: { effectiveDpi: Math.round(effectiveDpi), targetDpi: profile.targetDpi, maxWidthMm: Math.round(maxWidthMmAtTargetDpi) }, region: null, fix: null });
-  else if (effectiveDpi < profile.targetDpi - 0.5) add({ ruleId: "resolution.belowTarget", severity: "warning", params: { effectiveDpi: Math.round(effectiveDpi), targetDpi: profile.targetDpi, maxWidthMm: Math.round(maxWidthMmAtTargetDpi) }, region: null, fix: null });
-  if (dpi.source === "none" || dpi.x !== 300) add({ ruleId: "resolution.metadataMismatch", severity: "info", params: { dpi: dpi.x }, region: null, fix: null });
+  if (effectiveDpi < profile.errorBelowDpi)
+    add({
+      ruleId: "resolution.tooLow",
+      severity: "error",
+      params: {
+        effectiveDpi: Math.round(effectiveDpi),
+        targetDpi: profile.targetDpi,
+        maxWidthMm: Math.round(maxWidthMmAtTargetDpi),
+      },
+      region: null,
+      fix: null,
+    });
+  else if (effectiveDpi < profile.targetDpi - 0.5)
+    add({
+      ruleId: "resolution.belowTarget",
+      severity: "warning",
+      params: {
+        effectiveDpi: Math.round(effectiveDpi),
+        targetDpi: profile.targetDpi,
+        maxWidthMm: Math.round(maxWidthMmAtTargetDpi),
+      },
+      region: null,
+      fix: null,
+    });
+  if (dpi.source === "none" || dpi.x !== 300)
+    add({ ruleId: "resolution.metadataMismatch", severity: "info", params: { dpi: dpi.x }, region: null, fix: null });
 
-  if (!fitsPrintArea) add({ ruleId: "layout.exceedsPrintArea", severity: "error", params: { widthMm: round1(plannedWidthMm), heightMm: round1(plannedHeightMm), areaWidthMm: area.width, areaHeightMm: area.height }, region: null, fix: null });
-  else if (fitsSafeArea === false && safe) add({ ruleId: "layout.exceedsSafeArea", severity: "warning", params: { widthMm: round1(plannedWidthMm), heightMm: round1(plannedHeightMm), safeWidthMm: safe.width, safeHeightMm: safe.height }, region: null, fix: null });
-  if (!after && margins.top + margins.left + margins.right + margins.bottom === 0 && alpha.present) add({ ruleId: "layout.touchesEdge", severity: "info", params: {}, region: null, fix: null });
+  if (!fitsPrintArea)
+    add({
+      ruleId: "layout.exceedsPrintArea",
+      severity: "error",
+      params: {
+        widthMm: round1(plannedWidthMm),
+        heightMm: round1(plannedHeightMm),
+        areaWidthMm: area.width,
+        areaHeightMm: area.height,
+      },
+      region: null,
+      fix: null,
+    });
+  else if (fitsSafeArea === false && safe)
+    add({
+      ruleId: "layout.exceedsSafeArea",
+      severity: "warning",
+      params: {
+        widthMm: round1(plannedWidthMm),
+        heightMm: round1(plannedHeightMm),
+        safeWidthMm: safe.width,
+        safeHeightMm: safe.height,
+      },
+      region: null,
+      fix: null,
+    });
+  if (!after && margins.top + margins.left + margins.right + margins.bottom === 0 && alpha.present)
+    add({ ruleId: "layout.touchesEdge", severity: "info", params: {}, region: null, fix: null });
 
   if (color.profile === "cmyk") add({ ruleId: "color.cmyk", severity: "warning", params: {}, region: null, fix: null });
-  else if (color.profile === "none" && sample.format !== "other") add({ ruleId: "color.noProfile", severity: "info", params: {}, region: null, fix: null });
-  else if (color.profile === "srgb") add({ ruleId: "color.profileDiffers", severity: "info", params: { from: "sRGB", to: "Adobe RGB" }, region: null, fix: "colorProfile" });
+  else if (color.profile === "none" && sample.format !== "other")
+    add({ ruleId: "color.noProfile", severity: "info", params: {}, region: null, fix: null });
+  else if (color.profile === "srgb")
+    add({
+      ruleId: "color.profileDiffers",
+      severity: "info",
+      params: { from: "sRGB", to: "Adobe RGB" },
+      region: null,
+      fix: "colorProfile",
+    });
 
   if (alpha.present) {
     const share = alpha.semiAreaShareOfVisible;
@@ -240,11 +363,23 @@ export function analyze(input: AnalyzeInput, nowIso: string): PrintReport {
         ruleId: "alpha.semiTransparent",
         severity,
         params: { share: Math.round(share * 10000) / 10000, sharePercent: round1(share * 100) },
-        region: region({ x: Math.round(widthPx * 0.12), y: Math.round(heightPx * 0.78), width: Math.round(widthPx * 0.76), height: Math.round(heightPx * 0.18) }),
+        region: region({
+          x: Math.round(widthPx * 0.12),
+          y: Math.round(heightPx * 0.78),
+          width: Math.round(widthPx * 0.76),
+          height: Math.round(heightPx * 0.18),
+        }),
         fix: "semiTransparency",
       });
     }
-    if (alpha.ghostPixelCount > 0) add({ ruleId: "alpha.ghostPixels", severity: "warning", params: { count: alpha.ghostPixelCount }, region: region({ x: 0, y: 0, width: Math.round(widthPx * 0.2), height: Math.round(heightPx * 0.1) }), fix: "cleanGhostPixels" });
+    if (alpha.ghostPixelCount > 0)
+      add({
+        ruleId: "alpha.ghostPixels",
+        severity: "warning",
+        params: { count: alpha.ghostPixelCount },
+        region: region({ x: 0, y: 0, width: Math.round(widthPx * 0.2), height: Math.round(heightPx * 0.1) }),
+        fix: "cleanGhostPixels",
+      });
   }
   const minStroke = after ? null : sample.minStrokePx;
   if (minStroke !== null && minStroke < profile.strokes.warnBelowPx) {
@@ -252,19 +387,48 @@ export function analyze(input: AnalyzeInput, nowIso: string): PrintReport {
       ruleId: "detail.thinLines",
       severity: minStroke < profile.strokes.criticalBelowPx ? "error" : "warning",
       params: { minStrokePx: minStroke, minStrokeMm: round1((minStroke / profile.targetDpi) * MM) },
-      region: region({ x: Math.round(widthPx * 0.05), y: Math.round(heightPx * 0.44), width: Math.round(widthPx * 0.9), height: Math.round(heightPx * 0.04) }),
+      region: region({
+        x: Math.round(widthPx * 0.05),
+        y: Math.round(heightPx * 0.44),
+        width: Math.round(widthPx * 0.9),
+        height: Math.round(heightPx * 0.04),
+      }),
       fix: null,
     });
   }
-  if (garment && ((sample.tone === "dark" && (garment.id === "schwarz" || garment.id === "navy")) || (sample.tone === "light" && (garment.id === "weiss" || garment.id === "creme")))) {
-    add({ ruleId: "contrast.lowOnGarment", severity: "warning", params: { garment: garment.name, sharePercent: 62 }, region: null, fix: null });
+  if (
+    garment &&
+    ((sample.tone === "dark" && (garment.id === "schwarz" || garment.id === "navy")) ||
+      (sample.tone === "light" && (garment.id === "weiss" || garment.id === "creme")))
+  ) {
+    add({
+      ruleId: "contrast.lowOnGarment",
+      severity: "warning",
+      params: { garment: garment.name, sharePercent: 62 },
+      region: null,
+      fix: null,
+    });
   }
 
-  const verdict = findings.some((f) => f.severity === "error") ? "error" : findings.some((f) => f.severity === "warning") ? "warning" : "ok";
+  const verdict = findings.some((f) => f.severity === "error")
+    ? "error"
+    : findings.some((f) => f.severity === "warning")
+      ? "warning"
+      : "ok";
   return {
     engineVersion: "1.0.0",
     analyzedAt: nowIso,
-    file: { name: sample.name, format: sample.format, widthPx, heightPx, bitDepth: after ? 8 : sample.bitDepth, channels: sample.channels, interlaced: sample.interlaced, animated: sample.animated, fileBytes },
+    file: {
+      name: sample.name,
+      format: sample.format,
+      widthPx,
+      heightPx,
+      bitDepth: after ? 8 : sample.bitDepth,
+      channels: sample.channels,
+      interlaced: sample.interlaced,
+      animated: sample.animated,
+      fileBytes,
+    },
     dpi,
     color,
     alpha,

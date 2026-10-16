@@ -8,14 +8,14 @@ import { mockIPC } from "@tauri-apps/api/mocks";
 import { EXPORT_IMAGE_HEADERS, type ExportImageMeta, type FileHandleInfo } from "@contract";
 import { setClockTo } from "../../lib/clock";
 import { handlers, registerBlobHandle } from "./handlers";
-import { SCENARIOS, db, finishJob, newId, resetDb, startJob, type ScenarioName } from "./state";
+import { SCENARIOS, db, finishJob, newId, resetDb, startJob } from "./state";
 import { toAppError } from "../errors";
 
 interface MockApi {
   emit: (name: string, payload: unknown) => Promise<void>;
   calls: () => { cmd: string; args: unknown }[];
-  scenario: () => ScenarioName;
-  reset: (scenario?: ScenarioName) => void;
+  scenario: () => string;
+  reset: (scenario?: string) => void;
   exports: { meta: ExportImageMeta; bytes: number; url: string }[];
 }
 
@@ -28,11 +28,12 @@ declare global {
   }
 }
 
-function readScenario(): ScenarioName {
+/** Szenario aus `window.__CYPHER_SCENARIO__` oder `?scenario=`; mehrere mit „+“ kombinierbar. */
+function readScenario(): string {
   const fromWindow = window.__CYPHER_SCENARIO__;
   const fromUrl = new URLSearchParams(window.location.search).get("scenario");
   const wanted = fromWindow ?? fromUrl ?? "default";
-  return (SCENARIOS as readonly string[]).includes(wanted) ? (wanted as ScenarioName) : "default";
+  return wanted.split("+").every((p) => (SCENARIOS as readonly string[]).includes(p)) ? wanted : "default";
 }
 
 function seedBusy(): void {
@@ -60,7 +61,10 @@ export function installMock(): void {
 
   // Eigener Ereignisbus: Das mitgelieferte Mock meldet Abmeldungen nicht richtig zurück (args.id statt eventId).
   const listeners = new Map<string, Set<number>>();
-  const runCallback = (id: number, data: unknown) => (window as unknown as { __TAURI_INTERNALS__: { runCallback: (id: number, data: unknown) => void } }).__TAURI_INTERNALS__.runCallback(id, data);
+  const runCallback = (id: number, data: unknown) =>
+    (
+      window as unknown as { __TAURI_INTERNALS__: { runCallback: (id: number, data: unknown) => void } }
+    ).__TAURI_INTERNALS__.runCallback(id, data);
 
   mockIPC(
     async (cmd, payload) => {
@@ -78,25 +82,44 @@ export function installMock(): void {
       }
       if (cmd === "plugin:event|emit") {
         const a = payload as unknown as { event: string; payload: unknown };
-        for (const id of [...(listeners.get(a.event) ?? [])]) runCallback(id, { event: a.event, id, payload: a.payload });
+        for (const id of [...(listeners.get(a.event) ?? [])])
+          runCallback(id, { event: a.event, id, payload: a.payload });
         return undefined;
       }
       if (cmd.startsWith("plugin:")) return undefined;
       if (cmd === "export_save_image") {
         const body = payload as unknown as Uint8Array;
-        const meta = lastMeta ?? { fileName: "export.png", format: "png" as const, destination: { kind: "dialog" as const } };
-        const dir = meta.destination.kind === "project" ? `D:\\Sync\\Cypher\\Projekte\\Herbst-Drop 26\\${meta.destination.folder.replace("/", "\\")}` : meta.destination.kind === "library" ? `D:\\Sync\\Cypher\\${meta.destination.subfolder}` : "C:\\Users\\Lena\\Desktop";
+        const meta = lastMeta ?? {
+          fileName: "export.png",
+          format: "png" as const,
+          destination: { kind: "dialog" as const },
+        };
+        const dir =
+          meta.destination.kind === "project"
+            ? `D:\\Sync\\Cypher\\Projekte\\Herbst-Drop 26\\${meta.destination.folder.replace("/", "\\")}`
+            : meta.destination.kind === "library"
+              ? `D:\\Sync\\Cypher\\${meta.destination.subfolder}`
+              : "C:\\Users\\Lena\\Desktop";
         const blob = new Blob([body.slice().buffer], { type: meta.format === "png" ? "image/png" : "image/jpeg" });
         const url = URL.createObjectURL(blob);
         exports.push({ meta, bytes: body.byteLength, url });
-        const handle: FileHandleInfo = { id: `fh-${newId().slice(0, 8)}`, name: meta.fileName, displayPath: `${dir}\\${meta.fileName}`, size: body.byteLength, mime: blob.type, url, source: "export" };
+        const handle: FileHandleInfo = {
+          id: `fh-${newId().slice(0, 8)}`,
+          name: meta.fileName,
+          displayPath: `${dir}\\${meta.fileName}`,
+          size: body.byteLength,
+          mime: blob.type,
+          url,
+          source: "export",
+        };
         db.handles.set(handle.id, handle);
         void emit("library:changed", { reason: "import", changedCount: 1 });
         return handle;
       }
       const handler = (handlers as Record<string, ((args: unknown) => unknown) | undefined>)[cmd];
       db.calls.push({ cmd, args: payload });
-      if (!handler) throw { kind: "internal", message: `Mock: Command „${cmd}“ ist nicht bekannt`, correlationId: "mock" };
+      if (!handler)
+        throw { kind: "internal", message: `Mock: Command „${cmd}“ ist nicht bekannt`, correlationId: "mock" };
       try {
         return await handler(payload ?? {});
       } catch (error) {
@@ -107,7 +130,13 @@ export function installMock(): void {
   );
 
   // Kopfzeilen des RAW-Commands abgreifen (mockIPC reicht `options` nicht an den Handler weiter)
-  const internals = (window as unknown as { __TAURI_INTERNALS__: { invoke: (cmd: string, args?: unknown, options?: { headers?: Record<string, string> }) => Promise<unknown> } }).__TAURI_INTERNALS__;
+  const internals = (
+    window as unknown as {
+      __TAURI_INTERNALS__: {
+        invoke: (cmd: string, args?: unknown, options?: { headers?: Record<string, string> }) => Promise<unknown>;
+      };
+    }
+  ).__TAURI_INTERNALS__;
   const original = internals.invoke.bind(internals);
   internals.invoke = (cmd, args, options) => {
     if (cmd === "export_save_image") {
@@ -117,7 +146,7 @@ export function installMock(): void {
     return original(cmd, args, options);
   };
 
-  if (scenario === "busy") seedBusy();
+  if (db.flags.has("busy")) seedBusy();
 
   window.addEventListener("dragover", (e) => e.preventDefault());
   window.addEventListener("drop", (e) => {
@@ -138,7 +167,7 @@ export function installMock(): void {
   window.__CYPHER_MOCK__ = {
     emit: (name, payload) => emit(name, payload),
     calls: () => db.calls,
-    scenario: () => db.scenario,
+    scenario: () => [...db.flags].join("+"),
     reset: (next) => {
       resetDb(next ?? scenario);
     },

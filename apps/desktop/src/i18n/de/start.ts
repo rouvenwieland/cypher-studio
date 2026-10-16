@@ -31,7 +31,8 @@ export const start = {
       },
     },
     error: {
-      unreachable: (path: string) => `${path} ist gerade nicht erreichbar (Laufwerk getrennt?). Deine Dateien sind nicht betroffen.`,
+      unreachable: (path: string) =>
+        `${path} ist gerade nicht erreichbar (Laufwerk getrennt?). Deine Dateien sind nicht betroffen.`,
       permission: (path: string) => `Cypher Studio darf ${path} nicht lesen.`,
       generic: "Die Projekte ließen sich nicht lesen. Deine Dateien sind nicht betroffen.",
       retry: "Erneut versuchen",

@@ -68,12 +68,24 @@ export function NewProjectDialog({ open, onClose }: { open: boolean; onClose: ()
           submit();
         }}
       >
-        <TextField label={s.name} value={name} onChange={setName} placeholder={s.namePlaceholder} error={touched && invalid ? s.nameError : undefined} autoFocus maxLength={120} data-testid="new-project-name" />
+        <TextField
+          label={s.name}
+          value={name}
+          onChange={setName}
+          placeholder={s.namePlaceholder}
+          error={touched && invalid ? s.nameError : undefined}
+          autoFocus
+          maxLength={120}
+          data-testid="new-project-name"
+        />
         <SelectField
           label={s.collection}
           value={collection}
           onChange={setCollection}
-          options={[{ value: "", label: s.collectionNone }, ...(status.data?.collections ?? []).map((c) => ({ value: c.id, label: c.name }))]}
+          options={[
+            { value: "", label: s.collectionNone },
+            ...(status.data?.collections ?? []).map((c) => ({ value: c.id, label: c.name })),
+          ]}
         />
         <p className="t-meta t-mute">{s.hint}</p>
         {problem ? (

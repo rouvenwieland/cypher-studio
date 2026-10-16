@@ -29,7 +29,14 @@ export function Pop({
     <Popover.Root {...(open !== undefined ? { open } : {})} {...(onOpenChange ? { onOpenChange } : {})}>
       <Popover.Trigger asChild>{trigger}</Popover.Trigger>
       <Popover.Portal>
-        <Popover.Content className={padded ? "pop pop--pad" : "pop"} align={align} side={side} sideOffset={4} collisionPadding={8} aria-label={label}>
+        <Popover.Content
+          className={padded ? "pop pop--pad" : "pop"}
+          align={align}
+          side={side}
+          sideOffset={4}
+          collisionPadding={8}
+          aria-label={label}
+        >
           {children}
         </Popover.Content>
       </Popover.Portal>
@@ -73,7 +80,17 @@ export interface TabDef {
   content: ReactNode;
 }
 
-export function Tabs({ tabs, value, onChange, label }: { tabs: TabDef[]; value: string; onChange: (id: string) => void; label: string }) {
+export function Tabs({
+  tabs,
+  value,
+  onChange,
+  label,
+}: {
+  tabs: TabDef[];
+  value: string;
+  onChange: (id: string) => void;
+  label: string;
+}) {
   return (
     <TabsPrimitive.Root className="tabs" value={value} onValueChange={onChange}>
       <TabsPrimitive.List className="tabs__list" aria-label={label}>

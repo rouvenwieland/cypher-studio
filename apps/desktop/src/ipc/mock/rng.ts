@@ -23,7 +23,10 @@ export function hashString(text: string): number {
 export function fakeSha256(text: string): string {
   const rnd = mulberry32(hashString(text));
   let out = "";
-  while (out.length < 64) out += Math.floor(rnd() * 0x10000).toString(16).padStart(4, "0");
+  while (out.length < 64)
+    out += Math.floor(rnd() * 0x10000)
+      .toString(16)
+      .padStart(4, "0");
   return out.slice(0, 64);
 }
 

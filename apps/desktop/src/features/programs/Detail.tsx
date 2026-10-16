@@ -28,12 +28,17 @@ const d = t.programs.detail;
 function Overview({ p }: { p: ProgramOverview }) {
   const library = useCmd("library_query", { req: { limit: 60, sort: "modifiedDesc" as const } }, { retry: false });
   const files = (library.data?.entries ?? []).filter((e) => e.openWith === p.id).slice(0, 5);
-  const setPreferred = (installationId: string) => void call("program_set_preferred", { req: { programId: p.id, installationId } });
+  const setPreferred = (installationId: string) =>
+    void call("program_set_preferred", { req: { programId: p.id, installationId } });
   return (
     <div className="stack stack--loose ov">
       <p className="t-read">{d.useCase[p.id] ?? p.description}</p>
       {p.updateAvailable && p.latest ? (
-        <Notice kind="warn" title={d.updateRow(p.installations.find((i) => i.kind === "cypher")?.version ?? "—", p.latest.version)} role="status" />
+        <Notice
+          kind="warn"
+          title={d.updateRow(p.installations.find((i) => i.kind === "cypher")?.version ?? "—", p.latest.version)}
+          role="status"
+        />
       ) : null}
       <section>
         <h2 className="t-section ov__h">{d.installations}</h2>
@@ -52,11 +57,25 @@ function Overview({ p }: { p: ProgramOverview }) {
                   </span>
                   {i.problems.map((pr, idx) => (
                     <span key={idx} className="t-meta status status--warn">
-                      {pr.kind === "staleCatalogVersion" ? d.problems.staleCatalogVersion(pr.latest) : pr.kind === "endOfSupportSoon" ? d.problems.endOfSupportSoon(pr.until) : pr.kind === "fuseMissing" ? d.problems.fuseMissing : pr.kind === "setupNotSupported" ? d.problems.setupNotSupported : d.problems[pr.kind]}
+                      {pr.kind === "staleCatalogVersion"
+                        ? d.problems.staleCatalogVersion(pr.latest)
+                        : pr.kind === "endOfSupportSoon"
+                          ? d.problems.endOfSupportSoon(pr.until)
+                          : pr.kind === "fuseMissing"
+                            ? d.problems.fuseMissing
+                            : pr.kind === "setupNotSupported"
+                              ? d.problems.setupNotSupported
+                              : d.problems[pr.kind]}
                     </span>
                   ))}
                 </div>
-                {i.id === p.preferredInstallationId ? <span className="t-label">{d.preferred}</span> : p.installations.length > 1 ? <Button small variant="text" onClick={() => setPreferred(i.id)}>{d.makePreferred}</Button> : null}
+                {i.id === p.preferredInstallationId ? (
+                  <span className="t-label">{d.preferred}</span>
+                ) : p.installations.length > 1 ? (
+                  <Button small variant="text" onClick={() => setPreferred(i.id)}>
+                    {d.makePreferred}
+                  </Button>
+                ) : null}
               </li>
             ))}
           </ul>
@@ -98,9 +117,16 @@ function History({ p }: { p: ProgramOverview }) {
           {recs.map((r) => (
             <li key={r.setupId} className="ilist__row">
               <div className="ilist__main">
-                <span className="t-strong">{r.status === "undone" ? d.history.setupUndone : r.status === "partial" ? d.history.setupPartial : d.history.setupApplied}</span>
+                <span className="t-strong">
+                  {r.status === "undone"
+                    ? d.history.setupUndone
+                    : r.status === "partial"
+                      ? d.history.setupPartial
+                      : d.history.setupApplied}
+                </span>
                 <span className="t-data t-mute">
-                  {fmtDateTime(r.appliedAt)} · {r.packVersion} · {d.history.files(r.filesWritten)} · {d.history.backups(r.backupsTaken)}
+                  {fmtDateTime(r.appliedAt)} · {r.packVersion} · {d.history.files(r.filesWritten)} ·{" "}
+                  {d.history.backups(r.backupsTaken)}
                 </span>
               </div>
               {r.undoAvailable ? (
@@ -145,7 +171,10 @@ export function ProgramDetail() {
   const launch = () => {
     if (!program) return;
     if (state?.action === "install" || state?.action === "update") {
-      openInstall({ programId: program.id, ...(state.action === "update" && program.latest ? { version: program.latest.version } : {}) });
+      openInstall({
+        programId: program.id,
+        ...(state.action === "update" && program.latest ? { version: program.latest.version } : {}),
+      });
       return;
     }
     void call("program_launch", { req: { programId: program.id, ...(inst ? { installationId: inst.id } : {}) } })
@@ -162,31 +191,97 @@ export function ProgramDetail() {
   });
 
   if (query.isPending) {
-    return <PlainPage title={t.programs.title} testId="screen-program-detail">{null}</PlainPage>;
+    return (
+      <PlainPage title={t.programs.title} testId="screen-program-detail">
+        {null}
+      </PlainPage>
+    );
   }
   if (!program || !state) {
     return (
       <PlainPage title={t.programs.title} testId="screen-program-detail">
-        <EmptyState actions={<Button onClick={() => void navigate("/programme")}>{d.back}</Button>}>{t.programs.detail.notFound}</EmptyState>
+        <EmptyState actions={<Button onClick={() => void navigate("/programme")}>{d.back}</Button>}>
+          {t.programs.detail.notFound}
+        </EmptyState>
       </PlainPage>
     );
   }
 
   const unpacked = program.latest?.downloadSize ?? 0;
   const menu: MenuEntry[] = [
-    ...(inst ? [{ id: "reveal", label: d.menuReveal, onSelect: () => void call("app_reveal", { req: { target: { kind: "installation" as const, installationId: inst.id } } }) }] : []),
-    { id: "home", label: d.menuHomepage, onSelect: () => void call("app_open_external", { req: { target: { kind: "programPage", programId: program.id, page: "homepage" } } }) },
-    { id: "notes", label: d.menuReleaseNotes, onSelect: () => void call("app_open_external", { req: { target: { kind: "programPage", programId: program.id, page: "releaseNotes" } } }) },
-    { id: "license", label: d.menuLicense, onSelect: () => void call("app_open_external", { req: { target: { kind: "programPage", programId: program.id, page: "license" } } }) },
-    ...(inst ? [{ id: "remove", label: inst.managedByCypher ? d.menuRemove : d.menuForget, separatorBefore: true, onSelect: () => setRemoving(true) }] : []),
+    ...(inst
+      ? [
+          {
+            id: "reveal",
+            label: d.menuReveal,
+            onSelect: () =>
+              void call("app_reveal", { req: { target: { kind: "installation" as const, installationId: inst.id } } }),
+          },
+        ]
+      : []),
+    {
+      id: "home",
+      label: d.menuHomepage,
+      onSelect: () =>
+        void call("app_open_external", {
+          req: { target: { kind: "programPage", programId: program.id, page: "homepage" } },
+        }),
+    },
+    {
+      id: "notes",
+      label: d.menuReleaseNotes,
+      onSelect: () =>
+        void call("app_open_external", {
+          req: { target: { kind: "programPage", programId: program.id, page: "releaseNotes" } },
+        }),
+    },
+    {
+      id: "license",
+      label: d.menuLicense,
+      onSelect: () =>
+        void call("app_open_external", {
+          req: { target: { kind: "programPage", programId: program.id, page: "license" } },
+        }),
+    },
+    ...(inst
+      ? [
+          {
+            id: "remove",
+            label: inst.managedByCypher ? d.menuRemove : d.menuForget,
+            separatorBefore: true,
+            onSelect: () => setRemoving(true),
+          },
+        ]
+      : []),
   ];
-  const actionText = state.action === "install" ? t.programs.actions.install : state.action === "update" ? t.programs.actions.update : state.action === "cancel" ? t.programs.actions.cancel : t.programs.actions.launch;
+  const actionText =
+    state.action === "install"
+      ? t.programs.actions.install
+      : state.action === "update"
+        ? t.programs.actions.update
+        : state.action === "cancel"
+          ? t.programs.actions.cancel
+          : t.programs.actions.launch;
   const measure = [
-    { label: t.common.labels.version, value: state.versionLabel === "—" ? (program.latest?.version ?? "—") : state.versionLabel },
+    {
+      label: t.common.labels.version,
+      value: state.versionLabel === "—" ? (program.latest?.version ?? "—") : state.versionLabel,
+    },
     { label: t.common.labels.size, value: unpacked ? fmtBytes(unpacked) : "—" },
     { label: t.common.labels.license, value: program.license.spdx },
-    { label: t.common.labels.checksum, value: inst?.verified ? <Status kind="ok">{t.programs.status.installed}</Status> : "—" },
-    ...(inst ? [{ label: t.common.labels.target, value: <span title={inst.location}>{inst.location.replace(/\\[^\\]+$/, "")}</span> }] : []),
+    {
+      label: t.common.labels.checksum,
+      value: inst?.verified ? <Status kind="ok">{t.programs.status.installed}</Status> : "—",
+    },
+    ...(inst
+      ? [
+          {
+            label: t.common.labels.target,
+            newLine: true,
+            value: <span title={inst.location}>{inst.location.replace(/\\[^\\]+$/, "")}</span>,
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -206,7 +301,13 @@ export function ProgramDetail() {
     >
       <div className="detail">
         <div className="detail__back">
-          <IconButton icon={IconBack} label={d.back} bare onClick={() => void navigate("/programme")} combo="alt+left" />
+          <IconButton
+            icon={IconBack}
+            label={d.back}
+            bare
+            onClick={() => void navigate("/programme")}
+            combo="alt+left"
+          />
         </div>
         <div className="detail__kennung">
           <FitText text={program.name.toUpperCase()} size={120} minSize={40} maxSize={150} label={program.name} snap />
@@ -219,7 +320,9 @@ export function ProgramDetail() {
         <Tabs
           label={d.tabsLabel}
           value={tab}
-          onChange={(v) => setParams(v === "overview" ? {} : { tab: v === "setup" ? "einrichtung" : "verlauf" }, { replace: true })}
+          onChange={(v) =>
+            setParams(v === "overview" ? {} : { tab: v === "setup" ? "einrichtung" : "verlauf" }, { replace: true })
+          }
           tabs={[
             { id: "overview", label: d.tabs.overview, content: <Overview p={program} /> },
             { id: "setup", label: d.tabs.setup, content: setup.body },
@@ -238,7 +341,9 @@ export function ProgramDetail() {
               variant="danger"
               onClick={() => {
                 if (!inst) return;
-                void call("installation_remove", { req: { installationId: inst.id, mode: inst.managedByCypher ? "deleteFiles" : "forget" } })
+                void call("installation_remove", {
+                  req: { installationId: inst.id, mode: inst.managedByCypher ? "deleteFiles" : "forget" },
+                })
                   .then(() => {
                     setRemoving(false);
                     push({ kind: "info", text: t.programs.remove.done(program.name) });
@@ -253,7 +358,15 @@ export function ProgramDetail() {
           </>
         }
       >
-        {inst ? <p className="t-read">{t.programs.remove.text(inst.location, fmtBytes(program.latest?.downloadSize ? program.latest.downloadSize * 3 : 0), program.name)}</p> : null}
+        {inst ? (
+          <p className="t-read">
+            {t.programs.remove.text(
+              inst.location,
+              fmtBytes(program.latest?.downloadSize ? program.latest.downloadSize * 3 : 0),
+              program.name,
+            )}
+          </p>
+        ) : null}
       </Dialog>
     </PlainPage>
   );

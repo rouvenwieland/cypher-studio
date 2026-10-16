@@ -11,7 +11,15 @@ import { Dialog } from "../../ui/Dialog";
 import { PlainPage } from "../../ui/Frames";
 import { useRoving } from "../../ui/useRoving";
 import { ProgramDetail } from "./Detail";
-import { ProgramName, ProgressText, RowActionButton, StatusCell, roleOf, useProgramActions, useProgramRows } from "./parts";
+import {
+  ProgramName,
+  ProgressText,
+  RowActionButton,
+  StatusCell,
+  roleOf,
+  useProgramActions,
+  useProgramRows,
+} from "./parts";
 import "./programs.css";
 
 const s = t.programs;
@@ -87,26 +95,47 @@ function Board() {
             {s.manifestError.text}
           </Notice>
         ) : null}
-        <ul className="tafel" role="listbox" aria-label={s.list.label} aria-describedby="tafel-hint" {...roving.containerProps} data-testid="program-list">
+        <ul
+          className="tafel"
+          role="grid"
+          aria-label={s.list.label}
+          aria-describedby="tafel-hint"
+          {...roving.containerProps}
+          data-testid="program-list"
+        >
           {query.isPending
             ? Array.from({ length: 4 }, (_, i) => <li key={i} className="trow trow--skel" aria-hidden="true" />)
             : rows.map((row, i) => (
-                <li key={row.program.id} role="option" className="trow" {...roving.itemProps(i)} onClick={() => void navigate(`/programme/${row.program.id}`)} data-testid={`program-${row.program.id}`} aria-label={`${row.program.name}, ${roleOf(row.program)}, ${row.state.versionLabel}`}>
-                  <div className="trow__name">
+                <li
+                  key={row.program.id}
+                  role="row"
+                  className="trow"
+                  {...roving.itemProps(i)}
+                  onClick={() => void navigate(`/programme/${row.program.id}`)}
+                  data-testid={`program-${row.program.id}`}
+                >
+                  <div className="trow__name" role="gridcell">
                     <ProgramName name={row.program.name} />
                     <span className="t-label">{roleOf(row.program)}</span>
                   </div>
-                  <span className="t-data trow__version">{row.state.progress !== null ? "" : row.state.versionLabel}</span>
-                  <div className="trow__status">
+                  <span className="t-data trow__version" role="gridcell">
+                    {row.state.progress !== null ? "" : row.state.versionLabel}
+                  </span>
+                  <div className="trow__status" role="gridcell">
                     <StatusCell row={row} />
                     {row.state.progress !== null ? <ProgressText row={row} /> : null}
                     {row.state.status === "found" && row.state.installation ? (
                       <span className="t-meta trow__found" title={s.foundWhy}>
-                        {s.foundHint(row.state.installation.version ?? "—", ellipsizePath(row.state.installation.location, 46))}
+                        {s.foundHint(
+                          row.state.installation.version ?? "—",
+                          ellipsizePath(row.state.installation.location, 46),
+                        )}
                       </span>
                     ) : null}
                   </div>
-                  <RowActionButton row={row} onRun={run} />
+                  <div role="gridcell">
+                    <RowActionButton row={row} onRun={run} />
+                  </div>
                 </li>
               ))}
         </ul>
@@ -125,7 +154,13 @@ function Board() {
             <ul>
               {(query.data?.links ?? []).map((l) => (
                 <li key={l.id} className="t-meta">
-                  <button type="button" className="linkbtn" onClick={() => void call("app_open_external", { req: { target: { kind: "catalogLink", linkId: l.id } } })}>
+                  <button
+                    type="button"
+                    className="linkbtn"
+                    onClick={() =>
+                      void call("app_open_external", { req: { target: { kind: "catalogLink", linkId: l.id } } })
+                    }
+                  >
                     {l.name}
                   </button>{" "}
                   <span className="t-mute">{l.note ?? l.description}</span>
@@ -135,7 +170,12 @@ function Board() {
           </div>
         ) : null}
       </div>
-      <Dialog open={marks} title={s.trademarkTitle} onClose={() => setMarks(false)} footer={<Button onClick={() => setMarks(false)}>{t.common.close}</Button>}>
+      <Dialog
+        open={marks}
+        title={s.trademarkTitle}
+        onClose={() => setMarks(false)}
+        footer={<Button onClick={() => setMarks(false)}>{t.common.close}</Button>}
+      >
         <p className="t-read">{s.trademarkText}</p>
       </Dialog>
     </PlainPage>

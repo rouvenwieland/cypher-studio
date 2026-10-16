@@ -54,7 +54,14 @@ function Scale({ step, downloadMin, needle }: { step: number; downloadMin: numbe
           return (
             <span
               key={s.id}
-              className={["scale__seg", done ? "scale__seg--done" : "", current ? "scale__seg--now" : "", s.row === 1 ? "scale__seg--dl" : ""].filter(Boolean).join(" ")}
+              className={[
+                "scale__seg",
+                done ? "scale__seg--done" : "",
+                current ? "scale__seg--now" : "",
+                s.row === 1 ? "scale__seg--dl" : "",
+              ]
+                .filter(Boolean)
+                .join(" ")}
               style={{ left: pct(s.from), width: `calc(${pct(s.to - s.from)} - 2px)` }}
               title={o.schedule.steps[s.id - 1] ?? ""}
             >
@@ -98,7 +105,9 @@ export default function Onboarding() {
 
   const save = useCallback(
     (patch: NonNullable<SettingsPatch["onboarding"]>) => {
-      void call("settings_update", { req: { onboarding: patch } }).then((next: Settings) => qc.setQueryData(["settings_get"], next));
+      void call("settings_update", { req: { onboarding: patch } }).then((next: Settings) =>
+        qc.setQueryData(["settings_get"], next),
+      );
     },
     [qc],
   );
@@ -110,7 +119,7 @@ export default function Onboarding() {
     [save, selected, applySetup],
   );
 
-  const choose = useChooseRoot(() => setFolderChosen(status.data?.root ?? null));
+  const choose = useChooseRoot();
   useEffect(() => {
     if (status.data?.root) setFolderChosen(status.data.root);
   }, [status.data?.root]);
@@ -121,7 +130,8 @@ export default function Onboarding() {
 
   // Prüfungsanzeigen holen, sobald Schritt 3 erreicht ist
   useEffect(() => {
-    if (step === 3 && items.length === 0 && chosen.length > 0 && !batch.previewing) void batch.preview(chosen.map((p) => ({ id: p.id, name: p.name })));
+    if (step === 3 && items.length === 0 && chosen.length > 0 && !batch.previewing)
+      void batch.preview(chosen.map((p) => ({ id: p.id, name: p.name })));
     // eslint-disable-next-line react-hooks/exhaustive-deps -- nur beim Betreten des Schritts
   }, [step]);
 
@@ -133,7 +143,10 @@ export default function Onboarding() {
     { req: { handleId: sample?.handle.id ?? "", profileId: profile.data?.[0]?.id ?? "", garmentColorId: "schwarz" } },
     { enabled: step === 6 && !!sample && !!profile.data?.[0] },
   );
-  const sampleChecks = useMemo(() => (sampleReport.data && profile.data?.[0] ? evaluateChecks(sampleReport.data, profile.data[0]) : []), [sampleReport.data, profile.data]);
+  const sampleChecks = useMemo(
+    () => (sampleReport.data && profile.data?.[0] ? evaluateChecks(sampleReport.data, profile.data[0]) : []),
+    [sampleReport.data, profile.data],
+  );
   const sampleSum = summarize(sampleChecks);
 
   const finish = useCallback(
@@ -154,10 +167,16 @@ export default function Onboarding() {
   // Fortschritt und Zeit
   const dlBytes = items.reduce((n, it) => n + it.downloaded, 0);
   const dlTotal = items.reduce((n, it) => n + (it.plan?.artifact.size ?? 0), 0);
-  const earliest = items.reduce<number | null>((m, it) => (it.startedAt !== null && (m === null || it.startedAt < m) ? it.startedAt : m), null);
+  const earliest = items.reduce<number | null>(
+    (m, it) => (it.startedAt !== null && (m === null || it.startedAt < m) ? it.startedAt : m),
+    null,
+  );
   const elapsedS = earliest ? (Date.now() - earliest) / 1000 : 0;
   const rate = elapsedS > 4 ? dlBytes / elapsedS : 0;
-  const downloadMin = rate > 0 && dlTotal > 0 ? Math.max(1, Math.round((dlTotal - dlBytes) / rate / 60) + 2) : Math.max(6, Math.round(totalBytes / (1024 * 1024 * 40)) + 8);
+  const downloadMin =
+    rate > 0 && dlTotal > 0
+      ? Math.max(1, Math.round((dlTotal - dlBytes) / rate / 60) + 2)
+      : Math.max(6, Math.round(totalBytes / (1024 * 1024 * 40)) + 8);
   const stepNow = step ?? 0;
   const base = [0, 0, 1, 3, 5, 5 + downloadMin, 5 + downloadMin + 3][Math.max(0, Math.min(6, stepNow))] ?? 0;
   const frac = stepNow === 4 && dlTotal > 0 ? (dlBytes / dlTotal) * downloadMin : 0;
@@ -181,12 +200,13 @@ export default function Onboarding() {
     return <ReadyBand onDone={() => finish("/start")} items={items} folder={folderChosen} templates={4} />;
   }
 
-  let content: ReactNode = null;
+  let content: ReactNode;
   let nextLabel: string = o.next;
   let nextDisabled = false;
   let onNext: () => void = () => go(step + 1);
   let showBack = step > 1 && step < 4;
-  const toggleProgram = (id: string, on: boolean) => setSelected((cur) => (on ? [...new Set([...cur, id])] : cur.filter((x) => x !== id)));
+  const toggleProgram = (id: string, on: boolean) =>
+    setSelected((cur) => (on ? [...new Set([...cur, id])] : cur.filter((x) => x !== id)));
 
   if (step === 1) {
     content = (
@@ -197,7 +217,13 @@ export default function Onboarding() {
           {catalog.map((p) => (
             <li key={p.id} className={selected.includes(p.id) ? "obrow obrow--on" : "obrow"}>
               <label className="obrow__label">
-                <input type="checkbox" className="check__box" checked={selected.includes(p.id)} onChange={(e) => toggleProgram(p.id, e.target.checked)} data-testid={`ob-program-${p.id}`} />
+                <input
+                  type="checkbox"
+                  className="check__box"
+                  checked={selected.includes(p.id)}
+                  onChange={(e) => toggleProgram(p.id, e.target.checked)}
+                  data-testid={`ob-program-${p.id}`}
+                />
                 <span className="obrow__text">
                   <span className="t-strong">{o.step1.rows[p.id] ?? p.name}</span>
                   <span className="t-data t-mute">{p.latest ? fmtBytes(p.latest.downloadSize) : ""}</span>
@@ -224,7 +250,11 @@ export default function Onboarding() {
             <p className="t-data selectable" data-testid="ob-folder">
               {o.step2.chosen(folderChosen)}
             </p>
-            {status.data?.configured ? <p className="t-meta">{o.step2.summary(fmtCount(status.data.entryCount), fmtCount(status.data.projectCount))}</p> : null}
+            {status.data?.configured ? (
+              <p className="t-meta">
+                {o.step2.summary(fmtCount(status.data.entryCount), fmtCount(status.data.projectCount))}
+              </p>
+            ) : null}
             <div>
               <Button onClick={choose.start}>{o.step2.change}</Button>
             </div>
@@ -269,17 +299,33 @@ export default function Onboarding() {
         <>
           <h1 className="ob__title t-title">{o.step3.title}</h1>
           <p className="t-read">{o.step3.help}</p>
-          {batch.previewing && !ready ? <p className="t-meta" role="status">{o.step3.loading}</p> : null}
+          {batch.previewing && !ready ? (
+            <p className="t-meta" role="status">
+              {o.step3.loading}
+            </p>
+          ) : null}
           <table className="stable" data-testid="ob-review">
             <caption className="sr-only">{o.step3.title}</caption>
             <thead>
               <tr>
-                <th scope="col" className="t-label">{o.step3.columns.program}</th>
-                <th scope="col" className="t-label">{o.step3.columns.source}</th>
-                <th scope="col" className="t-label">{o.step3.columns.version}</th>
-                <th scope="col" className="t-label">{o.step3.columns.size}</th>
-                <th scope="col" className="t-label">{o.step3.columns.license}</th>
-                <th scope="col" className="t-label">{o.step3.columns.checksum}</th>
+                <th scope="col" className="t-label">
+                  {o.step3.columns.program}
+                </th>
+                <th scope="col" className="t-label">
+                  {o.step3.columns.source}
+                </th>
+                <th scope="col" className="t-label">
+                  {o.step3.columns.version}
+                </th>
+                <th scope="col" className="t-label">
+                  {o.step3.columns.size}
+                </th>
+                <th scope="col" className="t-label">
+                  {o.step3.columns.license}
+                </th>
+                <th scope="col" className="t-label">
+                  {o.step3.columns.checksum}
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -319,12 +365,20 @@ export default function Onboarding() {
                         <>
                           <td className="t-strong">{it.name}</td>
                           <td colSpan={5}>
-                            {it.planError ? <span className="field__error t-meta">{o.step3.failed(it.name)}</span> : <span className="t-meta t-mute">{t.common.loading}</span>}
+                            {it.planError ? (
+                              <span className="field__error t-meta">{o.step3.failed(it.name)}</span>
+                            ) : (
+                              <span className="t-meta t-mute">{t.common.loading}</span>
+                            )}
                           </td>
                         </>
                       )
                     }
-                    detail={open && it.plan ? <span className="t-data selectable">{`${it.plan.target.dir} · ${it.plan.artifact.sha256}`}</span> : null}
+                    detail={
+                      open && it.plan ? (
+                        <span className="t-data selectable">{`${it.plan.target.dir} · ${it.plan.artifact.sha256}`}</span>
+                      ) : null
+                    }
                   />
                 );
               })}
@@ -353,13 +407,27 @@ export default function Onboarding() {
                   <FitText text={it.name.toUpperCase()} size={30} minSize={16} maxSize={36} label={it.name} />
                 </span>
                 <span className="obrow__text">
-                  {it.state === "running" ? <Bar value={it.progress} label={it.name} valueText={`${Math.round(it.progress * 100)} %`} thin /> : null}
+                  {it.state === "running" ? (
+                    <Bar value={it.progress} label={it.name} valueText={`${Math.round(it.progress * 100)} %`} thin />
+                  ) : null}
                   <span className="t-data t-mute" data-testid={`ob-state-${it.programId}`}>
-                    {it.state === "pending" ? o.step4.queued : it.state === "running" ? `${fmtMegabytes(it.downloaded)} / ${it.plan ? fmtBytes(it.plan.artifact.size) : ""}` : o.step4[it.state === "done" ? "done" : it.state === "cancelled" ? "cancelled" : "failed"]}
+                    {it.state === "pending"
+                      ? o.step4.queued
+                      : it.state === "running"
+                        ? `${fmtMegabytes(it.downloaded)} / ${it.plan ? fmtBytes(it.plan.artifact.size) : ""}`
+                        : o.step4[it.state === "done" ? "done" : it.state === "cancelled" ? "cancelled" : "failed"]}
                   </span>
                 </span>
                 <span className="obrow__status">
-                  {it.state === "done" ? <Status kind="ok">{o.step4.done}</Status> : it.state === "failed" ? <Status kind="error">{o.step4.failed}</Status> : it.state === "running" ? <Status kind="plain">{o.step4.running}</Status> : <Status kind="open">{o.step4.queued}</Status>}
+                  {it.state === "done" ? (
+                    <Status kind="ok">{o.step4.done}</Status>
+                  ) : it.state === "failed" ? (
+                    <Status kind="error">{o.step4.failed}</Status>
+                  ) : it.state === "running" ? (
+                    <Status kind="plain">{o.step4.running}</Status>
+                  ) : (
+                    <Status kind="open">{o.step4.queued}</Status>
+                  )}
                 </span>
               </div>
             </li>
@@ -387,10 +455,26 @@ export default function Onboarding() {
                   <FitText text={it.name.toUpperCase()} size={30} minSize={16} maxSize={36} label={it.name} />
                 </span>
                 <span className="obrow__text t-meta">
-                  {it.setup === "off" ? o.step5.off : it.setup === "done" ? o.step5.applied(it.setupCount) : it.setup === "needsYou" ? o.step5.needsYou : it.state === "done" ? o.step5.applied(it.setupCount) : o.step5.pending}
+                  {it.setup === "off"
+                    ? o.step5.off
+                    : it.setup === "done"
+                      ? o.step5.applied(it.setupCount)
+                      : it.setup === "needsYou"
+                        ? o.step5.needsYou
+                        : it.state === "done"
+                          ? o.step5.applied(it.setupCount)
+                          : o.step5.pending}
                 </span>
                 <span className="obrow__status">
-                  {it.setup === "done" ? <Status kind="ok">{t.setup.status.current}</Status> : it.setup === "needsYou" ? <Status kind="warn">{o.step5.needsYou}</Status> : it.state === "failed" ? <Status kind="error">{o.step4.failed}</Status> : <Status kind="open">{o.step5.pending}</Status>}
+                  {it.setup === "done" ? (
+                    <Status kind="ok">{t.setup.status.current}</Status>
+                  ) : it.setup === "needsYou" ? (
+                    <Status kind="warn">{o.step5.needsYou}</Status>
+                  ) : it.state === "failed" ? (
+                    <Status kind="error">{o.step4.failed}</Status>
+                  ) : (
+                    <Status kind="open">{o.step5.pending}</Status>
+                  )}
                   {it.setup === "needsYou" ? (
                     <Button
                       small
@@ -418,10 +502,22 @@ export default function Onboarding() {
         <h1 className="ob__title t-title">{o.step6.title}</h1>
         <p className="t-read">{o.step6.help}</p>
         <div className="probe">
-          <div className="probe__img">{sample?.handle.url ? <img src={sample.handle.url} alt={o.step6.sample} /> : null}</div>
+          <div className="probe__img">
+            {sample?.handle.url ? <img src={sample.handle.url} alt={o.step6.sample} /> : null}
+          </div>
           <div className="stack">
             {sampleReport.data ? (
-              <Verdict kind={sampleSum.verdict === "ok" ? "ok" : sampleSum.verdict === "warning" ? "warn" : "error"} word={sampleSum.verdict === "ok" ? t.print.verdict.ok : sampleSum.verdict === "warning" ? t.print.verdict.warning : t.print.verdict.error} count={o.step6.result(t.print.verdict[sampleSum.verdict], sampleSum.warnings)} />
+              <Verdict
+                kind={sampleSum.verdict === "ok" ? "ok" : sampleSum.verdict === "warning" ? "warn" : "error"}
+                word={
+                  sampleSum.verdict === "ok"
+                    ? t.print.verdict.ok
+                    : sampleSum.verdict === "warning"
+                      ? t.print.verdict.warning
+                      : t.print.verdict.error
+                }
+                count={o.step6.result(t.print.verdict[sampleSum.verdict], sampleSum.warnings)}
+              />
             ) : (
               <p className="t-meta" role="status">
                 {o.step6.loading}
@@ -508,7 +604,17 @@ function FragmentRow({ cells, detail }: { cells: ReactNode; detail: ReactNode })
 }
 
 /** Startklar-Band (lauter Moment 2): Schnitt auf das Band in Cyan, einmal von links gefüllt (240 ms). */
-export function ReadyBand({ onDone, items, folder, templates }: { onDone: () => void; items: ReturnType<typeof useBatch>["items"]; folder: string | null; templates: number }) {
+export function ReadyBand({
+  onDone,
+  items,
+  folder,
+  templates,
+}: {
+  onDone: () => void;
+  items: ReturnType<typeof useBatch>["items"];
+  folder: string | null;
+  templates: number;
+}) {
   const r = o.ready;
   useDocumentTitle(r.word);
   return (
@@ -523,7 +629,13 @@ export function ReadyBand({ onDone, items, folder, templates }: { onDone: () => 
           <div className="mz">
             {items.map((it) => (
               <span key={it.programId} className="mz__item">
-                <span className="mz__value">{it.state === "done" ? (it.setup === "done" ? r.installed(it.name, it.installation?.version ?? "") : r.installedPlain(it.name, it.installation?.version ?? "")) : r.missing(it.name)}</span>
+                <span className="mz__value">
+                  {it.state === "done"
+                    ? it.setup === "done"
+                      ? r.installed(it.name, it.installation?.version ?? "")
+                      : r.installedPlain(it.name, it.installation?.version ?? "")
+                    : r.missing(it.name)}
+                </span>
               </span>
             ))}
             {folder ? (

@@ -73,7 +73,6 @@
 .sum__g--on {
   color: var(--progress);
   font-weight: var(--fw-strong);
-  box-shadow: none;
   border-bottom: var(--edge-strong) solid var(--progress);
 }
 

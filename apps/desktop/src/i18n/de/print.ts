@@ -18,7 +18,8 @@ export const print = {
   },
   preview: {
     label: "Vorschau der Druckfläche",
-    summary: (name: string, w: string, h: string, aw: number, ah: number) => `${name}, ${w} × ${h} mm, mittig auf der Druckfläche ${aw} × ${ah} mm`,
+    summary: (name: string, w: string, h: string, aw: number, ah: number) =>
+      `${name}, ${w} × ${h} mm, mittig auf der Druckfläche ${aw} × ${ah} mm`,
     disclaimer: "Bildschirm ist kein Farbbeweis. Für kritische Farben ein Probeshirt bestellen.",
     tools: {
       fit: "Einpassen",
@@ -47,10 +48,12 @@ export const print = {
     error: "Nicht druckbar",
     pending: "Wird gemessen",
     none: "Keine Datei",
-    counts: (warnings: number, errors: number, unchecked: number) => `${warnings} ${warnings === 1 ? "Hinweis" : "Hinweise"} · ${errors} ${errors === 1 ? "Fehler" : "Fehler"}${unchecked > 0 ? ` · ${unchecked} nicht geprüft` : ""}`,
+    counts: (warnings: number, errors: number, unchecked: number) =>
+      `${warnings} ${warnings === 1 ? "Hinweis" : "Hinweise"} · ${errors} ${errors === 1 ? "Fehler" : "Fehler"}${unchecked > 0 ? ` · ${unchecked} nicht geprüft` : ""}`,
     countsOk: (rules: number) => `${rules} Regeln erfüllt`,
     uncheckedHint: (n: number) => `${n === 1 ? "1 Regel" : `${n} Regeln`} nicht geprüft`,
-    announce: (warnings: number, errors: number) => `Prüfung fertig: ${warnings} ${warnings === 1 ? "Hinweis" : "Hinweise"}, ${errors} ${errors === 1 ? "Fehler" : "Fehler"}`,
+    announce: (warnings: number, errors: number) =>
+      `Prüfung fertig: ${warnings} ${warnings === 1 ? "Hinweis" : "Hinweise"}, ${errors} ${errors === 1 ? "Fehler" : "Fehler"}`,
   },
   garment: { title: "Textil", label: "Textilfarbe" },
   size: {
@@ -81,7 +84,10 @@ export const print = {
     notCheckedWhy: {
       strokes: "Die Linienstärke wird in dieser Version nur bei Bildern mit Alphakanal gemessen.",
     },
-    severity: { info: "Info", warning: "Hinweis", error: "Fehler", ok: "erfüllt", open: "nicht geprüft" } as Record<Severity | "ok" | "open", string>,
+    severity: { info: "Info", warning: "Hinweis", error: "Fehler", ok: "erfüllt", open: "nicht geprüft" } as Record<
+      Severity | "ok" | "open",
+      string
+    >,
   },
   checks: {
     format: { title: "Dateiformat", limit: "PNG mit Transparenz" },
@@ -101,7 +107,15 @@ export const print = {
     alphaMissing: "kein Alphakanal",
     pixels: (n: number) => `${n} Pixel`,
     atWidth: (dpi: number, mm: number) => `${dpi} dpi bei ${mm} mm`,
-    colorProfile: { srgb: "sRGB", adobeRgb: "Adobe RGB", displayP3: "Display P3", gray: "Graustufen", cmyk: "CMYK", other: "anderes Profil", none: "ohne Profil" },
+    colorProfile: {
+      srgb: "sRGB",
+      adobeRgb: "Adobe RGB",
+      displayP3: "Display P3",
+      gray: "Graustufen",
+      cmyk: "CMYK",
+      other: "anderes Profil",
+      none: "ohne Profil",
+    },
     contrastFine: "kein Befund",
   },
   export: {
@@ -109,11 +123,17 @@ export const print = {
     mode: "Exportart",
     modeTrimmed: "Zugeschnitten",
     modeFull: "Volle Druckfläche",
-    modeHelp: "Zugeschnitten legt nur das Motiv ab. „Volle Druckfläche“ erzeugt eine Leinwand in der Größe der Druckfläche.",
+    modeHelp:
+      "Zugeschnitten legt nur das Motiv ab. „Volle Druckfläche“ erzeugt eine Leinwand in der Größe der Druckfläche.",
     fixes: "Korrekturen",
     cleanGhost: "Geisterpixel entfernen",
     semi: "Halbtransparenz",
-    semiOptions: { keep: "behalten", threshold: "auf 0 oder 100 % runden", blendWithGarment: "mit Textilfarbe mischen", halftone: "Raster (später)" },
+    semiOptions: {
+      keep: "behalten",
+      threshold: "auf 0 oder 100 % runden",
+      blendWithGarment: "mit Textilfarbe mischen",
+      halftone: "Raster (später)",
+    },
     nearBlack: "Fast-Schwarz auf Reinschwarz setzen",
     colorProfile: "Farbprofil",
     placementJson: "Begleitdatei mit Breite und Versatz schreiben",
@@ -142,18 +162,30 @@ export const print = {
     dpi: "Auflösung",
     profile: "Farbraum",
     size: "Größe",
-    stages: { decode: "Lesen", analyze: "Messen", fix: "Korrigieren", resample: "Skalieren", colorConvert: "Farben umrechnen", encode: "Schreiben", verify: "Prüfen" },
+    stages: {
+      decode: "Lesen",
+      analyze: "Messen",
+      fix: "Korrigieren",
+      resample: "Skalieren",
+      colorConvert: "Farben umrechnen",
+      encode: "Schreiben",
+      verify: "Prüfen",
+    },
     again: "Erneut exportieren",
   },
   force: {
     title: "Trotzdem exportieren?",
-    text: (n: number) => (n === 1 ? "Die Datei hat 1 Fehler. Shirtigo kann sie ablehnen oder unschön drucken." : `Die Datei hat ${n} Fehler. Shirtigo kann sie ablehnen oder unschön drucken.`),
+    text: (n: number) =>
+      n === 1
+        ? "Die Datei hat 1 Fehler. Shirtigo kann sie ablehnen oder unschön drucken."
+        : `Die Datei hat ${n} Fehler. Shirtigo kann sie ablehnen oder unschön drucken.`,
     confirm: "Trotzdem exportieren",
   },
   errors: {
     unreadable: (name: string, reason: string) => `${name} lässt sich nicht öffnen: ${reason}`,
     openIn: "In Krita öffnen",
-    unsupportedFormat: (name: string, format: string) => `${name} lässt sich nicht öffnen: Das Format ${format.toUpperCase()} wird nicht unterstützt. Exportiere aus Krita als PNG mit 8 Bit.`,
+    unsupportedFormat: (name: string, format: string) =>
+      `${name} lässt sich nicht öffnen: Das Format ${format.toUpperCase()} wird nicht unterstützt. Exportiere aus Krita als PNG mit 8 Bit.`,
     generic: "Die Prüfung ist fehlgeschlagen.",
   },
   libraryNote: "Aus der Bibliothek: öffne eine Datei dort mit „Im Druck prüfen“.",

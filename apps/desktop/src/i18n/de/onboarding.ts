@@ -51,14 +51,23 @@ export const onboarding = {
   step3: {
     title: "Prüfen und zustimmen",
     help: "Cypher Studio lädt genau diese Dateien aus diesen Quellen, vergleicht die Prüfsummen und installiert nur, wenn sie stimmen.",
-    columns: { program: "Programm", source: "Quelle", version: "Version", size: "Größe", license: "Lizenz", checksum: "Prüfsumme", target: "Zielordner" },
+    columns: {
+      program: "Programm",
+      source: "Quelle",
+      version: "Version",
+      size: "Größe",
+      license: "Lizenz",
+      checksum: "Prüfsumme",
+      target: "Zielordner",
+    },
     details: "Details",
     hideDetails: "Weniger",
     loading: "Prüfungsanzeigen werden erstellt …",
     all: "Alle laden und installieren",
     afterSetup: "Danach mit Cypher-Paletten, Schriften und Vorlagen einrichten",
     nothing: "Du hast kein Programm gewählt. Weiter geht es mit dem Probelauf.",
-    failed: (name: string) => `Für ${name} gibt es gerade keine Prüfungsanzeige. Du kannst es später unter Programme nachholen.`,
+    failed: (name: string) =>
+      `Für ${name} gibt es gerade keine Prüfungsanzeige. Du kannst es später unter Programme nachholen.`,
     retry: "Erneut versuchen",
   },
   step4: {
@@ -69,7 +78,8 @@ export const onboarding = {
     done: "installiert",
     failed: "gescheitert",
     cancelled: "abgebrochen",
-    failedLine: (name: string) => `${name} konnte nicht geladen werden. Du kannst schon weitermachen und es später unter Programme nachholen.`,
+    failedLine: (name: string) =>
+      `${name} konnte nicht geladen werden. Du kannst schon weitermachen und es später unter Programme nachholen.`,
     cont: "Schon weitermachen",
     waiting: "Warten, bis alle fertig sind",
     allDone: "Alles geladen.",
@@ -89,8 +99,10 @@ export const onboarding = {
     title: "Probelauf",
     help: "Ein Probe-Motiv zeigt dir, wie der Druckprüfer arbeitet. Es hat absichtlich einen Hinweis.",
     explainVerdict: "Das Urteil oben fasst zusammen: druckbereit, druckbar mit Hinweisen oder nicht druckbar.",
-    explainRule: "Jede Zeile ist eine Regel mit Messwert und Grenze. Hinweise stehen oben, erfüllte Regeln eingeklappt.",
-    explainFix: "Bei vielen Befunden gibt es „Beheben“: Der Export wendet die Korrektur an, deine Datei bleibt unverändert.",
+    explainRule:
+      "Jede Zeile ist eine Regel mit Messwert und Grenze. Hinweise stehen oben, erfüllte Regeln eingeklappt.",
+    explainFix:
+      "Bei vielen Befunden gibt es „Beheben“: Der Export wendet die Korrektur an, deine Datei bleibt unverändert.",
     open: "Im Druckprüfer öffnen",
     skip: "Probelauf überspringen",
     result: (verdict: string, hints: number) => `${verdict} · ${hints} ${hints === 1 ? "Hinweis" : "Hinweise"}`,

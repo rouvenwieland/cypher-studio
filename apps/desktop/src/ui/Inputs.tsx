@@ -1,4 +1,12 @@
-import { useId, type ChangeEvent, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes } from "react";
+import {
+  useEffect,
+  useId,
+  useState,
+  type ChangeEvent,
+  type InputHTMLAttributes,
+  type ReactNode,
+  type SelectHTMLAttributes,
+} from "react";
 import * as Radio from "@radix-ui/react-radio-group";
 import * as Toggle from "@radix-ui/react-toggle-group";
 import * as SliderPrimitive from "@radix-ui/react-slider";
@@ -99,7 +107,14 @@ export function SelectField({ label, value, onChange, options, hideLabel, id, ..
   const selectId = id ?? auto;
   const control = (
     <div className="select">
-      <select id={selectId} className="input select__control" value={value} onChange={(e) => onChange(e.target.value)} {...(hideLabel ? { "aria-label": label } : {})} {...rest}>
+      <select
+        id={selectId}
+        className="input select__control"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        {...(hideLabel ? { "aria-label": label } : {})}
+        {...rest}
+      >
         {options.map((o) => (
           <option key={o.value} value={o.value} disabled={o.disabled}>
             {o.label}
@@ -136,18 +151,24 @@ export function Checkbox({
   describedBy?: string | undefined;
   id?: string | undefined;
 }) {
+  // Sofort umschalten, auch wenn der Elternzustand erst einen Takt später ankommt (Einstellungen, Abfrage-Zwischenspeicher)
+  const [on, setOn] = useState(checked);
+  useEffect(() => setOn(checked), [checked]);
   return (
     <label className="check">
       <input
         id={id}
         type="checkbox"
         className="check__box"
-        checked={checked}
+        checked={on}
         disabled={disabled}
         ref={(el) => {
           if (el) el.indeterminate = indeterminate === true;
         }}
-        onChange={(e) => onChange(e.target.checked)}
+        onChange={(e) => {
+          setOn(e.target.checked);
+          onChange(e.target.checked);
+        }}
         {...(describedBy ? { "aria-describedby": describedBy } : {})}
       />
       <span className="check__text">{children}</span>
@@ -178,7 +199,13 @@ export function Segmented<T extends string>({
       }}
     >
       {options.map((o) => (
-        <Toggle.Item key={o.value} value={o.value} className="seg__item" disabled={o.disabled} {...(o.title ? { title: o.title } : {})}>
+        <Toggle.Item
+          key={o.value}
+          value={o.value}
+          className="seg__item"
+          disabled={o.disabled}
+          {...(o.title ? { title: o.title } : {})}
+        >
           {o.label}
         </Toggle.Item>
       ))}
@@ -194,11 +221,27 @@ export interface SwatchOption {
 }
 
 /** Farbfelder als Radiogruppe (Pfeiltasten); der Name des gewählten Felds steht sichtbar daneben. */
-export function SwatchGroup({ value, onChange, options, label }: { value: string; onChange: (value: string) => void; options: SwatchOption[]; label: string }) {
+export function SwatchGroup({
+  value,
+  onChange,
+  options,
+  label,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  options: SwatchOption[];
+  label: string;
+}) {
   return (
     <Radio.Root className="swatches" value={value} onValueChange={onChange} aria-label={label} orientation="horizontal">
       {options.map((o) => (
-        <Radio.Item key={o.value} value={o.value} className="swatch" aria-label={o.name} style={{ ["--swatch" as string]: o.color, ["--swatch-on" as string]: o.on }}>
+        <Radio.Item
+          key={o.value}
+          value={o.value}
+          className="swatch"
+          aria-label={o.name}
+          style={{ ["--swatch" as string]: o.color, ["--swatch-on" as string]: o.on }}
+        >
           <Radio.Indicator className="swatch__check">
             <IconCheck size={16} />
           </Radio.Indicator>
@@ -226,11 +269,22 @@ export function Slider({
   valueText?: string | undefined;
 }) {
   return (
-    <SliderPrimitive.Root className="slider" value={[value]} min={min} max={max} step={step} onValueChange={(v) => onChange(v[0] ?? value)}>
+    <SliderPrimitive.Root
+      className="slider"
+      value={[value]}
+      min={min}
+      max={max}
+      step={step}
+      onValueChange={(v) => onChange(v[0] ?? value)}
+    >
       <SliderPrimitive.Track className="slider__track">
         <SliderPrimitive.Range className="slider__range" />
       </SliderPrimitive.Track>
-      <SliderPrimitive.Thumb className="slider__thumb" aria-label={label} {...(valueText ? { "aria-valuetext": valueText } : {})} />
+      <SliderPrimitive.Thumb
+        className="slider__thumb"
+        aria-label={label}
+        {...(valueText ? { "aria-valuetext": valueText } : {})}
+      />
     </SliderPrimitive.Root>
   );
 }

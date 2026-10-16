@@ -59,11 +59,16 @@ const err = (e: AppError): never => {
 };
 
 function offlineGuard(): void {
-  if (db.scenario === "offline") err({ kind: "network", host: "studio.cypherxcypher.de", message: "Keine Verbindung zum Cypher-Manifest", retryable: true });
+  if (db.flags.has("offline"))
+    err({
+      kind: "network",
+      host: "studio.cypherxcypher.de",
+      message: "Keine Verbindung zum Cypher-Manifest",
+      retryable: true,
+    });
 }
 
 /* ---------- Handles ---------- */
-
 
 async function handleForSample(name: string, source: FileHandleInfo["source"] = "dialog"): Promise<FileHandleInfo> {
   const sample = SAMPLES[name];
@@ -89,7 +94,17 @@ export function registerBlobHandle(file: File, url: string, widthPx: number, hei
   const base = SAMPLES["rauschen_logo.png"] as SampleImage;
   const name = file.name;
   const sampleName = `drop:${name}`;
-  SAMPLES[sampleName] = { ...base, name, widthPx, heightPx, fileBytes: file.size, mime: file.type || "image/png", format: file.type === "image/jpeg" ? "jpeg" : "png", margins: { top: 0, right: 0, bottom: 0, left: 0 }, minStrokePx: null };
+  SAMPLES[sampleName] = {
+    ...base,
+    name,
+    widthPx,
+    heightPx,
+    fileBytes: file.size,
+    mime: file.type || "image/png",
+    format: file.type === "image/jpeg" ? "jpeg" : "png",
+    margins: { top: 0, right: 0, bottom: 0, left: 0 },
+    minStrokePx: null,
+  };
   const handle: FileHandleInfo & { sample?: string } = {
     id: `fh-${newId().slice(0, 8)}`,
     name,
@@ -127,7 +142,7 @@ function projectOf(id: string): Project {
   return p;
 }
 
-async function openResult(project: Project, relPath: string, programId: string | null) {
+function openResult(programId: string | null) {
   if (programId && !(db.installations[programId] ?? []).length) {
     return { outcome: { kind: "programMissing" as const, programId } };
   }
@@ -136,11 +151,14 @@ async function openResult(project: Project, relPath: string, programId: string |
   return {
     outcome: {
       kind: "launched" as const,
-      launch: { programId: targetProgram, installationId: inst?.id ?? `cypher:${targetProgram}`, pid: 4812, startedAt: nowIso() },
+      launch: {
+        programId: targetProgram,
+        installationId: inst?.id ?? `cypher:${targetProgram}`,
+        pid: 4812,
+        startedAt: nowIso(),
+      },
     },
   };
-  void project;
-  void relPath;
 }
 
 /* ---------- Befehle ---------- */
@@ -169,8 +187,8 @@ export const handlers: Handlers = {
     if (p.downloads) s.downloads = { ...s.downloads, ...p.downloads };
     if (p.linux) s.linux = { ...s.linux, ...p.linux };
     if (p.profile?.displayName !== undefined) s.profile.displayName = p.profile.displayName;
-    if (p.ui) s.ui = { ...s.ui, ...p.ui } as typeof s.ui;
-    if (p.onboarding) s.onboarding = { ...s.onboarding, ...p.onboarding, updatedAt: nowIso() } as typeof s.onboarding;
+    if (p.ui) s.ui = { ...s.ui, ...p.ui };
+    if (p.onboarding) s.onboarding = { ...s.onboarding, ...p.onboarding, updatedAt: nowIso() };
     return structuredClone(s);
   },
   settings_choose_dir: (args) => {
@@ -179,7 +197,13 @@ export const handlers: Handlers = {
     return structuredClone(db.settings);
   },
   network_info: () => networkFixture(),
-  diagnostics_export: async () => handleForSample("signal_v3.png", "export").then((h) => ({ ...h, name: "cypher-studio-diagnose.zip", mime: "application/zip", url: null })),
+  diagnostics_export: async () =>
+    handleForSample("signal_v3.png", "export").then((h) => ({
+      ...h,
+      name: "cypher-studio-diagnose.zip",
+      mime: "application/zip",
+      url: null,
+    })),
 
   /* catalog */
   catalog_status: () => db.catalog,
@@ -231,7 +255,10 @@ export const handlers: Handlers = {
   },
 
   /* setup */
-  setup_packs_list: () => Object.values(PACKS).map((def) => setupSummary(def.packId, def.programId ? (catalogProgram(def.programId) ?? null) : null)),
+  setup_packs_list: () =>
+    Object.values(PACKS).map((def) =>
+      setupSummary(def.packId, def.programId ? (catalogProgram(def.programId) ?? null) : null),
+    ),
   setup_status: (args) => {
     const def = PACKS[args.req.packId];
     if (!def) return err({ kind: "notFound", entity: "setupScope", id: args.req.packId });
@@ -248,7 +275,14 @@ export const handlers: Handlers = {
     const { plan } = stored;
     const state = db.setup[plan.packId];
     if (!state) return err({ kind: "notFound", entity: "setupScope", id: plan.packId });
-    const job = startJob("setupApply", PACKS[plan.packId]?.programId ? (catalogProgram(PACKS[plan.packId]?.programId ?? "")?.name ?? plan.packId) : "Schriften", PACKS[plan.packId]?.programId ?? null, false);
+    const job = startJob(
+      "setupApply",
+      PACKS[plan.packId]?.programId
+        ? (catalogProgram(PACKS[plan.packId]?.programId ?? "")?.name ?? plan.packId)
+        : "Schriften",
+      PACKS[plan.packId]?.programId ?? null,
+      false,
+    );
     const chosen = plan.components.filter((c) => args.req.components.includes(c.id));
     const ops = chosen.flatMap((c) => c.operations.map((o) => ({ c, o })));
     args.onEvent.onmessage({ type: "started", jobId: job.info.id, total: ops.length });
@@ -264,9 +298,17 @@ export const handlers: Handlers = {
       args.onEvent.onmessage({ type: "step", index: idx, total: ops.length, componentId: c.id, operation: o });
     }
     for (const c of chosen) {
-      const locked = db.scenario === "setupLocked" && c.id === "templates";
+      const locked = db.flags.has("setupLocked") && c.id === "templates";
       if (locked) {
-        failures.push({ target: c.operations[0]?.target ?? "", error: { kind: "io", op: "write", path: c.operations[0]?.target ?? null, message: "Die Datei ist von Krita gesperrt." } });
+        failures.push({
+          target: c.operations[0]?.target ?? "",
+          error: {
+            kind: "io",
+            op: "write",
+            path: c.operations[0]?.target ?? null,
+            message: "Die Datei ist von Krita gesperrt.",
+          },
+        });
         state.components[c.id] = "partial";
         continue;
       }
@@ -310,7 +352,13 @@ export const handlers: Handlers = {
         if (state.before) state.components = { ...state.before };
         state.before = null;
         void emit("programs:changed", { reason: "setupChanged" });
-        const report: UndoReport = { setupId: rec.setupId, restored: rec.backupsTaken, removed: Math.max(0, rec.filesWritten - rec.backupsTaken), keptModified: [], fontsRemoved: rec.components.includes("fonts") ? 3 : 0 };
+        const report: UndoReport = {
+          setupId: rec.setupId,
+          restored: rec.backupsTaken,
+          removed: Math.max(0, rec.filesWritten - rec.backupsTaken),
+          keptModified: [],
+          fontsRemoved: rec.components.includes("fonts") ? 3 : 0,
+        };
         return report;
       }
     }
@@ -326,19 +374,27 @@ export const handlers: Handlers = {
       return Promise.all([handleForSample("rauschen_logo.png"), handleForSample("signal_v3.png")]);
     }
     const forced = requestedSample();
-    const name = purpose === "printcheck" ? forced : purpose === "socialImage" || purpose === "mockupDesign" || purpose === "bgremove" ? "signal_v3.png" : forced;
+    const name = forced;
     return [await handleForSample(name)];
   },
   samples_list: async () => {
     const handle = await handleForSample("signal_v3.png", "sample");
-    return [{ id: "probe-motiv", title: "Probe-Motiv", description: "Absichtlich mit Halbtransparenz, damit du den Druckprüfer kennenlernst.", handle }];
+    return [
+      {
+        id: "probe-motiv",
+        title: "Probe-Motiv",
+        description: "Absichtlich mit Halbtransparenz, damit du den Druckprüfer kennenlernst.",
+        handle,
+      },
+    ];
   },
 
   /* projects */
   templates_list: () => db.templates,
-  projects_list: async () => {
-    if (db.scenario === "folderLost") return err({ kind: "io", op: "read", path: LIBRARY_ROOT, message: "Der Ordner ist nicht erreichbar." });
-    if (db.scenario === "offline" || db.scenario === "default" || db.scenario === "fresh") {
+  projects_list: () => {
+    if (db.flags.has("folderLost"))
+      return err({ kind: "io", op: "read", path: LIBRARY_ROOT, message: "Der Ordner ist nicht erreichbar." });
+    if (db.flags.has("offline") || db.flags.has("default") || db.flags.has("fresh")) {
       /* normal */
     }
     return db.projects;
@@ -364,7 +420,7 @@ export const handlers: Handlers = {
     void emit("projects:changed", { projectId: project.id });
     return project;
   },
-  project_new_file: async (args) => {
+  project_new_file: (args) => {
     const project = projectOf(args.req.projectId);
     const tpl = db.templates.find((t) => t.id === args.req.templateId);
     if (!tpl) return err({ kind: "notFound", entity: "template", id: args.req.templateId });
@@ -373,24 +429,40 @@ export const handlers: Handlers = {
     project.updatedAt = nowIso();
     project.lastFile = { relPath: rel, modifiedAt: nowIso(), programId: tpl.programId, module: null };
     void emit("projects:changed", { projectId: project.id });
-    const handle: FileHandleInfo = { id: `fh-${newId().slice(0, 8)}`, name: `${args.req.fileName}${tpl.fileExtension}`, displayPath: `${project.dir}\\${rel.replace("/", "\\")}`, size: 48_000, mime: "application/octet-stream", url: null, source: "project" };
+    const handle: FileHandleInfo = {
+      id: `fh-${newId().slice(0, 8)}`,
+      name: `${args.req.fileName}${tpl.fileExtension}`,
+      displayPath: `${project.dir}\\${rel.replace("/", "\\")}`,
+      size: 48_000,
+      mime: "application/octet-stream",
+      url: null,
+      source: "project",
+    };
     db.handles.set(handle.id, handle);
     const file: ProjectFile = { projectId: project.id, ref: project.lastFile, handle };
     return file;
   },
   project_open_file: (args) => {
-    const project = projectOf(args.req.projectId);
+    projectOf(args.req.projectId); // wirft notFound bei unbekanntem Projekt
     const ext = args.req.relPath.split(".").pop() ?? "";
     const prog = ext === "svg" ? "inkscape" : ext === "kdenlive" ? "kdenlive" : ext === "blend" ? "blender" : "krita";
-    return openResult(project, args.req.relPath, prog);
+    return openResult(prog);
   },
   project_open_last: (args) => {
     const project = projectOf(args.req.projectId);
-    return openResult(project, project.lastFile?.relPath ?? "", project.lastFile?.programId ?? "krita");
+    return openResult(project.lastFile?.programId ?? "krita");
   },
   project_file_handle: (args) => {
     const project = projectOf(args.req.projectId);
-    return { id: `fh-${newId().slice(0, 8)}`, name: args.req.relPath.split("/").pop() ?? "", displayPath: `${project.dir}\\${args.req.relPath}`, size: 1_200_000, mime: "application/octet-stream", url: null, source: "project" };
+    return {
+      id: `fh-${newId().slice(0, 8)}`,
+      name: args.req.relPath.split("/").pop() ?? "",
+      displayPath: `${project.dir}\\${args.req.relPath}`,
+      size: 1_200_000,
+      mime: "application/octet-stream",
+      url: null,
+      source: "project",
+    };
   },
   project_set_collection: (args) => {
     const project = projectOf(args.req.projectId);
@@ -507,14 +579,21 @@ export const handlers: Handlers = {
     void emit("library:changed", { reason: "meta", changedCount: n });
     return n;
   },
-  library_import: async (args) => {
+  library_import: (args) => {
     const out: LibraryEntry[] = [];
     for (const id of args.req.handleIds) {
       const h = db.handles.get(id);
       if (!h || !db.library) continue;
       const base = db.library.entries[0];
       if (!base) continue;
-      const entry = { ...base, id: newId(), fileName: h.name, relPath: `${args.req.subfolder ?? "Import"}/${h.name}`, modifiedAt: nowIso(), hasThumb: true };
+      const entry = {
+        ...base,
+        id: newId(),
+        fileName: h.name,
+        relPath: `${args.req.subfolder ?? "Import"}/${h.name}`,
+        modifiedAt: nowIso(),
+        hasThumb: true,
+      };
       db.library.entries.unshift(entry);
       out.push(toEntry(entry));
     }
@@ -524,7 +603,15 @@ export const handlers: Handlers = {
   library_entry_handle: (args) => {
     const e = db.library?.entries.find((x) => x.id === args.req.entryId);
     if (!e) return err({ kind: "notFound", entity: "libraryEntry", id: args.req.entryId });
-    return { id: `fh-${newId().slice(0, 8)}`, name: e.fileName, displayPath: `${LIBRARY_ROOT}\\${e.relPath.replaceAll("/", "\\")}`, size: e.size, mime: e.mime, url: null, source: "library" };
+    return {
+      id: `fh-${newId().slice(0, 8)}`,
+      name: e.fileName,
+      displayPath: `${LIBRARY_ROOT}\\${e.relPath.replaceAll("/", "\\")}`,
+      size: e.size,
+      mime: e.mime,
+      url: null,
+      source: "library",
+    };
   },
   library_set_collections: (args) => {
     db.libraryStatus = { ...db.libraryStatus, collections: args.req.collections };
@@ -540,9 +627,26 @@ export const handlers: Handlers = {
     }
     args.onEvent.onmessage({ type: "finished" });
     finishJob(job, "succeeded", null, { kind: "none" });
-    return { id: `fh-${newId().slice(0, 8)}`, name: `${args.req.title}.cypherpack`, displayPath: `C:\\Users\\Lena\\Desktop\\${args.req.title}.cypherpack`, size: 12 * MIB, mime: "application/zip", url: null, source: "export" };
+    return {
+      id: `fh-${newId().slice(0, 8)}`,
+      name: `${args.req.title}.cypherpack`,
+      displayPath: `C:\\Users\\Lena\\Desktop\\${args.req.title}.cypherpack`,
+      size: 12 * MIB,
+      mime: "application/zip",
+      url: null,
+      source: "export",
+    };
   },
-  library_pack_inspect: (args) => ({ handleId: args.req.handleId, formatVersion: 1, title: "Herbst-Drop Motive", createdBy: "Jonas", createdAt: iso(-60 * 24), appVersion: "0.4.0", entries: [], totalBytes: 12 * MIB }),
+  library_pack_inspect: (args) => ({
+    handleId: args.req.handleId,
+    formatVersion: 1,
+    title: "Herbst-Drop Motive",
+    createdBy: "Jonas",
+    createdAt: iso(-60 * 24),
+    appVersion: "0.4.0",
+    entries: [],
+    totalBytes: 12 * MIB,
+  }),
   library_pack_import: (args) => {
     args.onEvent.onmessage({ type: "finished" });
     return { imported: 0, skipped: 0, renamed: 0, overwritten: 0 };
@@ -585,13 +689,29 @@ export const handlers: Handlers = {
     }
     const o = args.req.options;
     const widthPx = Math.round((o.plannedWidthMm / 25.4) * 300);
-    const trimmed = { w: sample.widthPx - sample.margins.left - sample.margins.right, h: sample.heightPx - sample.margins.top - sample.margins.bottom };
+    const trimmed = {
+      w: sample.widthPx - sample.margins.left - sample.margins.right,
+      h: sample.heightPx - sample.margins.top - sample.margins.bottom,
+    };
     const heightPx = Math.round(widthPx * (trimmed.h / trimmed.w));
     const base = sample.name.replace(/\.[^.]+$/, "");
     const placement = profile.placement === "front" ? "front" : "back";
     const fileName = `${base}_${profile.product.id}-${placement}_${Math.round(o.plannedWidthMm)}mm_300dpi.png`;
-    const dir = o.destination.kind === "project" ? `${LIBRARY_ROOT}\\Projekte\\Herbst-Drop 26\\Export\\Druck` : o.destination.kind === "library" ? `${LIBRARY_ROOT}\\Export\\Druck` : "C:\\Users\\Lena\\Desktop";
-    const output: FileHandleInfo = { id: `fh-${newId().slice(0, 8)}`, name: fileName, displayPath: `${dir}\\${fileName}`, size: Math.round(sample.fileBytes * 0.95), mime: "image/png", url: sample.unreadable ? null : await motifUrl(sample.motif), source: "export" };
+    const dir =
+      o.destination.kind === "project"
+        ? `${LIBRARY_ROOT}\\Projekte\\Herbst-Drop 26\\Export\\Druck`
+        : o.destination.kind === "library"
+          ? `${LIBRARY_ROOT}\\Export\\Druck`
+          : "C:\\Users\\Lena\\Desktop";
+    const output: FileHandleInfo = {
+      id: `fh-${newId().slice(0, 8)}`,
+      name: fileName,
+      displayPath: `${dir}\\${fileName}`,
+      size: Math.round(sample.fileBytes * 0.95),
+      mime: "image/png",
+      url: sample.unreadable ? null : await motifUrl(sample.motif),
+      source: "export",
+    };
     db.handles.set(output.id, output);
     const report = analyze(
       {
@@ -600,20 +720,45 @@ export const handlers: Handlers = {
         garmentColorId: args.req.garmentColorId ?? "schwarz",
         technique: args.req.technique ?? profile.techniques[0] ?? "dtg",
         plannedWidthMm: o.plannedWidthMm,
-        after: { widthPx: Math.max(widthPx, 1), heightPx: Math.max(heightPx, 1), dpiFromMeta: true, profile: o.colorProfile, semi: o.fixes.semiTransparency !== "keep", ghost: o.fixes.cleanGhostPixels },
+        after: {
+          widthPx: Math.max(widthPx, 1),
+          heightPx: Math.max(heightPx, 1),
+          dpiFromMeta: true,
+          profile: o.colorProfile,
+          semi: o.fixes.semiTransparency !== "keep",
+          ghost: o.fixes.cleanGhostPixels,
+        },
       },
       nowIso(),
     );
     args.onEvent.onmessage({ type: "finished" });
     finishJob(job, "succeeded", null, { kind: "file", handle: output });
     void emit("library:changed", { reason: "import", changedCount: 1 });
-    const placementJson: FileHandleInfo | null = o.writePlacementJson ? { ...output, id: `fh-${newId().slice(0, 8)}`, name: `${fileName.replace(/\.png$/, "")}.shirtigo.json`, displayPath: `${dir}\\${fileName.replace(/\.png$/, "")}.shirtigo.json`, size: 412, mime: "application/json", url: null } : null;
+    const placementJson: FileHandleInfo | null = o.writePlacementJson
+      ? {
+          ...output,
+          id: `fh-${newId().slice(0, 8)}`,
+          name: `${fileName.replace(/\.png$/, "")}.shirtigo.json`,
+          displayPath: `${dir}\\${fileName.replace(/\.png$/, "")}.shirtigo.json`,
+          size: 412,
+          mime: "application/json",
+          url: null,
+        }
+      : null;
     return { output, placementJson, widthPx, heightPx, dpi: 300, colorProfile: o.colorProfile, report };
   },
   printcheck_overlay: async (args) => {
     const sample = sampleOfHandle(args.req.handleId);
     void sample;
-    return { id: `fh-${newId().slice(0, 8)}`, name: "overlay.png", displayPath: "", size: 20_000, mime: "image/png", url: await overlayUrl(), source: "export" };
+    return {
+      id: `fh-${newId().slice(0, 8)}`,
+      name: "overlay.png",
+      displayPath: "",
+      size: 20_000,
+      mime: "image/png",
+      url: await overlayUrl(),
+      source: "export",
+    };
   },
 
   /* brand / mockup / social */
@@ -632,8 +777,32 @@ export const handlers: Handlers = {
         printArea: { quad: [q.tl, q.tr, q.br, q.bl] as [typeof q.tl, typeof q.tr, typeof q.br, typeof q.bl] },
         displaceStrengthPx: 6,
         variants: [
-          { exposure: "light" as const, layers: { mask: layers.mask, shade: layers.shade, light: layers.light, displace: layers.displace, texture: null, heather: layers.heather, background: layers.background }, colorIds: ["weiss", "creme", "sand", "grau-meliert"] },
-          { exposure: "dark" as const, layers: { mask: layers.mask, shade: layers.shade, light: layers.light, displace: layers.displace, texture: null, heather: null, background: layers.background }, colorIds: ["schwarz", "navy"] },
+          {
+            exposure: "light" as const,
+            layers: {
+              mask: layers.mask,
+              shade: layers.shade,
+              light: layers.light,
+              displace: layers.displace,
+              texture: null,
+              heather: layers.heather,
+              background: layers.background,
+            },
+            colorIds: ["weiss", "creme", "sand", "grau-meliert"],
+          },
+          {
+            exposure: "dark" as const,
+            layers: {
+              mask: layers.mask,
+              shade: layers.shade,
+              light: layers.light,
+              displace: layers.displace,
+              texture: null,
+              heather: null,
+              background: layers.background,
+            },
+            colorIds: ["schwarz", "navy"],
+          },
         ],
       },
     ];
@@ -670,7 +839,7 @@ export const handlers: Handlers = {
 
   /* bgremove */
   bgremove_status: () => db.bgremove,
-  bgremove_model_preview: async (args) => {
+  bgremove_model_preview: (args) => {
     const m = db.bgremove.models.find((x) => x.id === args.req.modelId);
     if (!m) return err({ kind: "notFound", entity: "artifact", id: args.req.modelId });
     const plan: InstallPlan = {
@@ -679,10 +848,29 @@ export const handlers: Handlers = {
       programName: m.name,
       version: "1.0.0",
       channel: "stable",
-      source: { label: "huggingface.co (Modellquelle des Kollektivs)", host: "huggingface.co", url: "https://huggingface.co/cypher-kollektiv/isnet-general-use/resolve/main/model.onnx", mirrorRedirects: false },
-      artifact: { kind: "zip", fileName: "isnet-general-use.onnx", size: m.size, sha256: fakeSha(m.id), checksumSource: "https://huggingface.co/cypher-kollektiv/isnet-general-use/blob/main/model.onnx.sha256", checksumOrigin: "cypherPinned", signature: null },
+      source: {
+        label: "huggingface.co (Modellquelle des Kollektivs)",
+        host: "huggingface.co",
+        url: "https://huggingface.co/cypher-kollektiv/isnet-general-use/resolve/main/model.onnx",
+        mirrorRedirects: false,
+      },
+      artifact: {
+        kind: "zip",
+        fileName: "isnet-general-use.onnx",
+        size: m.size,
+        sha256: fakeSha(m.id),
+        checksumSource: "https://huggingface.co/cypher-kollektiv/isnet-general-use/blob/main/model.onnx.sha256",
+        checksumOrigin: "cypherPinned",
+        signature: null,
+      },
       license: m.license,
-      target: { dir: `${PROGRAMS_DIR}\\..\\models\\${m.id}`, requiredBytes: m.size * 2, availableBytes: 212 * GIB, portable: true, needsAdmin: false },
+      target: {
+        dir: `${PROGRAMS_DIR}\\..\\models\\${m.id}`,
+        requiredBytes: m.size * 2,
+        availableBytes: 212 * GIB,
+        portable: true,
+        needsAdmin: false,
+      },
       replaces: null,
       existing: [],
       notes: [],
@@ -705,7 +893,12 @@ export const handlers: Handlers = {
         return err({ kind: "cancelled" });
       }
       await sleepScaled(160);
-      args.onEvent.onmessage({ type: "downloadProgress", downloadedBytes: Math.round((plan.artifact.size * i) / 12), totalBytes: plan.artifact.size, bytesPerSecond: 30 * MIB });
+      args.onEvent.onmessage({
+        type: "downloadProgress",
+        downloadedBytes: Math.round((plan.artifact.size * i) / 12),
+        totalBytes: plan.artifact.size,
+        bytesPerSecond: 30 * MIB,
+      });
       progressJob(job, i / 12, "download");
     }
     args.onEvent.onmessage({ type: "phase", phase: "verifyChecksum" });
@@ -713,7 +906,11 @@ export const handlers: Handlers = {
     args.onEvent.onmessage({ type: "verified", sha256: plan.artifact.sha256, signatureChecked: false });
     args.onEvent.onmessage({ type: "phase", phase: "register" });
     await sleepScaled(300);
-    db.bgremove = { ...db.bgremove, runtimeInstalled: true, models: db.bgremove.models.map((m) => (m.id === plan.programId ? { ...m, installed: true } : m)) };
+    db.bgremove = {
+      ...db.bgremove,
+      runtimeInstalled: true,
+      models: db.bgremove.models.map((m) => (m.id === plan.programId ? { ...m, installed: true } : m)),
+    };
     finishJob(job, "succeeded", null, { kind: "none" });
     return db.bgremove;
   },
@@ -726,7 +923,15 @@ export const handlers: Handlers = {
       args.onEvent.onmessage({ type: "stage", stage });
     }
     args.onEvent.onmessage({ type: "finished" });
-    const out: FileHandleInfo = { id: `fh-${newId().slice(0, 8)}`, name: sample.name.replace(/\.[^.]+$/, "_freigestellt.png"), displayPath: `${LIBRARY_ROOT}\\Export\\${sample.name.replace(/\.[^.]+$/, "_freigestellt.png")}`, size: 5 * MIB, mime: "image/png", url: await motifUrl(sample.motif), source: "export" };
+    const out: FileHandleInfo = {
+      id: `fh-${newId().slice(0, 8)}`,
+      name: sample.name.replace(/\.[^.]+$/, "_freigestellt.png"),
+      displayPath: `${LIBRARY_ROOT}\\Export\\${sample.name.replace(/\.[^.]+$/, "_freigestellt.png")}`,
+      size: 5 * MIB,
+      mime: "image/png",
+      url: await motifUrl(sample.motif),
+      source: "export",
+    };
     db.handles.set(out.id, { ...out, sample: sample.name });
     finishJob(job, "succeeded", null, { kind: "file", handle: out });
     return out;

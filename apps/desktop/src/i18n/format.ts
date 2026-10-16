@@ -11,7 +11,11 @@ const nfCache = new Map<number, Intl.NumberFormat>();
 function nf(digits: number): Intl.NumberFormat {
   let f = nfCache.get(digits);
   if (!f) {
-    f = new Intl.NumberFormat("de-DE", { minimumFractionDigits: digits, maximumFractionDigits: digits, useGrouping: false });
+    f = new Intl.NumberFormat("de-DE", {
+      minimumFractionDigits: digits,
+      maximumFractionDigits: digits,
+      useGrouping: false,
+    });
     nfCache.set(digits, f);
   }
   return f;
@@ -68,7 +72,9 @@ export function fmtBytes(bytes: number): string {
 
 /** Nur die Zahl der Megabyte für „74 von 182 MB“. */
 export function fmtMegabytes(bytes: number): string {
-  return nf(bytes / (1024 * 1024) >= 100 ? 0 : 1).format(bytes / (1024 * 1024)).replace(/,0$/, "");
+  return nf(bytes / (1024 * 1024) >= 100 ? 0 : 1)
+    .format(bytes / (1024 * 1024))
+    .replace(/,0$/, "");
 }
 
 export function fmtRate(bytesPerSecond: number): string {
@@ -76,7 +82,15 @@ export function fmtRate(bytesPerSecond: number): string {
 }
 
 function parts(date: Date, timeZone: string | undefined): { d: string; m: string; y: string; hh: string; mm: string } {
-  const f = new Intl.DateTimeFormat("de-DE", { timeZone, year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+  const f = new Intl.DateTimeFormat("de-DE", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  });
   const o: Record<string, string> = {};
   for (const p of f.formatToParts(date)) o[p.type] = p.value;
   return { d: o["day"] ?? "", m: o["month"] ?? "", y: o["year"] ?? "", hh: o["hour"] ?? "", mm: o["minute"] ?? "" };

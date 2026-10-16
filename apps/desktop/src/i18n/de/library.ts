@@ -47,7 +47,14 @@ export const library = {
     scanning: (done: string, total: string) => `Lese ${done} von ${total}`,
     loadMore: "Weitere werden geladen",
   },
-  listColumns: { name: "Name", kind: "Art", collection: "Kollektion", tags: "Tags", modified: "Geändert", size: "Größe" },
+  listColumns: {
+    name: "Name",
+    kind: "Art",
+    collection: "Kollektion",
+    tags: "Tags",
+    modified: "Geändert",
+    size: "Größe",
+  },
   multi: {
     setTags: "Tags setzen",
     collection: "Kollektion",
@@ -89,7 +96,10 @@ export const library = {
     cutout: "Freistellen",
     reveal: "Im Ordner zeigen",
     conflictTitle: "Konfliktkopie",
-    conflictText: (orig: string | null) => (orig ? `Das Sync-Programm hat diese Kopie neben ${orig} angelegt. Vergleiche beide, bevor du eine löschst.` : "Das Sync-Programm hat diese Kopie angelegt. Vergleiche sie mit dem Original, bevor du eine löschst."),
+    conflictText: (orig: string | null) =>
+      orig
+        ? `Das Sync-Programm hat diese Kopie neben ${orig} angelegt. Vergleiche beide, bevor du eine löschst.`
+        : "Das Sync-Programm hat diese Kopie angelegt. Vergleiche sie mit dem Original, bevor du eine löschst.",
     sidecarMissing: "Noch keine Begleitdatei. Sie entsteht beim ersten Bearbeiten.",
     readOnly: "Die Begleitdatei lässt sich nicht schreiben. Tags sind nur lesbar.",
     noThumb: (ext: string) => `${ext.toUpperCase()} ohne eingebettetes Vorschaubild`,
@@ -110,7 +120,8 @@ export const library = {
   chooseRoot: {
     title: "Gemeinsamen Ordner wählen",
     working: "Der Ordner wird gelesen …",
-    summary: (files: string, size: string, projects: string) => `${files} Dateien · ${size} · ${projects} Projekte gefunden`,
+    summary: (files: string, size: string, projects: string) =>
+      `${files} Dateien · ${size} · ${projects} Projekte gefunden`,
     sync: (tool: SyncTool | null) => {
       switch (tool) {
         case "syncthing":

@@ -138,8 +138,8 @@ export const TEE_CANVAS = { width: 1200, height: 1500 } as const;
 export const TEE_QUAD = {
   tl: { x: 360, y: 430 },
   tr: { x: 840, y: 430 },
-  br: { x: 840, y: 1180 },
-  bl: { x: 360, y: 1180 },
+  br: { x: 840, y: 1085 },
+  bl: { x: 360, y: 1085 },
 } as const;
 
 function teePath(ctx: CanvasRenderingContext2D): void {
@@ -179,15 +179,27 @@ async function buildTee(): Promise<TeeLayers> {
   const [shade, sctx] = canvasOf(w, h);
   sctx.fillStyle = "#fff";
   sctx.fillRect(0, 0, w, h);
-  for (let i = 0; i < 14; i++) {
-    const x = w * (0.24 + rnd() * 0.52);
-    const y = 300 + rnd() * 1000;
-    const g = sctx.createRadialGradient(x, y, 0, x, y, 80 + rnd() * 120);
-    g.addColorStop(0, `rgba(0,0,0,${0.1 + rnd() * 0.12})`);
-    g.addColorStop(1, "rgba(0,0,0,0)");
-    sctx.fillStyle = g;
-    sctx.fillRect(0, 0, w, h);
+  // Falten: lange, schmale, weiche Bänder statt Flecken
+  for (let i = 0; i < 6; i++) {
+    const x = w * (0.3 + rnd() * 0.4);
+    const y = 700 + rnd() * 400;
+    sctx.save();
+    sctx.translate(x, y);
+    sctx.rotate((rnd() - 0.5) * 0.7);
+    sctx.scale(1, 6);
+    const fold = sctx.createRadialGradient(0, 0, 0, 0, 0, 70);
+    const a = 0.06 + rnd() * 0.06;
+    fold.addColorStop(0, `rgba(0,0,0,${a.toFixed(3)})`);
+    fold.addColorStop(1, "rgba(0,0,0,0)");
+    sctx.fillStyle = fold;
+    sctx.fillRect(-70, -70, 140, 140);
+    sctx.restore();
   }
+  const hem = sctx.createLinearGradient(0, 1100, 0, 1400);
+  hem.addColorStop(0, "rgba(0,0,0,0)");
+  hem.addColorStop(1, "rgba(0,0,0,0.12)");
+  sctx.fillStyle = hem;
+  sctx.fillRect(0, 1100, w, 300);
   const edge = sctx.createLinearGradient(0, 0, w, 0);
   edge.addColorStop(0, "rgba(0,0,0,0.22)");
   edge.addColorStop(0.2, "rgba(0,0,0,0)");

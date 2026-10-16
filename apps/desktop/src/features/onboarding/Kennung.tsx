@@ -34,7 +34,11 @@ export function Kennung({ version, onStart, onLater }: { version: string; onStar
   useEffect(() => {
     const dt = takt();
     if (dt === 0) return;
-    timers.current = [window.setTimeout(() => setChannel(1), dt), window.setTimeout(() => setChannel(2), 2 * dt), window.setTimeout(() => setDone(true), 3 * dt)];
+    timers.current = [
+      window.setTimeout(() => setChannel(1), dt),
+      window.setTimeout(() => setChannel(2), 2 * dt),
+      window.setTimeout(() => setDone(true), 3 * dt),
+    ];
     return () => {
       for (const id of timers.current) window.clearTimeout(id);
     };
@@ -56,8 +60,22 @@ export function Kennung({ version, onStart, onLater }: { version: string; onStar
   }, [done, finish, onStart]);
 
   return (
-    <div className="kennung" data-channel={channel} data-done={done} data-testid="kennung" onPointerDown={() => !done && finish()} role="region" aria-label={k.label}>
-      <svg className="kennung__grid" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+    <div
+      className="kennung"
+      data-channel={channel}
+      data-done={done}
+      data-testid="kennung"
+      onPointerDown={() => !done && finish()}
+      role="region"
+      aria-label={k.label}
+    >
+      <svg
+        className="kennung__grid"
+        viewBox="0 0 1200 800"
+        preserveAspectRatio="xMidYMid slice"
+        aria-hidden="true"
+        focusable="false"
+      >
         {Array.from({ length: 13 }, (_, i) => (
           <line key={i} x1={i * 100} y1={0} x2={i * 100} y2={800} />
         ))}

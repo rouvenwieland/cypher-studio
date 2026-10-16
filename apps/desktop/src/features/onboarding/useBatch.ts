@@ -48,7 +48,7 @@ export function useBatch(applySetup: boolean) {
         name: p.name,
         plan: null,
         planError: null,
-        state: "pending" as BatchState,
+        state: "pending",
         progress: 0,
         phase: null,
         installation: null,
@@ -90,10 +90,17 @@ export function useBatch(applySetup: boolean) {
             patch(item.programId, (it) => ({ ...it, phase: e.phase }));
             break;
           case "downloadProgress":
-            patch(item.programId, (it) => ({ ...it, progress: (e.downloadedBytes / e.totalBytes) * 0.8, downloaded: e.downloadedBytes }));
+            patch(item.programId, (it) => ({
+              ...it,
+              progress: (e.downloadedBytes / e.totalBytes) * 0.8,
+              downloaded: e.downloadedBytes,
+            }));
             break;
           case "extractProgress":
-            patch(item.programId, (it) => ({ ...it, progress: 0.8 + (e.entriesTotal ? (e.entriesDone / e.entriesTotal) * 0.2 : 0) }));
+            patch(item.programId, (it) => ({
+              ...it,
+              progress: 0.8 + (e.entriesTotal ? (e.entriesDone / e.entriesTotal) * 0.2 : 0),
+            }));
             break;
           default:
             break;
@@ -101,7 +108,16 @@ export function useBatch(applySetup: boolean) {
       };
       try {
         const installation = await call("install_start", {
-          req: { planId: plan.planId, consent: { planId: plan.planId, sha256: plan.artifact.sha256, licenseSpdx: plan.license.spdx, targetDir: plan.target.dir, acceptedAt: nowIso() } },
+          req: {
+            planId: plan.planId,
+            consent: {
+              planId: plan.planId,
+              sha256: plan.artifact.sha256,
+              licenseSpdx: plan.license.spdx,
+              targetDir: plan.target.dir,
+              acceptedAt: nowIso(),
+            },
+          },
           onEvent: channel<InstallEvent>(onEvent),
         });
         patch(item.programId, (it) => ({ ...it, state: "done", progress: 1, installation }));
@@ -129,10 +145,16 @@ export function useBatch(applySetup: boolean) {
   }, [runOne]);
 
   const cancelAll = useCallback(() => {
-    for (const it of itemsRef.current) if (it.jobId && it.state === "running") void call("job_cancel", { req: { jobId: it.jobId } });
+    for (const it of itemsRef.current)
+      if (it.jobId && it.state === "running") void call("job_cancel", { req: { jobId: it.jobId } });
   }, []);
 
-  const settled = items.length > 0 && items.every((it) => it.state === "done" || it.state === "failed" || it.state === "cancelled" || (!it.plan && it.planError !== null));
+  const settled =
+    items.length > 0 &&
+    items.every(
+      (it) =>
+        it.state === "done" || it.state === "failed" || it.state === "cancelled" || (!it.plan && it.planError !== null),
+    );
   const running = items.some((it) => it.state === "running");
   return { items, previewing, preview, startAll, cancelAll, settled, running };
 }

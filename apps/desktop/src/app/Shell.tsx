@@ -33,9 +33,7 @@ function NotFound() {
   const n = t.shell.notFound;
   return (
     <PlainPage title={n.title}>
-      <EmptyState>
-        {n.text}
-      </EmptyState>
+      <EmptyState>{n.text}</EmptyState>
       <p>
         <Button onClick={() => (window.location.hash = "/start")}>{n.action}</Button>
       </p>
@@ -58,7 +56,8 @@ export function Shell() {
   const loc = useLocation();
 
   useEffect(() => {
-    if (settings.data?.onboarding.status === "notStarted" && loc.pathname !== ONBOARDING_PATH) void navigate(ONBOARDING_PATH, { replace: true });
+    if (settings.data?.onboarding.status === "notStarted" && loc.pathname !== ONBOARDING_PATH)
+      void navigate(ONBOARDING_PATH, { replace: true });
   }, [settings.data?.onboarding.status, loc.pathname, navigate]);
 
   return (
@@ -66,14 +65,70 @@ export function Shell() {
       <Rail />
       <Routes>
         <Route path="/" element={<RedirectStart />} />
-        <Route path="/start" element={<Guarded><Start /></Guarded>} />
-        <Route path="/bibliothek" element={<Guarded><Library /></Guarded>} />
-        <Route path="/programme/*" element={<Guarded><Programs /></Guarded>} />
-        <Route path="/druck" element={<Guarded><PrintCheck /></Guarded>} />
-        <Route path="/mockups" element={<Guarded><Mockup /></Guarded>} />
-        <Route path="/social" element={<Guarded><Social /></Guarded>} />
-        <Route path="/freistellen" element={<Guarded><Cutout /></Guarded>} />
-        <Route path="/einstellungen/*" element={<Guarded><Settings /></Guarded>} />
+        <Route
+          path="/start"
+          element={
+            <Guarded>
+              <Start />
+            </Guarded>
+          }
+        />
+        <Route
+          path="/bibliothek"
+          element={
+            <Guarded>
+              <Library />
+            </Guarded>
+          }
+        />
+        <Route
+          path="/programme/*"
+          element={
+            <Guarded>
+              <Programs />
+            </Guarded>
+          }
+        />
+        <Route
+          path="/druck"
+          element={
+            <Guarded>
+              <PrintCheck />
+            </Guarded>
+          }
+        />
+        <Route
+          path="/mockups"
+          element={
+            <Guarded>
+              <Mockup />
+            </Guarded>
+          }
+        />
+        <Route
+          path="/social"
+          element={
+            <Guarded>
+              <Social />
+            </Guarded>
+          }
+        />
+        <Route
+          path="/freistellen"
+          element={
+            <Guarded>
+              <Cutout />
+            </Guarded>
+          }
+        />
+        <Route
+          path="/einstellungen/*"
+          element={
+            <Guarded>
+              <Settings />
+            </Guarded>
+          }
+        />
         <Route path="*" element={<NotFound />} />
       </Routes>
       <Palette />
@@ -87,5 +142,9 @@ function RedirectStart() {
   useEffect(() => {
     void navigate("/start", { replace: true });
   }, [navigate]);
-  return <Link to="/start" className="sr-only">{t.nav.start}</Link>;
+  return (
+    <Link to="/start" className="sr-only">
+      {t.nav.start}
+    </Link>
+  );
 }

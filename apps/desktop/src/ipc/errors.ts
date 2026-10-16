@@ -42,7 +42,7 @@ export const APP_ERROR_KINDS = Object.keys(KIND_FLAGS) as AppErrorKind[]; // Sch
 
 export function isAppError(value: unknown): value is AppError {
   if (typeof value !== "object" || value === null || !("kind" in value)) return false;
-  const kind = (value as { kind: unknown }).kind; // schmale Prüfung auf Objekt mit `kind`, danach gegen die Liste
+  const kind = value.kind; // schmale Prüfung auf Objekt mit `kind`, danach gegen die Liste
   return typeof kind === "string" && Object.prototype.hasOwnProperty.call(KIND_FLAGS, kind);
 }
 

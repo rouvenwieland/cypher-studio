@@ -507,14 +507,16 @@
 
 /* ---------- Dialog (natives <dialog>) ---------- */
 
+/* Oben verankert statt mittig: Wechselt der Inhalt seine Höhe (Installation: prüfen, laden, fertig), springt nichts. */
 .dialog {
+  --dlg-top: clamp(24px, 10vh, 72px);
   position: fixed;
-  inset: 0;
-  margin: auto;
+  inset: var(--dlg-top) 0 auto;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
   width: min(600px, calc(100vw - 48px));
-  max-height: calc(100vh - 48px);
+  max-height: calc(100vh - var(--dlg-top) - 24px);
   padding: 0;
   border: var(--hair) solid var(--fg);
   border-radius: var(--radius);
@@ -648,8 +650,33 @@
   color: var(--mute);
 }
 
+.mz__break {
+  flex-basis: 100%;
+  height: 0;
+}
+
 .mz--plain .mz__label {
   display: none;
+}
+
+.mz--stack {
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--s-1) 0;
+}
+
+.mz--stack .mz__sep {
+  display: none;
+}
+
+.mz--stack .mz__item {
+  justify-content: space-between;
+  padding: var(--s-1) 0;
+  border-bottom: var(--hair) solid var(--line);
+}
+
+.mz--stack .mz__item:last-child {
+  border-bottom: 0;
 }
 
 /* ---------- Status ---------- */
@@ -1115,3 +1142,91 @@
   vertical-align: bottom;
 }
 
+/* Messzeilen im Inspektor: Zeichen links, Befund rechts (Social, Mockups). */
+.mlist {
+  display: flex;
+  flex-direction: column;
+}
+
+.mrow {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  column-gap: var(--s-2);
+  padding: var(--s-2) 0;
+  border-top: var(--hair) solid var(--line);
+}
+
+.mrow__g {
+  grid-row: 1 / span 3;
+  display: grid;
+  place-items: start center;
+  padding-top: 2px;
+}
+
+.mrow__g--warn {
+  color: var(--warn-text);
+}
+
+.mrow__g--open,
+.mrow__g--ok {
+  color: var(--mute);
+}
+
+.mrow__line {
+  grid-column: 2;
+  color: var(--fg-2);
+}
+
+/* Schieberegler (Radix Slider): Einstellungen, Freistellen, Druckprüfer. */
+.slider {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: var(--control-h);
+  touch-action: none;
+  user-select: none;
+}
+
+.slider__track {
+  position: relative;
+  flex: 1 1 auto;
+  height: var(--s-1);
+  background: var(--control);
+}
+
+.slider__range {
+  position: absolute;
+  height: 100%;
+  background: var(--fg);
+}
+
+.slider__thumb {
+  display: block;
+  width: var(--s-4);
+  height: var(--s-6);
+  border: 0;
+  border-radius: 0;
+  background: var(--fg);
+}
+
+/* Kollektionsmarke: Farbfeld und Name (Start, Bibliothek). */
+.coll {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-width: 0;
+}
+
+.coll__sw {
+  flex: 0 0 auto;
+  width: 8px;
+  height: 8px;
+  border: var(--hair) solid var(--fg);
+}
+
+.coll__name {
+  color: inherit;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

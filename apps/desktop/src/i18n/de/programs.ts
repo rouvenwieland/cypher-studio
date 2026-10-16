@@ -121,7 +121,8 @@ export const programs = {
   },
   remove: {
     title: (name: string, version: string) => `${name} ${version} deinstallieren?`,
-    text: (path: string, size: string, name: string) => `Gelöscht wird ${path} (${size}). Deine ${name}-Dateien und die Einrichtung bleiben.`,
+    text: (path: string, size: string, name: string) =>
+      `Gelöscht wird ${path} (${size}). Deine ${name}-Dateien und die Einrichtung bleiben.`,
     confirm: "Deinstallieren",
     done: (name: string) => `${name} ist deinstalliert.`,
     forgetTitle: (name: string) => `${name} aus der Liste entfernen?`,
@@ -153,15 +154,19 @@ export const install = {
     mirrors
       ? `Steht im Cypher-Manifest als offizielle Quelle von ${name}. Weiterleitungen nur zu Spiegeln derselben Liste; der Inhalt ist über die Prüfsumme festgenagelt.`
       : `Steht im Cypher-Manifest als offizielle Quelle von ${name}. Es gibt keine Weiterleitung auf andere Server.`,
-  versionLine: (version: string, channel: string, released: string | null) => `${version} · ${channel}${released ? ` · erschienen ${released}` : ""}`,
+  versionLine: (version: string, channel: string, released: string | null) =>
+    `${version} · ${channel}${released ? ` · erschienen ${released}` : ""}`,
   channel: { stable: "stabil", lts: "Langzeitversion", preview: "Vorschau" },
-  sizeLine: (download: string, disk: string, drive: string, free: string) => `${download} laden · ${disk} auf dem Datenträger · frei auf ${drive} ${free}`,
+  sizeLine: (download: string, disk: string, drive: string, free: string) =>
+    `${download} laden · ${disk} auf dem Datenträger · frei auf ${drive} ${free}`,
   licenseLine: (spdx: string, name: string) => `${spdx} · ${name}`,
   licenseText: "Lizenztext",
   checksumHash: "SHA-256",
   checksumOrigin: {
-    upstream: "aus dem signierten Cypher-Manifest · stimmt mit der Prüfsummendatei des Herstellers überein · wird nach dem Laden verglichen",
-    cypherPinned: "aus dem signierten Cypher-Manifest · vom Kollektiv festgeschrieben, weil der Hersteller keine eigene Prüfsumme veröffentlicht · wird nach dem Laden verglichen",
+    upstream:
+      "aus dem signierten Cypher-Manifest · stimmt mit der Prüfsummendatei des Herstellers überein · wird nach dem Laden verglichen",
+    cypherPinned:
+      "aus dem signierten Cypher-Manifest · vom Kollektiv festgeschrieben, weil der Hersteller keine eigene Prüfsumme veröffentlicht · wird nach dem Laden verglichen",
   },
   showAllGroups: "Alle 64 Zeichen zeigen",
   hideAllGroups: "Kurz zeigen",
@@ -170,12 +175,15 @@ export const install = {
   targetChange: "Ändern",
   after: "Mit Cypher-Paletten, Schriften und Vorlagen einrichten",
   afterHint: "Danach siehst du jeden Baustein vor dem Anwenden. Rückgängig geht jederzeit.",
-  consentText: "Cypher Studio lädt genau diese Datei aus dieser Quelle, vergleicht die Prüfsumme und installiert nur, wenn sie stimmt.",
+  consentText:
+    "Cypher Studio lädt genau diese Datei aus dieser Quelle, vergleicht die Prüfsumme und installiert nur, wenn sie stimmt.",
   consentButton: "Laden und installieren",
   consentButtonUpdate: "Laden und aktualisieren",
   notes: {
-    replaces: (name: string, version: string) => `Ersetzt ${name} ${version}. Dein Einrichtungsstand bleibt erhalten und wird danach abgeglichen.`,
-    existing: (name: string, version: string) => `Du hast ${name} ${version} schon, installiert außerhalb von Studio. Es bleibt unberührt.`,
+    replaces: (name: string, version: string) =>
+      `Ersetzt ${name} ${version}. Dein Einrichtungsstand bleibt erhalten und wird danach abgeglichen.`,
+    existing: (name: string, version: string) =>
+      `Du hast ${name} ${version} schon, installiert außerhalb von Studio. Es bleibt unberührt.`,
     note: (n: InstallNote): string => {
       switch (n.kind) {
         case "macosNotarizationCheck":
@@ -207,7 +215,8 @@ export const install = {
     download: (done: string, total: string, rate: string | null) => `${done} / ${total}${rate ? ` · ${rate}` : ""}`,
     verify: "SHA-256 wird verglichen",
     verifyDone: "Prüfsumme stimmt",
-    extract: (done: string, total: string | null) => (total ? `entpackt ${done} von ${total} Dateien` : `entpackt ${done} Dateien`),
+    extract: (done: string, total: string | null) =>
+      total ? `entpackt ${done} von ${total} Dateien` : `entpackt ${done} Dateien`,
     checkContent: "Inhalt wird geprüft",
     register: "wird eingetragen",
     setup: (n: number) => `${n} ${n === 1 ? "Baustein" : "Bausteine"} werden angewendet`,
@@ -244,10 +253,12 @@ export const install = {
       expected: "Erwartet",
       actual: "Berechnet",
       region: "Sicherheitswarnung",
-      detailsText: (name: string, file: string, expected: string, actual: string) => `${name}: Prüfsumme falsch\nDatei: ${file}\nErwartet: ${expected}\nBerechnet: ${actual}`,
+      detailsText: (name: string, file: string, expected: string, actual: string) =>
+        `${name}: Prüfsumme falsch\nDatei: ${file}\nErwartet: ${expected}\nBerechnet: ${actual}`,
     },
     network: {
-      title: (host: string, done: string, total: string) => `Verbindung zu ${host} abgebrochen bei ${done} von ${total} MB.`,
+      title: (host: string, done: string, total: string) =>
+        `Verbindung zu ${host} abgebrochen bei ${done} von ${total} MB.`,
       titlePlain: (host: string) => `Verbindung zu ${host} abgebrochen.`,
       safe: "Nichts ist installiert. Geht automatisch weiter, sobald du online bist.",
       now: "Jetzt erneut",
@@ -260,7 +271,8 @@ export const install = {
     },
     running: {
       title: (name: string) => `${name} ist noch geöffnet.`,
-      text: (name: string) => `Speichere und schließe ${name}, dann geht es weiter. Cypher Studio beendet nie fremde Programme.`,
+      text: (name: string) =>
+        `Speichere und schließe ${name}, dann geht es weiter. Cypher Studio beendet nie fremde Programme.`,
       retry: "Erneut prüfen",
     },
     cancelled: {
@@ -273,7 +285,8 @@ export const install = {
       text: "Sie gilt 10 Minuten. Es wurde nichts geladen.",
       again: "Neu anzeigen",
     },
-    stale: (name: string, newer: string, shown: string) => `${name} ${newer} ist erschienen, aber noch nicht von uns geprüft. Bis dahin installieren wir ${shown}.`,
+    stale: (name: string, newer: string, shown: string) =>
+      `${name} ${newer} ist erschienen, aber noch nicht von uns geprüft. Bis dahin installieren wir ${shown}.`,
     generic: { retry: "Erneut versuchen", close: "Schließen" },
   },
 } as const;
@@ -318,11 +331,14 @@ export const setup = {
   restartHint: (name: string) => `${name} neu starten, damit die Bausteine erscheinen.`,
   apply: "Einrichtung anwenden",
   applying: "Wende an",
-  summary: (n: number, news: number, updates: number) => `${n} ${n === 1 ? "Baustein" : "Bausteine"} · ${news} neu · ${updates} aktualisiert`,
+  summary: (n: number, news: number, updates: number) =>
+    `${n} ${n === 1 ? "Baustein" : "Bausteine"} · ${news} neu · ${updates} aktualisiert`,
   summaryBackup: "Sicherung wird angelegt",
-  appliedBar: (time: string, backup: boolean, restart: string | null) => `Angewendet ${time}${backup ? " · Sicherung angelegt" : ""}${restart ? ` · ${restart}` : ""}`,
+  appliedBar: (time: string, backup: boolean, restart: string | null) =>
+    `Angewendet ${time}${backup ? " · Sicherung angelegt" : ""}${restart ? ` · ${restart}` : ""}`,
   undo: "Rückgängig",
-  undone: (restored: number, removed: number) => `Rückgängig gemacht: ${restored} ${restored === 1 ? "Sicherung" : "Sicherungen"} zurückgespielt, ${removed} ${removed === 1 ? "Datei" : "Dateien"} entfernt.`,
+  undone: (restored: number, removed: number) =>
+    `Rückgängig gemacht: ${restored} ${restored === 1 ? "Sicherung" : "Sicherungen"} zurückgespielt, ${removed} ${removed === 1 ? "Datei" : "Dateien"} entfernt.`,
   keptModified: (n: number) => `${n} von dir geänderte ${n === 1 ? "Datei bleibt" : "Dateien bleiben"} liegen.`,
   launch: (name: string) => `${name} starten`,
   lockedFile: (file: string, name: string) => `${file} ist von ${name} gesperrt. Schließe ${name} und wende erneut an.`,
@@ -351,7 +367,8 @@ export const setup = {
     blenderExtension: "Erweiterung installieren",
     writeConfig: "Einstellung schreiben",
   },
-  statusLine: (name: string, applied: boolean) => (applied ? `${name}: eingerichtet` : `${name}: noch nicht eingerichtet`),
+  statusLine: (name: string, applied: boolean) =>
+    applied ? `${name}: eingerichtet` : `${name}: noch nicht eingerichtet`,
   announceDone: (n: number) => `Einrichtung angewendet: ${n} Bausteine`,
   openFolder: "Ordner öffnen",
 } as const;
