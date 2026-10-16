@@ -5,6 +5,8 @@
 #   Kdenlive: SHA-256 von download.kde.org
 #   Inkscape: OpenPGP-Signatur des AppImage (DSA-1024/SHA-1, schwach) und festgenagelte SHA-256 (cypherPinned)
 set -euo pipefail
+# C1_SKIP_VERIFY=1: Prüfungen überspringen (nur für Wiederholungsläufe nach einer vollständigen Prüfung; die Signaturprüfung der großen Dateien dauert Minuten)
+SKIP="${C1_SKIP_VERIFY:-0}"
 WORK="${C1_WORK:-$HOME/c1work}"
 mkdir -p "$WORK/dl" && cd "$WORK/dl"
 
@@ -19,22 +21,22 @@ get "https://download.kde.org/stable/krita/5.3.4.1/$KRITA" "$KRITA"
 curl -fsSL -o "$KRITA.sha256" "https://download.kde.org/stable/krita/5.3.4.1/$KRITA.sha256"
 curl -fsSL -o "$KRITA.sig" "https://download.kde.org/stable/krita/5.3.4.1/$KRITA.sig"
 curl -fsSL -o dmitry_kazakov.gpg "https://files.kde.org/krita/dmitry_kazakov.gpg"
-sha256sum -c "$KRITA.sha256"
+[ "$SKIP" = 1 ] || sha256sum -c "$KRITA.sha256"
 GNUPGHOME="$(mktemp -d)"; export GNUPGHOME; chmod 700 "$GNUPGHOME"
 gpg --quiet --import dmitry_kazakov.gpg 2>/dev/null
-gpg --status-fd 1 --verify "$KRITA.sig" "$KRITA" 2>/dev/null | grep -q "VALIDSIG E9FB29E74ADEACC5E3035B8AB69EB4CF7468332F" && echo "Krita: Signatur gültig (E9FB 29E7 …)"
+[ "$SKIP" = 1 ] || gpg --status-fd 1 --verify "$KRITA.sig" "$KRITA" 2>/dev/null | grep -q "VALIDSIG E9FB29E74ADEACC5E3035B8AB69EB4CF7468332F" && echo "Krita: Signatur gültig (E9FB 29E7 …)"
 
 get "https://download.kde.org/stable/kdenlive/26.08/linux/$KDENLIVE" "$KDENLIVE"
 curl -fsSL -o "$KDENLIVE.sha256" "https://download.kde.org/stable/kdenlive/26.08/linux/$KDENLIVE.sha256"
-sha256sum -c "$KDENLIVE.sha256"
+[ "$SKIP" = 1 ] || sha256sum -c "$KDENLIVE.sha256"
 
 get "https://media.inkscape.org/dl/resources/file/$INKSCAPE" "$INKSCAPE"
 curl -fsSL -o inkscape.sig "https://media.inkscape.org/media/resources/sigs/Inkscape-dcaf3e7-x86_64.AppImage.sig"
 curl -fsSL -o inkscape-jeanmougin.gpg "https://inkscape.org/~MarcJeanmougin/gpg/"
 GNUPGHOME="$(mktemp -d)"; export GNUPGHOME; chmod 700 "$GNUPGHOME"
 gpg --quiet --import inkscape-jeanmougin.gpg 2>/dev/null
-gpg --status-fd 1 --verify inkscape.sig "$INKSCAPE" 2>/dev/null | grep -q "VALIDSIG 74E8DA1398055A8120B276EB5FCB204EF882B07A" && echo "Inkscape: Signatur gültig (74E8 DA13 …, DSA-1024/SHA-1)"
-echo "$INKSCAPE_SHA256  $INKSCAPE" | sha256sum -c
+[ "$SKIP" = 1 ] || gpg --status-fd 1 --verify inkscape.sig "$INKSCAPE" 2>/dev/null | grep -q "VALIDSIG 74E8DA1398055A8120B276EB5FCB204EF882B07A" && echo "Inkscape: Signatur gültig (74E8 DA13 …, DSA-1024/SHA-1)"
+[ "$SKIP" = 1 ] || echo "$INKSCAPE_SHA256  $INKSCAPE" | sha256sum -c
 
 cd "$WORK"
 for spec in "$KRITA:app-krita" "$INKSCAPE:app-inkscape" "$KDENLIVE:app-kdenlive"; do

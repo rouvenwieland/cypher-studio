@@ -5,6 +5,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { PACKS_DIR } from '../gen-palettes.mjs';
+import { decodePngRgba } from '../lib/png.mjs';
 import { readPngInfo } from '../lib/png.mjs';
 import { readFontInfo } from '../lib/ttf.mjs';
 import { findAll, parseXml } from '../lib/xml.mjs';
@@ -168,4 +169,31 @@ test('Projektvorlagen: Liste der mitgelieferten Vorlagen (ARCHITEKTUR 4.5)', () 
   assert.deepEqual(shirt.format, { label: '330 × 450 mm', widthPx: 3898, heightPx: 5315, dpi: 300, widthMm: 330, heightMm: 450 });
   assert.equal(shirt.printProfileId, 'shirtigo-tee-front');
   assert.equal(json('projects', 'hoodie-front-krita', 'template.json').printProfileId, 'shirtigo-hoodie-front');
+});
+
+test('Probe-Motiv: 280 × 360 mm bei 300 dpi, genau eine Auffälligkeit (2,1 % Halbtransparenz), keine Geisterpixel', () => {
+  const file = readFileSync(p('samples', 'probe-motiv.png'));
+  const info = readPngInfo(file);
+  assert.deepEqual([info.width, info.height], [mmToPx(280, 300), mmToPx(360, 300)]); // 3307 × 4252
+  assert.deepEqual(info.dpi, { x: 300, y: 300 });
+  assert.equal(info.hasAlpha, true);
+  const { rgba } = decodePngRgba(file);
+  let visible = 0;
+  let semi = 0;
+  let ghost = 0;
+  let touchesEdge = 0;
+  const w = info.width;
+  for (let i = 3, px = 0; i < rgba.length; i += 4, px++) {
+    const a = rgba[i];
+    if (a === 0) continue;
+    visible++;
+    if (a >= 13 && a <= 252) semi++;
+    else if (a < 13) ghost++;
+    const x = px % w;
+    const y = Math.floor(px / w);
+    if (x === 0 || y === 0 || x === w - 1 || y === info.height - 1) touchesEdge++;
+  }
+  assert.ok(Math.abs(semi / visible - 0.021) < 0.0006, `Halbtransparenz ${((semi / visible) * 100).toFixed(3)} %`);
+  assert.equal(ghost, 0);
+  assert.equal(touchesEdge, 0);
 });

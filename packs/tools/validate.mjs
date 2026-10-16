@@ -27,6 +27,7 @@ import * as project from './gen-kdenlive-project.mjs';
 import * as social from './gen-social.mjs';
 import * as templates from './gen-templates.mjs';
 import * as packsGen from './gen-packs.mjs';
+import * as probe from './gen-probe-motif.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 export const DEFAULT_PACKS_DIR = join(here, '..');
@@ -727,6 +728,7 @@ export function validate(opts = {}) {
     }
     compareGenerated(r, packsDir, 'erzeugt', tpl);
     compareGenerated(r, packsDir, 'erzeugt', packsGen.renderAll().map((f) => ({ file: f.file, data: f.text })));
+    compareGenerated(r, packsDir, 'erzeugt', [{ file: 'samples/probe-motiv.png', data: probe.renderProbe().png }]);
     // Verzeichnisse, die vollständig von Generatoren stammen: keine Fremddateien
     const known = new Set();
     for (const f of inkscape.renderAll()) known.add(`inkscape/templates/${f.file}`);

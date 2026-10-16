@@ -1,2 +1,4 @@
-# Arbeitsdateien der Vorschau-Erzeugung
+# Arbeitsdateien der Vorschau-Erzeugung und Python-Zwischendateien
 tools/authoring/previews/.work/
+__pycache__/
+*.pyc
