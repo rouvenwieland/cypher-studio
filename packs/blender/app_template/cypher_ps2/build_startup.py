@@ -12,7 +12,8 @@ Inhalt der Szene:
     nie exportiert) und „Beispiele“ (je ein Modell pro Präfix innerhalb des Budgets)
   * Materialien „Cypher Basis“ (Textur x Vertexfarbe), „Cypher Neon“ (Emission), kleine Texturen
   * Palette „Cypher Kollektionen“ (17 Farben aus packs/shared/brand/brand.json) zum Malen
-  * EEVEE-Vorschau mit Nebel, Farbverwaltung „Standard“, Einsteiger-Arbeitsbereiche
+  * EEVEE-Vorschau; Nebel als Mist-Einstellung der Welt und als ausgeblendeter Nebelquader in „Referenz“;
+    Farbverwaltung „Standard“; Einsteiger-Arbeitsbereiche
 """
 
 import hashlib
@@ -206,13 +207,14 @@ class Shape:
         self.mats = mats
         self.bm = bmesh.new()
         self.uv = self.bm.loops.layers.uv.new("UVMap")
-        self.col = self.bm.loops.layers.color.new("Col")
+        self.col = self.bm.loops.layers.float_color.new("Col")
+
+    def _new_faces(self):
+        return [f for f in self.bm.faces if f not in self._before]
 
     def _finish_part(self, color_hex, tile, mat_slot, zspan):
         base = lin(color_hex)
-        for f in self.bm.faces:
-            if f.tag:
-                continue
+        for f in self._new_faces():
             f.material_index = mat_slot
             n = f.normal
             ax = max(range(3), key=lambda i: abs(n[i]))
@@ -226,12 +228,10 @@ class Shape:
                 if ax != 2:
                     shade *= 0.88
                 loop[self.col] = (base[0] * shade, base[1] * shade, base[2] * shade, 1.0)
-        for f in self.bm.faces:
-            f.tag = True
 
     def _begin(self):
-        for f in self.bm.faces:
-            f.tag = True
+        # Neue Flächen erkennt man am Unterschied zur Menge davor (bmesh-Operatoren löschen f.tag selbst).
+        self._before = set(self.bm.faces)
 
     def box(self, center, size, color, tile=1.0, mat=0, bevel=0.0, zspan=2.0):
         self._begin()
@@ -242,7 +242,7 @@ class Shape:
         if bevel > 0:
             edges = {e for v in verts for e in v.link_edges}
             bmesh.ops.bevel(self.bm, geom=list(edges), offset=bevel, segments=1, affect="EDGES")
-        bmesh.ops.recalc_face_normals(self.bm, faces=[f for f in self.bm.faces if not f.tag])
+        bmesh.ops.recalc_face_normals(self.bm, faces=self._new_faces())
         self._finish_part(color, tile, mat, zspan)
 
     def cylinder(self, center, radius, depth, color, segments=8, tile=1.0, mat=0, zspan=2.0):
@@ -259,9 +259,8 @@ class Shape:
         res = bmesh.ops.extrude_face_region(self.bm, geom=[face])
         moved = [e for e in res["geom"] if isinstance(e, bmesh.types.BMVert)]
         bmesh.ops.translate(self.bm, vec=Vector((0.0, thickness, 0.0)), verts=moved)
-        new_faces = [f for f in self.bm.faces if not f.tag]
-        bmesh.ops.triangulate(self.bm, faces=new_faces)
-        bmesh.ops.recalc_face_normals(self.bm, faces=[f for f in self.bm.faces if not f.tag])
+        bmesh.ops.triangulate(self.bm, faces=self._new_faces())
+        bmesh.ops.recalc_face_normals(self.bm, faces=self._new_faces())
         self._finish_part(color, tile, mat, zspan)
 
     def to_object(self, location=(0.0, 0.0, 0.0)):
@@ -414,6 +413,31 @@ def build_reference(collection):
     grid.hide_select = True
     collection.objects.link(grid)
 
+    # Nebelquader: Retro-Nebel für Vorschau und Render (EEVEE und Cycles); aus, bis man das Auge einschaltet
+    fog_mat = bpy.data.materials.new("Cypher Nebel")
+    fog_mat.use_nodes = True
+    fnt = fog_mat.node_tree
+    fnt.nodes.clear()
+    fout = fnt.nodes.new("ShaderNodeOutputMaterial")
+    fvol = fnt.nodes.new("ShaderNodeVolumeScatter")
+    fvol.inputs["Color"].default_value = (*lin("#3a4a5e"), 1.0)
+    fvol.inputs["Density"].default_value = 0.04
+    fnt.links.new(fvol.outputs["Volume"], fout.inputs["Volume"])
+    bm = bmesh.new()
+    bmesh.ops.create_cube(bm, size=1.0)
+    me = bpy.data.meshes.new("Nebel")
+    bm.to_mesh(me)
+    bm.free()
+    me.materials.append(fog_mat)
+    fog = bpy.data.objects.new("Nebel", me)
+    fog.scale = (40.0, 40.0, 10.0)
+    fog.location = (0.0, 0.0, 5.0)
+    fog.display_type = "WIRE"
+    fog.hide_select = True
+    fog.hide_viewport = True
+    fog.hide_render = True
+    collection.objects.link(fog)
+
     # Shop-Kamera: Augenhöhe 1,6 m, 70° Blickfeld, 640 x 448
     cam_data = bpy.data.cameras.new("Shop-Kamera")
     cam_data.sensor_fit = "HORIZONTAL"
@@ -477,10 +501,6 @@ def setup_world(scene):
     bg.inputs["Color"].default_value = (*lin(FOG_HEX), 1.0)
     bg.inputs["Strength"].default_value = 1.0
     nt.links.new(bg.outputs["Background"], out.inputs["Surface"])
-    vol = nt.nodes.new("ShaderNodeVolumeScatter")  # Nebel: dünn, in der Vorschau nur bei Bedarf
-    vol.inputs["Color"].default_value = (*lin(FOG_HEX), 1.0)
-    vol.inputs["Density"].default_value = 0.02
-    nt.links.new(vol.outputs["Volume"], out.inputs["Volume"])
     ms = world.mist_settings
     ms.start, ms.depth, ms.falloff = 3.0, 30.0, "QUADRATIC"
 
@@ -513,6 +533,7 @@ GUIDE = """CYPHER PS2 – Modelle für den Cypher-Shop
    (prop-, furn-, prod-, fig-, room-) und Namen eintragen. Grün/Gelb/Rot zeigt,
    ob das Modell ins Budget passt. Dann „Als GLB exportieren“.
 5. Beispiele: Sammlung „Beispiele“ – je ein Modell pro Präfix im Budget.
+6. Nebel (nur Vorschau): In „Referenz“ das Auge beim Objekt „Nebel“ einschalten.
 
 Budgets (Dreiecke): prop 500 · furn 1.500 · prod 1.500 · fig 4.000 · room 15.000.
 Die Sammlung „Referenz“ wird nie exportiert.
