@@ -1,0 +1,21 @@
+{
+  "type": "finished",
+  "installation": {
+    "id": "cypher:blender:5.2.2",
+    "programId": "blender",
+    "version": "5.2.2",
+    "kind": "cypher",
+    "managedByCypher": true,
+    "location": "~/AppData/Local/de.cypherxcypher.studio/data/programs/blender/5.2.2/blender.exe",
+    "launchable": true,
+    "problems": [],
+    "installedAt": "2026-10-20T10:00:00Z",
+    "detectedAt": "2026-10-20T10:00:00Z",
+    "verified": {
+      "sha256": "3849d17a682cba006075aaa3f3597ecb5c9c30ec31035b2e092c53e40679b535",
+      "catalogSequence": 1,
+      "signatureChecked": false
+    },
+    "setupScopeId": "b3f2a1c0d9e8"
+  }
+}

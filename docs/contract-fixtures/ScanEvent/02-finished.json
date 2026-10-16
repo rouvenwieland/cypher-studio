@@ -1,0 +1,23 @@
+{
+  "type": "finished",
+  "status": {
+    "configured": true,
+    "root": "D:\\Sync\\Cypher",
+    "initialized": true,
+    "formatVersion": 1,
+    "entryCount": 3104,
+    "totalBytes": 44023414784,
+    "projectCount": 12,
+    "conflictCount": 1,
+    "lastScanAt": "2026-10-20T10:00:00Z",
+    "syncTool": "syncthing",
+    "watching": true,
+    "collections": [
+      {
+        "id": "rauschen",
+        "name": "Rauschen",
+        "hex": "#0b0b0a"
+      }
+    ]
+  }
+}

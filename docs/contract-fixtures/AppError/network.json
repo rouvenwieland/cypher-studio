@@ -1,0 +1,6 @@
+{
+  "kind": "network",
+  "host": "download.blender.org",
+  "message": "Zeitüberschreitung",
+  "retryable": true
+}

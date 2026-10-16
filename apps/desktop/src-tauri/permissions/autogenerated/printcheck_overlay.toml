@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-printcheck-overlay"
+description = "Enables the printcheck_overlay command without any pre-configured scope."
+commands.allow = ["printcheck_overlay"]
+
+[[permission]]
+identifier = "deny-printcheck-overlay"
+description = "Denies the printcheck_overlay command without any pre-configured scope."
+commands.deny = ["printcheck_overlay"]

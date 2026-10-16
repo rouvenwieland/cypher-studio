@@ -1,0 +1,17 @@
+{
+  "handleId": "h-09",
+  "formatVersion": 1,
+  "title": "Drop Oktober",
+  "createdBy": "Mo",
+  "createdAt": "2026-10-20T10:00:00Z",
+  "appVersion": "0.3.0",
+  "entries": [
+    {
+      "relPath": "Motive/neon-ratte.png",
+      "kind": "image",
+      "size": 123,
+      "state": "conflict"
+    }
+  ],
+  "totalBytes": 123
+}

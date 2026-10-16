@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-library-bulk-meta"
+description = "Enables the library_bulk_meta command without any pre-configured scope."
+commands.allow = ["library_bulk_meta"]
+
+[[permission]]
+identifier = "deny-library-bulk-meta"
+description = "Denies the library_bulk_meta command without any pre-configured scope."
+commands.deny = ["library_bulk_meta"]

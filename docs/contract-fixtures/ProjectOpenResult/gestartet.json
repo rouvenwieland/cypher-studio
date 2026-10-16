@@ -1,0 +1,11 @@
+{
+  "outcome": {
+    "kind": "launched",
+    "launch": {
+      "programId": "krita",
+      "installationId": "cypher:krita:5.3.4.1",
+      "pid": null,
+      "startedAt": "2026-10-20T10:00:00Z"
+    }
+  }
+}

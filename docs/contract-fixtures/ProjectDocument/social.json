@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "module": "social",
+  "data": {
+    "templateId": "post-signal",
+    "format": "post",
+    "texts": {
+      "headline": "SIGNAL"
+    },
+    "images": {
+      "hero": {
+        "relPath": "Motive/ratte.png",
+        "focal": {
+          "x": 0.5,
+          "y": 0.4
+        }
+      },
+      "leer": null
+    },
+    "colorOverrides": {
+      "bg": "#141210"
+    },
+    "exportFormat": "png"
+  }
+}

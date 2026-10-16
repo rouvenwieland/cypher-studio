@@ -1,0 +1,17 @@
+{
+  "mode": "trimmed",
+  "plannedWidthMm": 280,
+  "offsetTopMm": 0,
+  "offsetCenterMm": 0,
+  "allowUpscale": false,
+  "colorProfile": "adobeRgb",
+  "fixes": {
+    "cleanGhostPixels": true,
+    "semiTransparency": "blendWithGarment",
+    "nearBlackToPureBlack": false
+  },
+  "writePlacementJson": true,
+  "destination": {
+    "kind": "besideSource"
+  }
+}

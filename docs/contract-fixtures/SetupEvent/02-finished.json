@@ -1,0 +1,28 @@
+{
+  "type": "finished",
+  "record": {
+    "setupId": "7c1e5a52-9a0e-4c53-8a1d-3f8d0b8e9f10",
+    "packId": "krita",
+    "programId": "krita",
+    "scopeId": "b3f2a1c0d9e8",
+    "packVersion": "1.0.0",
+    "components": [
+      "bundle",
+      "templates"
+    ],
+    "appliedAt": "2026-10-20T10:00:00Z",
+    "status": "partial",
+    "filesWritten": 5,
+    "backupsTaken": 1,
+    "undoAvailable": true,
+    "failures": [
+      {
+        "target": "~/AppData/Roaming/krita/fonts/cypher/Anybody-Variable.ttf",
+        "error": {
+          "kind": "permissionDenied",
+          "path": "C:\\Windows"
+        }
+      }
+    ]
+  }
+}

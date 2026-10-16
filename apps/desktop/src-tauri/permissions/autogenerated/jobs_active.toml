@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-jobs-active"
+description = "Enables the jobs_active command without any pre-configured scope."
+commands.allow = ["jobs_active"]
+
+[[permission]]
+identifier = "deny-jobs-active"
+description = "Denies the jobs_active command without any pre-configured scope."
+commands.deny = ["jobs_active"]

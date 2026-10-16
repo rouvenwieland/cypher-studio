@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-bgremove-model-install"
+description = "Enables the bgremove_model_install command without any pre-configured scope."
+commands.allow = ["bgremove_model_install"]
+
+[[permission]]
+identifier = "deny-bgremove-model-install"
+description = "Denies the bgremove_model_install command without any pre-configured scope."
+commands.deny = ["bgremove_model_install"]

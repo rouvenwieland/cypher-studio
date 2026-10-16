@@ -1,0 +1,14 @@
+{
+  "id": "probe-motiv",
+  "title": "Probe-Motiv",
+  "description": "Absichtlich mit Halbtransparenz",
+  "handle": {
+    "id": "h-03",
+    "name": "probe-motiv.png",
+    "displayPath": "~/Pictures/ratte.png",
+    "size": 4123456,
+    "mime": "image/png",
+    "url": "http://cyfile.localhost/h-01",
+    "source": "sample"
+  }
+}

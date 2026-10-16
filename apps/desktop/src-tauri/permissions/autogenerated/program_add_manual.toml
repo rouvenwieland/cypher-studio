@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-program-add-manual"
+description = "Enables the program_add_manual command without any pre-configured scope."
+commands.allow = ["program_add_manual"]
+
+[[permission]]
+identifier = "deny-program-add-manual"
+description = "Denies the program_add_manual command without any pre-configured scope."
+commands.deny = ["program_add_manual"]

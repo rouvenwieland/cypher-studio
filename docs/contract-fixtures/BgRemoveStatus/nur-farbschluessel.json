@@ -1,0 +1,19 @@
+{
+  "colorKeyAvailable": true,
+  "modelFeature": false,
+  "runtimeInstalled": false,
+  "models": [
+    {
+      "id": "isnet-general-use",
+      "name": "IS-Net general-use",
+      "license": {
+        "spdx": "Apache-2.0",
+        "name": "Apache License 2.0",
+        "url": "https://www.apache.org/licenses/LICENSE-2.0"
+      },
+      "size": 179000000,
+      "installed": false,
+      "notice": null
+    }
+  ]
+}

@@ -1,0 +1,68 @@
+{
+  "planId": "0b8e2b7e-3f4d-4f43-9c61-5d0f1f8d2a11",
+  "programId": "krita",
+  "programName": "Krita",
+  "version": "5.3.4.1",
+  "channel": "stable",
+  "source": {
+    "label": "download.kde.org (offizielle Quelle, Spiegelserver möglich)",
+    "host": "download.kde.org",
+    "url": "https://download.kde.org/stable/krita/5.3.4.1/krita-5.3.4.1-x86_64.AppImage",
+    "mirrorRedirects": true
+  },
+  "artifact": {
+    "kind": "appImage",
+    "fileName": "krita-5.3.4.1-x86_64.AppImage",
+    "size": 381635064,
+    "sha256": "e315dfb3da81cdb8bddc4bb3fcd4d9bacd0630fc7065d8ed07de758b267573f0",
+    "checksumSource": "https://download.kde.org/stable/krita/5.3.4.1/krita-5.3.4.1-x86_64.AppImage.sha256",
+    "checksumOrigin": "upstream",
+    "signature": {
+      "type": "pgp",
+      "enforced": true,
+      "url": "https://download.kde.org/stable/krita/5.3.4.1/krita-5.3.4.1-x86_64.AppImage.sig",
+      "signerFingerprints": [
+        "E9FB29E74ADEACC5E3035B8AB69EB4CF7468332F"
+      ]
+    }
+  },
+  "license": {
+    "spdx": "GPL-3.0-or-later",
+    "name": "GNU General Public License v3.0 or later",
+    "url": "https://www.blender.org/about/license/"
+  },
+  "target": {
+    "dir": "~/AppData/Local/de.cypherxcypher.studio/data/programs/blender/5.2.2",
+    "requiredBytes": 2004453484,
+    "availableBytes": 128849018880,
+    "portable": true,
+    "needsAdmin": false
+  },
+  "replaces": {
+    "id": "system:krita:3fa9c2",
+    "programId": "krita",
+    "version": "5.2.9",
+    "kind": "system",
+    "managedByCypher": false,
+    "location": "C:\\Program Files\\Krita (x64)\\bin\\krita.exe",
+    "launchable": true,
+    "problems": [
+      {
+        "kind": "staleCatalogVersion",
+        "latest": "5.3.4.1"
+      },
+      {
+        "kind": "setupNotSupported",
+        "reason": "installKind"
+      }
+    ],
+    "installedAt": null,
+    "detectedAt": "2026-10-20T10:00:00Z",
+    "verified": null,
+    "setupScopeId": null
+  },
+  "existing": [],
+  "notes": [],
+  "createdAt": "2026-10-20T10:00:00Z",
+  "expiresAt": "2026-10-20T10:10:00Z"
+}

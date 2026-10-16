@@ -1,0 +1,23 @@
+{
+  "id": "builtin:post",
+  "title": "Post 4:5",
+  "description": "Leinwand 330 × 450 mm (3898 × 5315 px, 300 dpi), transparent.",
+  "target": "social",
+  "programId": null,
+  "format": {
+    "label": "1080 × 1350",
+    "widthPx": 1080,
+    "heightPx": 1350,
+    "dpi": null,
+    "widthMm": null,
+    "heightMm": null
+  },
+  "aspect": 0.8,
+  "folder": "Social",
+  "fileExtension": ".social.json",
+  "printProfileId": null,
+  "previewUrl": null,
+  "source": "builtin",
+  "requiresSetup": false,
+  "tags": []
+}

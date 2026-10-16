@@ -1,0 +1,64 @@
+{
+  "collections": [
+    {
+      "id": "rauschen",
+      "name": "Rauschen",
+      "hex": "#0b0b0a"
+    }
+  ],
+  "garmentColors": [
+    {
+      "id": "schwarz",
+      "name": "Schwarz",
+      "hex": "#141210",
+      "textileHex": "#201e1f",
+      "providerColorName": "Black",
+      "heather": false,
+      "underbase": true,
+      "textOnGarment": "#f2efe8"
+    },
+    {
+      "id": "grau-meliert",
+      "name": "Grau meliert",
+      "hex": "#8c8a86",
+      "textileHex": "#818381",
+      "providerColorName": null,
+      "heather": true,
+      "underbase": true,
+      "textOnGarment": "#141210"
+    }
+  ],
+  "palettes": [
+    {
+      "id": "cypher-textil",
+      "name": "Cypher Textil",
+      "colors": [
+        {
+          "name": "Papier",
+          "hex": "#f2efe8"
+        }
+      ]
+    }
+  ],
+  "fonts": [
+    {
+      "family": "Anybody",
+      "usage": "display",
+      "license": "OFL-1.1",
+      "files": [
+        {
+          "url": "http://cyasset.localhost/fonts/anybody/Anybody-Variable.ttf",
+          "weight": 400,
+          "style": "normal"
+        }
+      ]
+    }
+  ],
+  "logos": [
+    {
+      "id": "wortmarke",
+      "variant": "light",
+      "url": "http://cyasset.localhost/shared/brand/logo-light.svg"
+    }
+  ]
+}

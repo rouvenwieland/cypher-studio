@@ -1,0 +1,13 @@
+{
+  "type": "step",
+  "index": 0,
+  "total": 5,
+  "componentId": "bundle",
+  "operation": {
+    "kind": "create",
+    "target": "~/AppData/Roaming/krita/bundles/cypher.bundle",
+    "sourceId": "bundle",
+    "bytes": 182044,
+    "conflictId": null
+  }
+}

@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-library-thumbnails-clear"
+description = "Enables the library_thumbnails_clear command without any pre-configured scope."
+commands.allow = ["library_thumbnails_clear"]
+
+[[permission]]
+identifier = "deny-library-thumbnails-clear"
+description = "Denies the library_thumbnails_clear command without any pre-configured scope."
+commands.deny = ["library_thumbnails_clear"]

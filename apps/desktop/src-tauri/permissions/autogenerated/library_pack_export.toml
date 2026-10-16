@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-library-pack-export"
+description = "Enables the library_pack_export command without any pre-configured scope."
+commands.allow = ["library_pack_export"]
+
+[[permission]]
+identifier = "deny-library-pack-export"
+description = "Denies the library_pack_export command without any pre-configured scope."
+commands.deny = ["library_pack_export"]

@@ -1,0 +1,26 @@
+{
+  "id": "builtin:shirt-krita",
+  "title": "Shirt vorne",
+  "description": "Leinwand 330 × 450 mm (3898 × 5315 px, 300 dpi), transparent.",
+  "target": "program",
+  "programId": "krita",
+  "format": {
+    "label": "330 × 450 mm",
+    "widthPx": 3898,
+    "heightPx": 5315,
+    "dpi": 300,
+    "widthMm": 330,
+    "heightMm": 450
+  },
+  "aspect": 0.7333,
+  "folder": "Motive",
+  "fileExtension": ".kra",
+  "printProfileId": "shirtigo-tee-front",
+  "previewUrl": "http://cyasset.localhost/projects/shirt-front-krita/preview.png",
+  "source": "builtin",
+  "requiresSetup": false,
+  "tags": [
+    "shirt",
+    "druck"
+  ]
+}

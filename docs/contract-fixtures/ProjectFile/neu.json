@@ -1,0 +1,18 @@
+{
+  "projectId": "1f0c7a9e-77a1-4f1a-9a52-5f3c2d1e0b9a",
+  "ref": {
+    "relPath": "Social/post-01.social.json",
+    "modifiedAt": "2026-10-20T10:00:00Z",
+    "programId": null,
+    "module": "social"
+  },
+  "handle": {
+    "id": "h-04",
+    "name": "post-01.social.json",
+    "displayPath": "~/Pictures/ratte.png",
+    "size": 4123456,
+    "mime": "application/json",
+    "url": null,
+    "source": "project"
+  }
+}

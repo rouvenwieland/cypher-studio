@@ -1,0 +1,10 @@
+{
+  "kind": "unsupportedFormat",
+  "format": "gif",
+  "supported": [
+    "png",
+    "jpeg",
+    "tiff",
+    "webp"
+  ]
+}

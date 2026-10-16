@@ -1,0 +1,60 @@
+{
+  "id": "shirtigo-tee-sleeve-left",
+  "provider": "shirtigo",
+  "product": {
+    "id": "tee",
+    "providerProductId": "organic-shirt",
+    "label": "Organic Shirt (Creator 2.0, STTU169)"
+  },
+  "placement": "sleeveLeft",
+  "techniques": [
+    "dtf"
+  ],
+  "title": "T-Shirt Vorderseite",
+  "printAreaMm": {
+    "width": 100,
+    "height": 100
+  },
+  "safeAreaMm": null,
+  "topMarginHintMm": 26,
+  "widthPresets": [],
+  "defaultWidthMm": 280,
+  "targetDpi": 300,
+  "errorBelowDpi": 150,
+  "minPxPerSide": 1000,
+  "maxPxPerSide": 10500,
+  "warnFileBytes": 50331648,
+  "maxFileBytes": 67108864,
+  "acceptedUploadFormats": [
+    "png",
+    "jpeg"
+  ],
+  "color": {
+    "exportProfile": "adobeRgb",
+    "acceptedProfiles": [
+      "adobeRgb",
+      "srgb"
+    ]
+  },
+  "alpha": {
+    "semiMin": 13,
+    "semiMax": 252,
+    "ghostMax": 12,
+    "edgeRadiusPx": 2,
+    "warnShare": 0.001,
+    "errorShare": 0.01,
+    "severityOnLightGarment": "info",
+    "severityForDtf": "error"
+  },
+  "strokes": {
+    "warnBelowPx": 10,
+    "criticalBelowPx": 5
+  },
+  "source": {
+    "urls": [
+      "https://cockpit.shirtigo.com/de/catalog/product/organic-shirt"
+    ],
+    "checkedAt": "2026-10-16T00:00:00Z"
+  },
+  "assumption": true
+}

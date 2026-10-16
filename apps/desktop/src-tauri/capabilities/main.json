@@ -1,0 +1,25 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "main",
+  "description": "Hauptfenster: Events abonnieren und Cypher-Commands aufrufen, sonst nichts.",
+  "windows": ["main"],
+  "permissions": [
+    "core:event:allow-listen",
+    "core:event:allow-unlisten",
+    "allow-app",
+    "allow-settings",
+    "allow-catalog",
+    "allow-programs",
+    "allow-install",
+    "allow-launch",
+    "allow-setup",
+    "allow-files",
+    "allow-projects",
+    "allow-library",
+    "allow-printcheck",
+    "allow-brand",
+    "allow-updater",
+    "allow-jobs",
+    "allow-bgremove"
+  ]
+}

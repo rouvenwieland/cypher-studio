@@ -1,0 +1,41 @@
+{
+  "id": "3e7a7d31-8b3c-4b64-c7d9-2e1a0f9b8c7d",
+  "kind": "image",
+  "relPath": "Projekte/Herbst-Drop 26/Motive/neon-ratte.png",
+  "fileName": "neon-ratte (conflicted copy).png",
+  "mime": "image/png",
+  "size": 4123456,
+  "modifiedAt": "2026-10-20T10:00:00Z",
+  "widthPx": null,
+  "heightPx": null,
+  "projectId": null,
+  "openWith": null,
+  "meta": {
+    "title": "Neon Ratte",
+    "tags": [
+      "ratte",
+      "neon",
+      "final"
+    ],
+    "collection": "rauschen",
+    "author": "Mo",
+    "status": "approved",
+    "notes": "",
+    "colors": [
+      "#ff2bd6"
+    ],
+    "printProfileId": "shirtigo-tee-front",
+    "garmentColorIds": [
+      "schwarz",
+      "navy"
+    ],
+    "createdAt": "2026-10-20T10:00:00Z",
+    "updatedAt": "2026-10-20T10:00:00Z"
+  },
+  "thumbnailUrl": null,
+  "conflict": {
+    "kind": "syncConflictCopy",
+    "originalRelPath": "Projekte/Herbst-Drop 26/Motive/neon-ratte.png"
+  },
+  "sidecarMissing": true
+}

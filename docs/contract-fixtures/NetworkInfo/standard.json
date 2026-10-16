@@ -1,0 +1,42 @@
+{
+  "endpoints": [
+    {
+      "purpose": "catalog",
+      "host": "studio.cypherxcypher.de",
+      "urlPattern": "https://studio.cypherxcypher.de/catalog/v1/…",
+      "when": "onStart",
+      "enabled": true
+    },
+    {
+      "purpose": "appUpdate",
+      "host": "studio.cypherxcypher.de",
+      "urlPattern": "https://studio.cypherxcypher.de/releases/latest.json",
+      "when": "onStart",
+      "enabled": true
+    },
+    {
+      "purpose": "programDownload",
+      "host": "download.blender.org",
+      "urlPattern": "https://download.blender.org/release/…",
+      "when": "afterConsent",
+      "enabled": true
+    }
+  ],
+  "recent": [
+    {
+      "at": "2026-10-20T10:00:00Z",
+      "host": "studio.cypherxcypher.de",
+      "purpose": "catalog",
+      "status": 200,
+      "bytes": 48210
+    },
+    {
+      "at": "2026-10-20T10:00:00Z",
+      "host": "download.blender.org",
+      "purpose": "programDownload",
+      "status": null,
+      "bytes": 0
+    }
+  ],
+  "telemetry": false
+}

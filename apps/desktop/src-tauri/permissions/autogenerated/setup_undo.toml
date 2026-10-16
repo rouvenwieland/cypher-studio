@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-setup-undo"
+description = "Enables the setup_undo command without any pre-configured scope."
+commands.allow = ["setup_undo"]
+
+[[permission]]
+identifier = "deny-setup-undo"
+description = "Denies the setup_undo command without any pre-configured scope."
+commands.deny = ["setup_undo"]

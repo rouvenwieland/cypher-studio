@@ -1,0 +1,18 @@
+{
+  "mode": "fullArea",
+  "plannedWidthMm": 280,
+  "offsetTopMm": 0,
+  "offsetCenterMm": 0,
+  "allowUpscale": false,
+  "colorProfile": "adobeRgb",
+  "fixes": {
+    "cleanGhostPixels": true,
+    "semiTransparency": "blendWithGarment",
+    "nearBlackToPureBlack": false
+  },
+  "writePlacementJson": true,
+  "destination": {
+    "kind": "project",
+    "projectId": "1f0c7a9e-77a1-4f1a-9a52-5f3c2d1e0b9a"
+  }
+}

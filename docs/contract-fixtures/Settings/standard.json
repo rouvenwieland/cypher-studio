@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "updates": {
+    "frequency": "weekly",
+    "lastCheckAt": null
+  },
+  "catalog": {
+    "autoRefresh": true
+  },
+  "programsDir": "~/AppData/Local/de.cypherxcypher.studio/data/programs",
+  "projectsDir": "~/Documents/Cypher Studio/Projekte",
+  "libraryRoot": null,
+  "downloads": {
+    "keepCache": false,
+    "maxParallel": 2
+  },
+  "linux": {
+    "appImageMode": "auto",
+    "graphicsCompat": false
+  },
+  "profile": {
+    "displayName": ""
+  },
+  "ui": {
+    "theme": "system",
+    "density": "normal",
+    "motion": "system",
+    "zoomPercent": 100,
+    "measureColor": "cyan",
+    "surround": {
+      "paper": "light",
+      "ink": "dark"
+    },
+    "calibrationPxPerMm": null,
+    "singleKeyShortcuts": false,
+    "shortcutOverrides": {}
+  },
+  "onboarding": {
+    "status": "notStarted",
+    "step": 0,
+    "selectedPrograms": [],
+    "applySetup": true,
+    "updatedAt": null
+  }
+}

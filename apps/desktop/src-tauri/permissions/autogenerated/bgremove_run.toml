@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-bgremove-run"
+description = "Enables the bgremove_run command without any pre-configured scope."
+commands.allow = ["bgremove_run"]
+
+[[permission]]
+identifier = "deny-bgremove-run"
+description = "Denies the bgremove_run command without any pre-configured scope."
+commands.deny = ["bgremove_run"]

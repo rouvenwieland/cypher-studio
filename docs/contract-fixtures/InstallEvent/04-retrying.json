@@ -1,0 +1,7 @@
+{
+  "type": "retrying",
+  "attempt": 1,
+  "maxAttempts": 4,
+  "delayMs": 1000,
+  "reason": "Verbindung getrennt"
+}

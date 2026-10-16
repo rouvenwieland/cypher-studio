@@ -1,0 +1,24 @@
+{
+  "info": {
+    "id": "7d3c9c2a-1f6e-4d0a-8f40-0a1b2c3d4e5f",
+    "kind": "setupApply",
+    "subject": "Blender 5.2.2",
+    "startedAt": "2026-10-20T10:00:00Z",
+    "cancellable": true,
+    "progress": 0.26,
+    "phase": "download",
+    "needsAttention": false
+  },
+  "finishedAt": "2026-10-20T10:00:00Z",
+  "outcome": "failed",
+  "error": {
+    "kind": "setupConflict",
+    "files": [
+      "~/AppData/Roaming/krita/bundles/cypher.bundle"
+    ]
+  },
+  "result": {
+    "kind": "setup",
+    "setupId": "7c1e5a52-9a0e-4c53-8a1d-3f8d0b8e9f10"
+  }
+}

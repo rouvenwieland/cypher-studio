@@ -1,0 +1,5 @@
+{
+  "kind": "invalidInput",
+  "field": "fileName",
+  "reason": "Datei existiert schon"
+}

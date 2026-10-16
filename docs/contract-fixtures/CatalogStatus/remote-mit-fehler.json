@@ -1,0 +1,16 @@
+{
+  "sourceUrl": "https://studio.cypherxcypher.de/catalog/v1/catalog.json",
+  "schemaVersion": 1,
+  "sequence": 1,
+  "generatedAt": "2026-10-16T12:00:00Z",
+  "expiresAt": "2027-04-16T00:00:00Z",
+  "expired": false,
+  "source": "remote",
+  "lastCheckAt": "2026-10-20T10:00:00Z",
+  "lastError": {
+    "kind": "network",
+    "host": "download.blender.org",
+    "message": "Zeitüberschreitung",
+    "retryable": true
+  }
+}

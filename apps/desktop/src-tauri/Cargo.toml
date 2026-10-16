@@ -1,18 +1,18 @@
 [package]
 name = "cypher-studio"
-version = "0.1.0"
+version.workspace = true
 description = "Cypher Studio – Zentrale für das Cypher Kollektiv"
-authors = ["Cypher Kollektiv"]
-license = "MIT"
-repository = "https://github.com/rouvenwieland/cypher-studio"
-edition = "2024"
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+edition.workspace = true
+rust-version.workspace = true
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lints]
+workspace = true
 
 [lib]
-# The `_lib` suffix may seem redundant but it is necessary
-# to make the lib name unique and wouldn't conflict with the bin name.
-# This seems to be only an issue on Windows, see https://github.com/rust-lang/cargo/issues/8519
+# Das Suffix `_lib` ist nötig, damit der Bibliotheksname nicht mit dem Binärnamen kollidiert (Windows, cargo#8519).
 name = "cypher_studio_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
@@ -20,16 +20,20 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
+cypher-core = { path = "../../../crates/cypher-core" }
 tauri = { version = "2", features = [] }
+tauri-plugin-dialog = "2"
 tauri-plugin-opener = "2"
-serde = { version = "1", features = ["derive"] }
-serde_json = "1"
+serde.workspace = true
+serde_json.workspace = true
+tokio.workspace = true
 
+# Desktop-Plugins (wie in der Tauri-Dokumentation empfohlen)
+[target.'cfg(any(target_os = "macos", windows, target_os = "linux"))'.dependencies]
+tauri-plugin-single-instance = "2"
+tauri-plugin-updater = "2"
+tauri-plugin-process = "2"
+tauri-plugin-window-state = "2"
 
-# Read the optimization guideline for more details: https://tauri.app/concept/size/#cargo-configuration
-[profile.release]
-codegen-units = 1
-lto = true
-opt-level = 3
-panic = "abort"
-strip = true
+[dev-dependencies]
+tauri = { version = "2", features = ["test"] }

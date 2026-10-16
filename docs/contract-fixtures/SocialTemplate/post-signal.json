@@ -1,0 +1,133 @@
+{
+  "id": "post-signal",
+  "title": "Post Signal",
+  "format": "post",
+  "size": {
+    "width": 1080,
+    "height": 1350
+  },
+  "background": {
+    "type": "linearGradient",
+    "angleDeg": 90,
+    "stops": [
+      {
+        "at": 0,
+        "color": "#141210"
+      },
+      {
+        "at": 1,
+        "color": "#0b0b0a"
+      }
+    ]
+  },
+  "layers": [
+    {
+      "type": "image",
+      "id": "hero",
+      "slot": "hero",
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "width": 1080,
+        "height": 900
+      },
+      "fit": "cover",
+      "radiusPx": 0,
+      "required": true
+    },
+    {
+      "type": "text",
+      "id": "headline",
+      "slot": "headline",
+      "rect": {
+        "x": 60,
+        "y": 980,
+        "width": 960,
+        "height": 200
+      },
+      "fontFamily": "Anybody",
+      "fontWeight": 800,
+      "sizePx": 120,
+      "minSizePx": 60,
+      "lineHeight": 1.0,
+      "letterSpacingEm": 0.0,
+      "color": "#f2efe8",
+      "align": "left",
+      "valign": "bottom",
+      "transform": "uppercase",
+      "maxLines": 2,
+      "defaultText": "Signal"
+    },
+    {
+      "type": "shape",
+      "id": "balken",
+      "rect": {
+        "x": 0,
+        "y": 900,
+        "width": 1080,
+        "height": 8
+      },
+      "fill": {
+        "type": "solid",
+        "color": "#ff2bd6"
+      },
+      "radiusPx": 0,
+      "opacity": 1
+    },
+    {
+      "type": "logo",
+      "id": "logo",
+      "rect": {
+        "x": 60,
+        "y": 60,
+        "width": 200,
+        "height": 60
+      },
+      "variant": "light"
+    },
+    {
+      "type": "grain",
+      "id": "korn",
+      "opacity": 0.08,
+      "seed": 7
+    },
+    {
+      "type": "scanlines",
+      "id": "zeilen",
+      "opacity": 0.05,
+      "spacingPx": 4
+    },
+    {
+      "type": "shape",
+      "id": "bild-fuellung",
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "width": 10,
+        "height": 10
+      },
+      "fill": {
+        "type": "image",
+        "url": "http://cyasset.localhost/social/x.png",
+        "fit": "contain"
+      },
+      "radiusPx": 4,
+      "opacity": 0.5
+    }
+  ],
+  "safeZones": [
+    {
+      "x": 120,
+      "y": 270,
+      "width": 840,
+      "height": 408
+    }
+  ],
+  "gridCrop": {
+    "x": 34,
+    "y": 0,
+    "width": 1012,
+    "height": 1350
+  },
+  "previewUrl": null
+}

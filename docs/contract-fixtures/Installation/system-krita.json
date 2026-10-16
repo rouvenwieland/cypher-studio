@@ -1,0 +1,23 @@
+{
+  "id": "system:krita:3fa9c2",
+  "programId": "krita",
+  "version": "5.2.9",
+  "kind": "system",
+  "managedByCypher": false,
+  "location": "C:\\Program Files\\Krita (x64)\\bin\\krita.exe",
+  "launchable": true,
+  "problems": [
+    {
+      "kind": "staleCatalogVersion",
+      "latest": "5.3.4.1"
+    },
+    {
+      "kind": "setupNotSupported",
+      "reason": "installKind"
+    }
+  ],
+  "installedAt": null,
+  "detectedAt": "2026-10-20T10:00:00Z",
+  "verified": null,
+  "setupScopeId": null
+}

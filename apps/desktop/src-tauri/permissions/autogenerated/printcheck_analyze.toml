@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-printcheck-analyze"
+description = "Enables the printcheck_analyze command without any pre-configured scope."
+commands.allow = ["printcheck_analyze"]
+
+[[permission]]
+identifier = "deny-printcheck-analyze"
+description = "Denies the printcheck_analyze command without any pre-configured scope."
+commands.deny = ["printcheck_analyze"]

@@ -1,0 +1,151 @@
+{
+  "output": {
+    "id": "h-05",
+    "name": "ratte_tee-front_280mm_300dpi.png",
+    "displayPath": "~/Pictures/ratte.png",
+    "size": 4123456,
+    "mime": "image/png",
+    "url": "http://cyfile.localhost/h-01",
+    "source": "export"
+  },
+  "placementJson": {
+    "id": "h-06",
+    "name": "ratte_tee-front_280mm_300dpi.png.shirtigo.json",
+    "displayPath": "~/Pictures/ratte.png",
+    "size": 4123456,
+    "mime": "application/json",
+    "url": null,
+    "source": "export"
+  },
+  "widthPx": 3307,
+  "heightPx": 4609,
+  "dpi": 300,
+  "colorProfile": "adobeRgb",
+  "report": {
+    "engineVersion": "1.0.0",
+    "analyzedAt": "2026-10-20T10:00:00Z",
+    "file": {
+      "name": "ratte.png",
+      "format": "png",
+      "widthPx": 2400,
+      "heightPx": 3200,
+      "bitDepth": 8,
+      "channels": "rgba",
+      "interlaced": false,
+      "animated": false,
+      "fileBytes": 4123456
+    },
+    "dpi": {
+      "x": 72,
+      "y": 72,
+      "source": "pHYs"
+    },
+    "color": {
+      "profile": "srgb",
+      "iccDescription": "sRGB IEC61966-2.1",
+      "srgbChunk": false
+    },
+    "alpha": {
+      "present": true,
+      "transparentShare": 0.61,
+      "opaqueShare": 0.36,
+      "semiShareOfVisible": 0.031,
+      "semiAreaShareOfVisible": 0.0042,
+      "ghostPixelCount": 37
+    },
+    "bounds": {
+      "x": 120,
+      "y": 80,
+      "width": 2160,
+      "height": 3010
+    },
+    "marginsPx": {
+      "top": 80,
+      "right": 120,
+      "bottom": 110,
+      "left": 120
+    },
+    "trimmedPx": {
+      "width": 2160,
+      "height": 3010
+    },
+    "profileId": "shirtigo-tee-front",
+    "technique": "dtg",
+    "garment": {
+      "colorId": "schwarz",
+      "underbase": true
+    },
+    "placement": {
+      "plannedWidthMm": 280,
+      "plannedHeightMm": 390.2,
+      "effectiveDpi": 196,
+      "maxWidthMmAtTargetDpi": 182.9,
+      "targetPx": {
+        "width": 3307,
+        "height": 4609
+      },
+      "fitsPrintArea": true,
+      "fitsSafeArea": false
+    },
+    "minStrokePx": null,
+    "findings": [
+      {
+        "ruleId": "resolution.belowTarget",
+        "severity": "warning",
+        "params": {
+          "effectiveDpi": 196,
+          "targetDpi": 300,
+          "maxWidthMm": 182.9
+        },
+        "region": null,
+        "fix": null
+      },
+      {
+        "ruleId": "alpha.semiTransparent",
+        "severity": "warning",
+        "params": {
+          "share": 0.0042,
+          "warnShare": 0.001,
+          "errorShare": 0.01
+        },
+        "region": {
+          "x": 300,
+          "y": 2600,
+          "width": 1800,
+          "height": 400
+        },
+        "fix": "semiTransparency"
+      },
+      {
+        "ruleId": "alpha.ghostPixels",
+        "severity": "warning",
+        "params": {
+          "count": 37
+        },
+        "region": null,
+        "fix": "cleanGhostPixels"
+      },
+      {
+        "ruleId": "color.profileDiffers",
+        "severity": "info",
+        "params": {
+          "from": "srgb",
+          "to": "adobeRgb",
+          "dtfOnly": false
+        },
+        "region": null,
+        "fix": "colorProfile"
+      },
+      {
+        "ruleId": "color.nearBlack",
+        "severity": "info",
+        "params": {
+          "share": 0.07
+        },
+        "region": null,
+        "fix": "nearBlackToPureBlack"
+      }
+    ],
+    "verdict": "warning"
+  }
+}

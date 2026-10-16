@@ -1,0 +1,109 @@
+{
+  "planId": "a5c1f6a0-2c1e-4e2b-8d7c-0a9b8c7d6e5f",
+  "packId": "krita",
+  "programId": "krita",
+  "scopeId": "b3f2a1c0d9e8",
+  "packVersion": "1.0.0",
+  "packLabel": "Cypher-Paket 2026.10",
+  "previous": null,
+  "components": [
+    {
+      "id": "bundle",
+      "kind": "bundle",
+      "label": "Palette „Cypher Kollektionen“ und Arbeitsfläche",
+      "optional": false,
+      "defaultSelected": true,
+      "status": "new",
+      "preview": {
+        "colors": [
+          "#141210",
+          "#f2efe8"
+        ],
+        "formats": [],
+        "fonts": []
+      },
+      "operations": [
+        {
+          "kind": "create",
+          "target": "~/AppData/Roaming/krita/bundles/cypher.bundle",
+          "sourceId": "bundle",
+          "bytes": 182044,
+          "conflictId": null
+        }
+      ]
+    },
+    {
+      "id": "templates",
+      "kind": "templates",
+      "label": "Vorlagen (Shirt vorne, Hoodie vorne, Post, Story)",
+      "optional": true,
+      "defaultSelected": true,
+      "status": "userModified",
+      "preview": {
+        "colors": [],
+        "formats": [
+          "330 × 450 mm",
+          "1080 × 1350"
+        ],
+        "fonts": []
+      },
+      "operations": [
+        {
+          "kind": "conflict",
+          "target": "~/AppData/Roaming/krita/templates/Cypher/Shirt-Front.desktop",
+          "sourceId": "tpl-tee",
+          "bytes": 412,
+          "conflictId": "c1"
+        },
+        {
+          "kind": "skip",
+          "target": "x",
+          "sourceId": "tpl-dir",
+          "bytes": 31,
+          "conflictId": null
+        },
+        {
+          "kind": "update",
+          "target": "y",
+          "sourceId": "tpl-tee-kra",
+          "bytes": 9000,
+          "conflictId": null
+        },
+        {
+          "kind": "installFont",
+          "target": "z",
+          "sourceId": "font",
+          "bytes": 100,
+          "conflictId": null
+        },
+        {
+          "kind": "blenderExtension",
+          "target": "blender",
+          "sourceId": "ext",
+          "bytes": 1,
+          "conflictId": null
+        },
+        {
+          "kind": "writeConfig",
+          "target": "cfg",
+          "sourceId": "cfg",
+          "bytes": 80,
+          "conflictId": null
+        }
+      ]
+    }
+  ],
+  "conflicts": [
+    {
+      "conflictId": "c1",
+      "componentId": "templates",
+      "target": "~/AppData/Roaming/krita/templates/Cypher/Shirt-Front.desktop",
+      "reason": "userModified",
+      "keepBothName": "Shirt-Front-cypher-2026-10.desktop"
+    }
+  ],
+  "programRunning": true,
+  "restartHint": true,
+  "createdAt": "2026-10-20T10:00:00Z",
+  "expiresAt": "2026-10-20T10:10:00Z"
+}

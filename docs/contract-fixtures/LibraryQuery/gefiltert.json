@@ -1,0 +1,22 @@
+{
+  "text": "ratte",
+  "kinds": [
+    "image",
+    "vector"
+  ],
+  "collections": [
+    "rauschen"
+  ],
+  "tags": [
+    "neon"
+  ],
+  "status": [
+    "approved"
+  ],
+  "projectId": "1f0c7a9e-77a1-4f1a-9a52-5f3c2d1e0b9a",
+  "modifiedAfter": "2026-10-20T10:00:00Z",
+  "onlyConflicts": false,
+  "sort": "modifiedDesc",
+  "offset": 0,
+  "limit": 200
+}

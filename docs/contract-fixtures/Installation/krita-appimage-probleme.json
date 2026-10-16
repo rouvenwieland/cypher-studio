@@ -1,0 +1,36 @@
+{
+  "id": "cypher:krita:5.3.4.1",
+  "programId": "krita",
+  "version": "5.3.4.1",
+  "kind": "cypher",
+  "managedByCypher": true,
+  "location": "~/.local/share/de.cypherxcypher.studio/programs/krita/5.3.4.1/krita-5.3.4.1-x86_64.AppImage",
+  "launchable": true,
+  "problems": [
+    {
+      "kind": "fuseMissing",
+      "fallback": "extracted"
+    },
+    {
+      "kind": "notNotarized"
+    },
+    {
+      "kind": "versionUnknown"
+    },
+    {
+      "kind": "executableMissing"
+    },
+    {
+      "kind": "endOfSupportSoon",
+      "until": "2027-07"
+    }
+  ],
+  "installedAt": "2026-10-20T10:00:00Z",
+  "detectedAt": "2026-10-20T10:00:00Z",
+  "verified": {
+    "sha256": "e315dfb3da81cdb8bddc4bb3fcd4d9bacd0630fc7065d8ed07de758b267573f0",
+    "catalogSequence": 1,
+    "signatureChecked": true
+  },
+  "setupScopeId": null
+}

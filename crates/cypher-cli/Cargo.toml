@@ -1,0 +1,19 @@
+[package]
+name = "cypher-cli"
+description = "Cypher Studio: Kommandozeile für CI, Linux-Probe und Katalogpflege"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+repository.workspace = true
+
+[lints]
+workspace = true
+
+[[bin]]
+name = "cypher"
+path = "src/main.rs"
+
+[dependencies]
+cypher-core = { path = "../cypher-core" }

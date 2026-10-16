@@ -1,0 +1,87 @@
+{
+  "programs": [
+    {
+      "id": "blender",
+      "name": "Blender",
+      "vendor": "Blender Foundation",
+      "category": "3d",
+      "description": "3D-Modelle im PS2-Retro-Stil für den 3D-Shop, mit Cypher-Startszene und Export-Add-on.",
+      "license": {
+        "spdx": "GPL-3.0-or-later",
+        "name": "GNU General Public License v3.0 or later",
+        "url": "https://www.blender.org/about/license/"
+      },
+      "supportedOnThisPlatform": true,
+      "latest": {
+        "version": "5.2.2",
+        "channel": "lts",
+        "releasedAt": "2026-09-15",
+        "downloadSize": 404453484,
+        "availableForThisPlatform": true
+      },
+      "installations": [
+        {
+          "id": "cypher:blender:5.2.2",
+          "programId": "blender",
+          "version": "5.2.2",
+          "kind": "cypher",
+          "managedByCypher": true,
+          "location": "~/AppData/Local/de.cypherxcypher.studio/data/programs/blender/5.2.2/blender.exe",
+          "launchable": true,
+          "problems": [],
+          "installedAt": "2026-10-20T10:00:00Z",
+          "detectedAt": "2026-10-20T10:00:00Z",
+          "verified": {
+            "sha256": "3849d17a682cba006075aaa3f3597ecb5c9c30ec31035b2e092c53e40679b535",
+            "catalogSequence": 1,
+            "signatureChecked": false
+          },
+          "setupScopeId": "b3f2a1c0d9e8"
+        }
+      ],
+      "preferredInstallationId": "cypher:blender:5.2.2",
+      "updateAvailable": false,
+      "setup": {
+        "packId": "blender",
+        "programId": "blender",
+        "title": "Cypher-Einrichtung für Blender",
+        "packVersion": "1.0.0",
+        "requiresPacks": [],
+        "scopes": [
+          {
+            "scopeId": "b3f2a1c0d9e8",
+            "scopeKind": "portableInstall",
+            "componentsApplied": [],
+            "targetRoots": [
+              "~/AppData/Local/de.cypherxcypher.studio/data/programs/blender/5.2.2/portable"
+            ],
+            "installationIds": [
+              "cypher:blender:5.2.2"
+            ],
+            "status": "notApplied",
+            "record": null
+          }
+        ]
+      }
+    }
+  ],
+  "links": [
+    {
+      "id": "affinity",
+      "name": "Affinity",
+      "description": "Kommerzielles Grafikprogramm (Canva).",
+      "note": "Nur Verweis, keine Installation durch Cypher Studio."
+    }
+  ],
+  "catalog": {
+    "sourceUrl": null,
+    "schemaVersion": 1,
+    "sequence": 1,
+    "generatedAt": "2026-10-16T12:00:00Z",
+    "expiresAt": "2027-04-16T00:00:00Z",
+    "expired": false,
+    "source": "embedded",
+    "lastCheckAt": null,
+    "lastError": null
+  }
+}

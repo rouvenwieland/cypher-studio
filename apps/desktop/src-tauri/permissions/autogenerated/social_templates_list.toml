@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-social-templates-list"
+description = "Enables the social_templates_list command without any pre-configured scope."
+commands.allow = ["social_templates_list"]
+
+[[permission]]
+identifier = "deny-social-templates-list"
+description = "Denies the social_templates_list command without any pre-configured scope."
+commands.deny = ["social_templates_list"]

@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-printcheck-export"
+description = "Enables the printcheck_export command without any pre-configured scope."
+commands.allow = ["printcheck_export"]
+
+[[permission]]
+identifier = "deny-printcheck-export"
+description = "Denies the printcheck_export command without any pre-configured scope."
+commands.deny = ["printcheck_export"]

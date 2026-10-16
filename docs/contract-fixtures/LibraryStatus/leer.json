@@ -1,0 +1,14 @@
+{
+  "configured": false,
+  "root": null,
+  "initialized": false,
+  "formatVersion": null,
+  "entryCount": 0,
+  "totalBytes": 0,
+  "projectCount": 0,
+  "conflictCount": 0,
+  "lastScanAt": null,
+  "syncTool": null,
+  "watching": false,
+  "collections": []
+}

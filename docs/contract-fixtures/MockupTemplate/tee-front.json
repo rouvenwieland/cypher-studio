@@ -1,0 +1,65 @@
+{
+  "id": "tee-front",
+  "title": "Shirt vorne",
+  "product": "tee",
+  "view": "front",
+  "canvas": {
+    "width": 2400,
+    "height": 3000
+  },
+  "printProfileId": "shirtigo-tee-front",
+  "printArea": {
+    "quad": [
+      {
+        "x": 700,
+        "y": 500
+      },
+      {
+        "x": 1700,
+        "y": 500
+      },
+      {
+        "x": 1700,
+        "y": 1800
+      },
+      {
+        "x": 700,
+        "y": 1800
+      }
+    ]
+  },
+  "displaceStrengthPx": 6,
+  "variants": [
+    {
+      "exposure": "light",
+      "layers": {
+        "mask": "http://cyasset.localhost/mockups/tee-front/mask.png",
+        "shade": "http://cyasset.localhost/mockups/tee-front/shade.png",
+        "light": "http://cyasset.localhost/mockups/tee-front/light.png",
+        "displace": null,
+        "texture": null,
+        "heather": null,
+        "background": null
+      },
+      "colorIds": [
+        "weiss",
+        "sand"
+      ]
+    },
+    {
+      "exposure": "dark",
+      "layers": {
+        "mask": "http://cyasset.localhost/mockups/tee-front/mask.png",
+        "shade": "http://cyasset.localhost/mockups/tee-front/shade.png",
+        "light": "http://cyasset.localhost/mockups/tee-front/light.png",
+        "displace": null,
+        "texture": null,
+        "heather": null,
+        "background": null
+      },
+      "colorIds": [
+        "schwarz"
+      ]
+    }
+  ]
+}

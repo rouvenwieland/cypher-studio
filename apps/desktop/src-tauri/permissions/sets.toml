@@ -1,0 +1,86 @@
+# Gruppen der App-Command-Freigaben für capabilities/main.json.
+# Die einzelnen `allow-<command>`-Rechte erzeugt build.rs über AppManifest.
+
+[[set]]
+identifier = "allow-app"
+description = "App-Info, Öffnen externer Ziele, Im-Ordner-zeigen, Schließen, Diagnose"
+permissions = ["allow-app-info", "allow-app-open-external", "allow-app-reveal", "allow-app-close", "allow-diagnostics-export"]
+
+[[set]]
+identifier = "allow-settings"
+description = "Einstellungen und Netzwerkübersicht"
+permissions = ["allow-settings-get", "allow-settings-update", "allow-settings-choose-dir", "allow-network-info"]
+
+[[set]]
+identifier = "allow-catalog"
+description = "Katalogstatus und -aktualisierung"
+permissions = ["allow-catalog-status", "allow-catalog-refresh"]
+
+[[set]]
+identifier = "allow-programs"
+description = "Programmliste, Neuerkennung, bevorzugte und manuelle Installation"
+permissions = ["allow-programs-list", "allow-programs-rescan", "allow-program-set-preferred", "allow-program-add-manual"]
+
+[[set]]
+identifier = "allow-install"
+description = "Installationsvorschau, Installation, Entfernen"
+permissions = ["allow-install-preview", "allow-install-start", "allow-installation-remove"]
+
+[[set]]
+identifier = "allow-launch"
+description = "Programme starten"
+permissions = ["allow-program-launch"]
+
+[[set]]
+identifier = "allow-setup"
+description = "Cypher-Einrichtung"
+permissions = ["allow-setup-packs-list", "allow-setup-status", "allow-setup-preview", "allow-setup-apply", "allow-setup-undo", "allow-setup-history"]
+
+[[set]]
+identifier = "allow-files"
+description = "Dateiauswahl, Bildexport, Beispieldateien"
+permissions = ["allow-file-pick", "allow-export-save-image", "allow-samples-list"]
+
+[[set]]
+identifier = "allow-projects"
+description = "Projekte und Vorlagen"
+permissions = [
+  "allow-templates-list", "allow-projects-list", "allow-project-create", "allow-project-new-file", "allow-project-open-file",
+  "allow-project-open-last", "allow-project-file-handle", "allow-project-set-collection", "allow-project-forget",
+  "allow-project-read-document", "allow-project-write-document", "allow-project-add-asset",
+]
+
+[[set]]
+identifier = "allow-library"
+description = "Bibliothek"
+permissions = [
+  "allow-library-status", "allow-library-choose-root", "allow-library-use-root", "allow-library-scan", "allow-library-query",
+  "allow-library-get", "allow-library-update-meta", "allow-library-bulk-meta", "allow-library-import", "allow-library-entry-handle",
+  "allow-library-set-collections", "allow-library-thumbnails-clear", "allow-library-pack-export", "allow-library-pack-inspect",
+  "allow-library-pack-import",
+]
+
+[[set]]
+identifier = "allow-printcheck"
+description = "Druckprüfer"
+permissions = ["allow-print-profiles-list", "allow-printcheck-analyze", "allow-printcheck-export", "allow-printcheck-overlay"]
+
+[[set]]
+identifier = "allow-brand"
+description = "Marke, Mockup- und Social-Vorlagen"
+permissions = ["allow-brand-get", "allow-mockup-templates-list", "allow-social-templates-list"]
+
+[[set]]
+identifier = "allow-updater"
+description = "App-Update"
+permissions = ["allow-app-update-check", "allow-app-update-install"]
+
+[[set]]
+identifier = "allow-jobs"
+description = "Aufträge"
+permissions = ["allow-jobs-active", "allow-jobs-recent", "allow-job-cancel"]
+
+[[set]]
+identifier = "allow-bgremove"
+description = "Hintergrundentfernung (Modell-Commands nur mit Cargo-Feature bgremove nutzbar)"
+permissions = ["allow-bgremove-status", "allow-bgremove-model-preview", "allow-bgremove-model-install", "allow-bgremove-run"]

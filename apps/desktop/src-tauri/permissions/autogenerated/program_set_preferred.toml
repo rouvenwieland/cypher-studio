@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-program-set-preferred"
+description = "Enables the program_set_preferred command without any pre-configured scope."
+commands.allow = ["program_set_preferred"]
+
+[[permission]]
+identifier = "deny-program-set-preferred"
+description = "Denies the program_set_preferred command without any pre-configured scope."
+commands.deny = ["program_set_preferred"]

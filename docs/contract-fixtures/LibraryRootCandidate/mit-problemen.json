@@ -1,0 +1,15 @@
+{
+  "candidateId": "cand-1",
+  "path": "D:\\Sync\\Cypher",
+  "fileCount": 3104,
+  "totalBytes": 44023414784,
+  "projectCount": 12,
+  "initialized": true,
+  "syncTool": "syncthing",
+  "problems": [
+    "notWritable",
+    "insideAppData",
+    "systemDirectory",
+    "veryLarge"
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "engineVersion": "1.0.0",
+  "analyzedAt": "2026-10-20T10:00:00Z",
+  "file": {
+    "name": "ratte.png",
+    "format": "png",
+    "widthPx": 2400,
+    "heightPx": 3200,
+    "bitDepth": 8,
+    "channels": "rgba",
+    "interlaced": false,
+    "animated": false,
+    "fileBytes": 4123456
+  },
+  "dpi": {
+    "x": 72,
+    "y": 72,
+    "source": "pHYs"
+  },
+  "color": {
+    "profile": "srgb",
+    "iccDescription": "sRGB IEC61966-2.1",
+    "srgbChunk": false
+  },
+  "alpha": {
+    "present": true,
+    "transparentShare": 0.61,
+    "opaqueShare": 0.36,
+    "semiShareOfVisible": 0.031,
+    "semiAreaShareOfVisible": 0.0042,
+    "ghostPixelCount": 37
+  },
+  "bounds": null,
+  "marginsPx": null,
+  "trimmedPx": null,
+  "profileId": "shirtigo-tee-front",
+  "technique": "dtg",
+  "garment": null,
+  "placement": {
+    "plannedWidthMm": 280,
+    "plannedHeightMm": 390.2,
+    "effectiveDpi": 196,
+    "maxWidthMmAtTargetDpi": 182.9,
+    "targetPx": {
+      "width": 3307,
+      "height": 4609
+    },
+    "fitsPrintArea": true,
+    "fitsSafeArea": false
+  },
+  "minStrokePx": null,
+  "findings": [
+    {
+      "ruleId": "layout.empty",
+      "severity": "error",
+      "params": {},
+      "region": null,
+      "fix": null
+    }
+  ],
+  "verdict": "error"
+}

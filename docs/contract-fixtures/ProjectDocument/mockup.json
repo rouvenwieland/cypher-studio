@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "module": "mockup",
+  "data": {
+    "templateId": "tee-front",
+    "colorId": "schwarz",
+    "design": {
+      "relPath": "Motive/ratte.png"
+    },
+    "placement": {
+      "widthMm": 280,
+      "offsetTopMm": 0,
+      "offsetCenterMm": 0
+    },
+    "background": {
+      "kind": "color",
+      "hex": "#f2efe8"
+    },
+    "exportSizePx": {
+      "width": 2400,
+      "height": 3000
+    }
+  }
+}

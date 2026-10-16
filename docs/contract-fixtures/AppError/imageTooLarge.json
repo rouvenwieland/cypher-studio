@@ -1,0 +1,6 @@
+{
+  "kind": "imageTooLarge",
+  "widthPx": 20000,
+  "heightPx": 20000,
+  "maxPixels": 120000000
+}

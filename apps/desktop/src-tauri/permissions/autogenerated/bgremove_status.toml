@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-bgremove-status"
+description = "Enables the bgremove_status command without any pre-configured scope."
+commands.allow = ["bgremove_status"]
+
+[[permission]]
+identifier = "deny-bgremove-status"
+description = "Denies the bgremove_status command without any pre-configured scope."
+commands.deny = ["bgremove_status"]

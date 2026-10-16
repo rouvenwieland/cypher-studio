@@ -1,0 +1,4 @@
+# ts-rs schreibt die TypeScript-Typen des IPC-Vertrags (Generator, nie von Hand ändern).
+[env]
+TS_RS_EXPORT_DIR = { value = "apps/desktop/src/ipc/generated", relative = true }
+TS_RS_LARGE_INT = "number"

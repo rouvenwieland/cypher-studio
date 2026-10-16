@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-print-profiles-list"
+description = "Enables the print_profiles_list command without any pre-configured scope."
+commands.allow = ["print_profiles_list"]
+
+[[permission]]
+identifier = "deny-print-profiles-list"
+description = "Denies the print_profiles_list command without any pre-configured scope."
+commands.deny = ["print_profiles_list"]

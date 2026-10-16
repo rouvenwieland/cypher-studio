@@ -1,0 +1,24 @@
+{
+  "id": "krita",
+  "name": "Krita",
+  "vendor": "KDE / Krita Foundation",
+  "category": "raster",
+  "description": "Digitale Malerei und Motive für den Druck.",
+  "license": {
+    "spdx": "GPL-3.0-or-later",
+    "name": "GNU General Public License v3.0 or later",
+    "url": "https://krita.org/en/about/krita/"
+  },
+  "supportedOnThisPlatform": true,
+  "latest": {
+    "version": "5.3.4.1",
+    "channel": "stable",
+    "releasedAt": "2026-10-07",
+    "downloadSize": 227787916,
+    "availableForThisPlatform": true
+  },
+  "installations": [],
+  "preferredInstallationId": null,
+  "updateAvailable": false,
+  "setup": null
+}

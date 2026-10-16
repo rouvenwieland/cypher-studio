@@ -1,6 +1,9 @@
-// Prevents additional console window on Windows in release, DO NOT REMOVE!!
+// Verhindert ein zusätzliches Konsolenfenster unter Windows im Release-Build. NICHT ENTFERNEN!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    cypher_studio_lib::run()
+    if let Err(e) = cypher_studio_lib::run() {
+        eprintln!("Cypher Studio konnte nicht starten: {e}");
+        std::process::exit(1);
+    }
 }

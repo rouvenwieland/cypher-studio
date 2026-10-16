@@ -1,0 +1,77 @@
+{
+  "id": "shirtigo-tee-front",
+  "provider": "shirtigo",
+  "product": {
+    "id": "tee",
+    "providerProductId": "organic-shirt",
+    "label": "Organic Shirt (Creator 2.0, STTU169)"
+  },
+  "placement": "front",
+  "techniques": [
+    "dtg",
+    "dtf"
+  ],
+  "title": "T-Shirt Vorderseite",
+  "printAreaMm": {
+    "width": 330,
+    "height": 450
+  },
+  "safeAreaMm": {
+    "width": 280,
+    "height": 360
+  },
+  "topMarginHintMm": 26,
+  "widthPresets": [
+    {
+      "id": "chestEmblem",
+      "label": "Brustemblem",
+      "widthMm": 100,
+      "maxWidthMm": 150
+    },
+    {
+      "id": "chestCentered",
+      "label": "Brust zentriert",
+      "widthMm": 280,
+      "maxWidthMm": null
+    }
+  ],
+  "defaultWidthMm": 280,
+  "targetDpi": 300,
+  "errorBelowDpi": 150,
+  "minPxPerSide": 1000,
+  "maxPxPerSide": 10500,
+  "warnFileBytes": 50331648,
+  "maxFileBytes": 67108864,
+  "acceptedUploadFormats": [
+    "png",
+    "jpeg"
+  ],
+  "color": {
+    "exportProfile": "adobeRgb",
+    "acceptedProfiles": [
+      "adobeRgb",
+      "srgb"
+    ]
+  },
+  "alpha": {
+    "semiMin": 13,
+    "semiMax": 252,
+    "ghostMax": 12,
+    "edgeRadiusPx": 2,
+    "warnShare": 0.001,
+    "errorShare": 0.01,
+    "severityOnLightGarment": "info",
+    "severityForDtf": "error"
+  },
+  "strokes": {
+    "warnBelowPx": 10,
+    "criticalBelowPx": 5
+  },
+  "source": {
+    "urls": [
+      "https://cockpit.shirtigo.com/de/catalog/product/organic-shirt"
+    ],
+    "checkedAt": "2026-10-16T00:00:00Z"
+  },
+  "assumption": true
+}

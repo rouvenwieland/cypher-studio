@@ -1,0 +1,5 @@
+{
+  "kind": "archiveUnsafeEntry",
+  "entry": "../evil.dll",
+  "reason": "parentTraversal"
+}

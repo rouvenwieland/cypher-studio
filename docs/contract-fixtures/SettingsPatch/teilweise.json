@@ -1,0 +1,18 @@
+{
+  "updates": {
+    "frequency": "never"
+  },
+  "downloads": {
+    "maxParallel": 3
+  },
+  "ui": {
+    "theme": "ink",
+    "calibrationPxPerMm": null,
+    "zoomPercent": 125
+  },
+  "onboarding": {
+    "status": "inProgress",
+    "step": 2,
+    "updatedAt": "2026-10-20T10:00:00Z"
+  }
+}
