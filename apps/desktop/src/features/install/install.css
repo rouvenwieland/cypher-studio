@@ -1,0 +1,151 @@
+/* Installationsdialog: Prüfungsanzeige, Phasenliste, Prüfsumme in Vierergruppen. */
+
+.stack--loose {
+  gap: var(--s-5);
+}
+
+.linkbtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--fg);
+  font-size: var(--fs-meta);
+  line-height: var(--lh-meta);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: var(--hair);
+}
+
+.linkbtn:hover {
+  text-decoration-thickness: var(--edge-strong);
+}
+
+.install__why {
+  display: block;
+  margin-top: var(--s-2);
+  color: var(--fg-2);
+}
+
+.install__license,
+.install__target {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--s-2) var(--s-4);
+}
+
+.install__sub-actions {
+  display: flex;
+  gap: var(--s-4);
+  margin-top: var(--s-2);
+}
+
+.install__after,
+.install__consent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+  padding-top: var(--s-3);
+  border-top: var(--hair) solid var(--line);
+}
+
+/* Prüfsumme: Gruppen zu je vier Zeichen, acht je Zeile */
+.sum {
+  display: grid;
+  grid-template-columns: repeat(8, max-content);
+  gap: var(--s-1) var(--s-3);
+  margin-top: var(--s-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-data);
+  line-height: var(--lh-data);
+  font-variant-numeric: tabular-nums slashed-zero;
+  color: var(--mute);
+  user-select: text;
+}
+
+.sum__g {
+  padding: 0 var(--s-1);
+}
+
+.sum__g--on {
+  color: var(--progress);
+  font-weight: var(--fw-strong);
+  box-shadow: none;
+  border-bottom: var(--edge-strong) solid var(--progress);
+}
+
+.sum__g--diff {
+  color: var(--error-text);
+  font-weight: var(--fw-strong);
+  text-decoration: underline;
+  text-decoration-thickness: var(--edge-strong);
+  text-underline-offset: 3px;
+}
+
+.compare {
+  display: grid;
+  gap: var(--s-1);
+}
+
+/* Phasenliste */
+.phases {
+  display: flex;
+  flex-direction: column;
+}
+
+.phase {
+  display: grid;
+  grid-template-columns: 24px 120px minmax(0, 1fr);
+  align-items: center;
+  column-gap: var(--s-3);
+  row-gap: var(--s-2);
+  padding: var(--s-3) 0;
+  border-top: var(--hair) solid var(--line);
+}
+
+.phase:first-child {
+  border-top: 0;
+}
+
+.phase__mark {
+  display: grid;
+  place-items: center;
+}
+
+.phase[data-state="done"] .phase__mark {
+  color: var(--ok-text);
+}
+
+.phase[data-state="pending"] {
+  color: var(--mute);
+}
+
+.phase__run {
+  width: 12px;
+  height: 12px;
+  background: var(--progress);
+}
+
+.phase__detail {
+  text-align: right;
+  color: var(--fg-2);
+}
+
+.phase[data-state="pending"] .phase__detail {
+  color: var(--mute);
+}
+
+.phase__bar,
+.phase__sum {
+  grid-column: 2 / -1;
+}
+
+.install__path {
+  display: block;
+  margin-bottom: var(--s-1);
+  color: var(--mute);
+  overflow-wrap: anywhere;
+}

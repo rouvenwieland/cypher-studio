@@ -1,0 +1,280 @@
+/* Start: Projekte (8 Spalten) · Programme + Ordner (4 Spalten) · Formatleiste über die volle Breite. */
+
+.start {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--s-6) var(--gutter);
+  align-items: start;
+}
+
+.start__projects {
+  grid-column: 1 / span 7;
+  min-width: 0;
+}
+
+.start__side {
+  grid-column: 8 / span 5;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-6);
+  min-width: 0;
+}
+
+.start__templates {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+.panel__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-4);
+  min-width: 0;
+  padding-bottom: var(--s-3);
+  border-bottom: var(--hair) solid var(--fg);
+}
+
+.panel__note {
+  padding: var(--s-2) 0;
+  color: var(--progress);
+  border-bottom: var(--hair) solid var(--line);
+}
+
+.panel__more {
+  padding-top: var(--s-3);
+}
+
+.resume {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-4);
+  margin-bottom: var(--s-6);
+  padding: var(--s-3) var(--s-4);
+  border: var(--hair) solid var(--control);
+  background: var(--field);
+}
+
+/* Projektzeilen */
+.plist {
+  display: flex;
+  flex-direction: column;
+}
+
+.prow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto auto 32px;
+  align-items: center;
+  gap: var(--s-4);
+  min-height: 56px;
+  padding: var(--s-2) var(--s-3);
+  border-bottom: var(--hair) solid var(--line);
+  cursor: default;
+}
+
+.prow:hover {
+  background: var(--hover);
+}
+
+.prow:focus-visible {
+  outline-offset: -2px;
+}
+
+.prow[aria-selected="true"]:focus-within,
+.prow[aria-selected="true"]:focus {
+  background: var(--select-bg);
+  color: var(--select-fg);
+}
+
+.prow[aria-selected="true"]:focus .t-mute,
+.prow[aria-selected="true"]:focus .t-label,
+.prow[aria-selected="true"]:focus .prow__last,
+.prow[aria-selected="true"]:focus-within .t-label {
+  color: inherit;
+}
+
+.prow[aria-selected="true"]:focus .iconbtn,
+.prow[aria-selected="true"]:focus-within .iconbtn {
+  color: var(--select-fg);
+  background: transparent;
+  border-color: transparent;
+}
+
+.prow__main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.prow__name {
+  font-size: var(--fs-read);
+  line-height: var(--lh-read);
+  font-weight: var(--fw-strong);
+}
+
+.prow__last {
+  color: var(--mute);
+}
+
+.prow__count,
+.prow__time {
+  white-space: nowrap;
+  text-align: right;
+}
+
+.prow__time {
+  min-width: 88px;
+}
+
+.prow__count {
+  min-width: 72px;
+}
+
+.prow__menu {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.coll {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-width: 0;
+}
+
+.coll__sw {
+  flex: 0 0 auto;
+  width: 8px;
+  height: 8px;
+  border: var(--hair) solid var(--fg);
+}
+
+.coll__name {
+  color: inherit;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Programmzeilen auf dem Start */
+.pl {
+  display: flex;
+  flex-direction: column;
+}
+
+.pl__row {
+  display: grid;
+  grid-template-columns: 104px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--s-4);
+  min-height: 64px;
+  padding: var(--s-2) var(--s-3);
+  border-bottom: var(--hair) solid var(--line);
+}
+
+.pl__row:hover {
+  background: var(--hover);
+}
+
+.pl__row[aria-selected="true"]:focus {
+  background: var(--select-bg);
+  color: var(--select-fg);
+}
+
+.pl__row[aria-selected="true"]:focus .status,
+.pl__row[aria-selected="true"]:focus .t-label {
+  color: inherit;
+}
+
+.pl__name {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+  min-width: 0;
+}
+
+.pl__state {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+  min-width: 0;
+}
+
+.prog {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+  min-width: 0;
+}
+
+/* Formatleiste (Testbild-Balken): echte Seitenverhältnisse auf gleicher Höhe */
+.tstrip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--s-5) var(--s-4);
+  padding-top: var(--s-4);
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--s-1);
+  min-width: 92px;
+  padding: var(--s-2);
+  border: var(--hair) solid transparent;
+  background: transparent;
+  color: var(--fg);
+  text-align: left;
+}
+
+.tile:hover {
+  background: var(--hover);
+}
+
+.tile[aria-selected="true"]:focus-visible {
+  outline-offset: 0;
+}
+
+.tile__img {
+  display: block;
+  height: 112px;
+  margin-bottom: var(--s-2);
+  border: var(--hair) solid var(--control);
+  background: var(--surround-hell);
+  overflow: hidden;
+}
+
+.tile__img img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.tile__opens {
+  white-space: nowrap;
+}
+
+/* Ruhige Platzhalter (kein Schimmer) */
+.skel {
+  display: flex;
+  flex-direction: column;
+}
+
+.skel__row {
+  height: 56px;
+  margin-top: var(--hair);
+  background: var(--panel);
+}
+
+.skel__row--prog {
+  height: 64px;
+}
+
+.skel--strip {
+  height: 168px;
+  margin-top: var(--s-4);
+  background: var(--panel);
+}

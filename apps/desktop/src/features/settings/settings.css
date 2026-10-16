@@ -1,0 +1,110 @@
+/* Einstellungen: Abschnittsliste (240) · Inhalt mit Lesemaß. */
+
+.settings {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  min-height: 100%;
+}
+
+.settings__nav {
+  padding: var(--s-5) var(--s-4);
+  border-right: var(--hair) solid var(--line);
+  background: var(--panel);
+}
+
+.snav {
+  display: flex;
+  align-items: center;
+  min-height: var(--row-h);
+  padding: 0 var(--s-3);
+  color: var(--fg);
+  text-decoration: none;
+  font-weight: var(--fw-strong);
+}
+
+.snav:hover {
+  background: var(--hover);
+}
+
+.snav--on,
+.snav--on:hover {
+  background: var(--select-bg);
+  color: var(--select-fg);
+}
+
+.settings__content {
+  min-width: 0;
+  padding: var(--s-6) var(--margin) var(--s-8);
+  max-width: 880px;
+}
+
+.srow {
+  max-width: var(--measure);
+}
+
+.zoomrow {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  max-width: 560px;
+}
+
+.zoomrow__slider {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.zoomrow__val {
+  min-width: 52px;
+  text-align: right;
+}
+
+.calib {
+  position: relative;
+  height: var(--s-6);
+  border: var(--hair) solid var(--fg);
+  background: var(--field);
+  max-width: 100%;
+}
+
+.calib::before,
+.calib::after {
+  content: "";
+  position: absolute;
+  top: calc(-1 * var(--s-2));
+  bottom: calc(-1 * var(--s-2));
+  width: var(--hair);
+  background: var(--fg);
+}
+
+.calib::before {
+  left: -1px;
+}
+
+.calib::after {
+  right: -1px;
+}
+
+.calib__label {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--fg-2);
+}
+
+.notes {
+  margin: 0;
+  white-space: pre-wrap;
+  max-width: var(--measure);
+  padding: var(--s-3) var(--s-4);
+  border: var(--hair) solid var(--line);
+  background: var(--field);
+  max-height: 320px;
+  overflow: auto;
+}
+
+.stable--plain th,
+.stable--plain td {
+  padding: var(--s-2) var(--s-3);
+}

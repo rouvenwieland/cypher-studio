@@ -1,0 +1,357 @@
+/* Rail (Gehäuse in Tinte, in beiden Themen gleich), Aufträge-Popover, Befehle, Hilfe. */
+
+.rail {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  background: var(--case-bg);
+  color: var(--case-fg);
+  border-right: var(--hair) solid var(--case-line);
+}
+
+.rail__brand {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  height: var(--title-h);
+  padding: 0 var(--s-5);
+  background: var(--c-studio);
+  color: var(--c-studio-on);
+  text-decoration: none;
+  min-width: 0;
+}
+
+.rail__brand:focus-visible {
+  outline: var(--focus-w) solid var(--c-ink);
+  outline-offset: -4px;
+}
+
+.rail__scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: var(--s-3) 0;
+}
+
+.rail__list {
+  display: flex;
+  flex-direction: column;
+}
+
+.rail__group {
+  margin: var(--s-5) var(--s-5) var(--s-2);
+  color: var(--case-mute);
+}
+
+.rail__item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  width: 100%;
+  height: var(--row-h);
+  padding: 0 var(--s-5);
+  border: 0;
+  background: transparent;
+  color: var(--case-fg);
+  font-size: var(--fs-ui);
+  line-height: var(--lh-ui);
+  text-align: left;
+  text-decoration: none;
+}
+
+.rail__item:hover {
+  background: var(--case-hover);
+}
+
+.rail__item:focus-visible {
+  outline: var(--focus-w) solid var(--case-focus);
+  outline-offset: -3px;
+}
+
+.rail__item--on,
+.rail__item--on:hover {
+  background: var(--case-select-bg);
+  color: var(--case-select-fg);
+}
+
+.rail__item--on:focus-visible {
+  outline-color: var(--c-ink);
+}
+
+.rail__label {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--s-3);
+}
+
+.rail__count {
+  color: var(--case-mute);
+}
+
+.rail__kbd {
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  line-height: var(--lh-label);
+  color: var(--case-mute);
+  white-space: nowrap;
+}
+
+.rail__item--on .rail__kbd {
+  color: inherit;
+  opacity: 0.7;
+}
+
+.rail__note {
+  display: block;
+  margin: calc(-1 * var(--s-2)) var(--s-5) var(--s-2) calc(var(--s-5) + 20px + var(--s-3));
+  color: var(--case-mute);
+}
+
+.rail__foot {
+  flex: 0 0 auto;
+  padding: var(--s-3) 0;
+  border-top: var(--hair) solid var(--case-line);
+}
+
+.rail__update {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+  width: calc(100% - 2 * var(--s-3));
+  margin: 0 var(--s-3) var(--s-3);
+  padding: var(--s-3);
+  border: var(--hair) solid var(--c-studio);
+  background: transparent;
+  color: var(--case-fg);
+  text-align: left;
+  font-size: var(--fs-meta);
+}
+
+.rail__update:hover {
+  background: var(--case-hover);
+}
+
+.rail__update-act {
+  color: var(--c-studio);
+  font-weight: var(--fw-strong);
+}
+
+/* Lampe: Form + Wort + Farbe (■ läuft · ◆ braucht dich · ▲ gescheitert) */
+.lamp {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+}
+
+.lamp::after {
+  content: "";
+  position: absolute;
+  top: -3px;
+  right: -4px;
+  width: 8px;
+  height: 8px;
+  display: none;
+}
+
+.lamp--running::after {
+  display: block;
+  background: var(--c-studio);
+}
+
+.lamp--attention::after {
+  display: block;
+  background: var(--warn-surface);
+  rotate: 45deg;
+}
+
+.lamp--failed::after {
+  display: block;
+  background: var(--error-surface);
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  width: 10px;
+  height: 9px;
+}
+
+:root[data-bp="narrow"] .rail__brand {
+  justify-content: center;
+  padding: 0;
+}
+
+:root[data-bp="narrow"] .rail__item {
+  justify-content: center;
+  padding: 0;
+}
+
+:root[data-bp="narrow"] .rail__label,
+:root[data-bp="narrow"] .rail__kbd,
+:root[data-bp="narrow"] .rail__note,
+:root[data-bp="narrow"] .rail__update-text {
+  display: none;
+}
+
+:root[data-bp="narrow"] .rail__group {
+  height: var(--hair);
+  margin: var(--s-3) var(--s-4);
+  background: var(--case-line);
+  overflow: hidden;
+}
+
+:root[data-bp="narrow"] .rail__update {
+  margin: 0 var(--s-2) var(--s-3);
+  padding: var(--s-2);
+  text-align: center;
+}
+
+/* ---------- Aufträge ---------- */
+
+.jobs {
+  width: 360px;
+  max-height: min(560px, calc(100vh - 32px));
+  overflow: auto;
+  padding: var(--s-4) 0;
+}
+
+.jobs__title {
+  padding: var(--s-2) var(--s-5);
+}
+
+.jobs__empty {
+  padding: var(--s-2) var(--s-5) var(--s-4);
+}
+
+.jobs__list {
+  display: flex;
+  flex-direction: column;
+}
+
+.jobs__row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  padding: var(--s-3) var(--s-5);
+  border-top: var(--hair) solid var(--line);
+}
+
+.jobs__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-3);
+  min-width: 0;
+}
+
+/* ---------- Befehle (cmdk) ---------- */
+
+.palette {
+  inset: 12vh 0 auto 0;
+  margin: 0 auto;
+  width: min(580px, calc(100vw - 48px));
+  max-height: min(520px, 70vh);
+}
+
+.palette__cmd {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.palette__input {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding: 0 var(--s-4);
+  height: var(--s-9);
+  border-bottom: var(--hair) solid var(--fg);
+}
+
+.palette__field {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--fg);
+  font-size: var(--fs-read);
+  outline: none;
+}
+
+.palette__field::placeholder {
+  color: var(--mute);
+}
+
+.palette__list {
+  min-height: 0;
+  overflow: auto;
+  padding: var(--s-2) 0;
+}
+
+.palette__empty {
+  padding: var(--s-4);
+  color: var(--mute);
+}
+
+.palette [cmdk-group-heading] {
+  padding: var(--s-4) var(--s-4) var(--s-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  line-height: var(--lh-label);
+  text-transform: uppercase;
+  letter-spacing: var(--tr-label);
+  color: var(--mute);
+}
+
+.palette__item {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  min-height: var(--control-h);
+  padding: 0 var(--s-4);
+}
+
+.palette__item > .kbd {
+  margin-left: auto;
+}
+
+.palette__item[data-selected="true"] {
+  background: var(--select-bg);
+  color: var(--select-fg);
+}
+
+.palette__item[data-selected="true"] .kbd,
+.palette__item[data-selected="true"] .t-mute {
+  color: inherit;
+}
+
+/* ---------- Hilfe ---------- */
+
+.help__intro {
+  margin-bottom: var(--s-5);
+}
+
+.help__group {
+  margin-top: var(--s-5);
+}
+
+.help__rows {
+  margin-top: var(--s-2);
+}
+
+.help__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-5);
+  padding: var(--s-2) 0;
+  border-top: var(--hair) solid var(--line);
+}
+
+.help__kbd {
+  color: var(--fg);
+}

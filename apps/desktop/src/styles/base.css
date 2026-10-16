@@ -1,0 +1,419 @@
+/*
+ * Cypher Studio · Basis: Reset, Typografie-Klassen, Gerüst (Rail · Titelzeile · Vorschau · Inspektor · Ausgangsleiste).
+ * Farben, Abstände, Bewegung kommen ausschließlich aus docs/tokens.css (per Alias @tokens, in main.tsx importiert).
+ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+html {
+  --app-zoom: 1;
+  text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: default;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+  margin: 0;
+}
+
+button {
+  cursor: default;
+}
+
+h1,
+h2,
+h3,
+h4,
+p,
+dl,
+dd,
+ul,
+ol,
+figure {
+  margin: 0;
+  padding: 0;
+}
+
+ul,
+ol {
+  list-style: none;
+}
+
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
+p,
+li,
+dd {
+  text-wrap: pretty;
+}
+
+a {
+  color: inherit;
+}
+
+img,
+svg,
+canvas {
+  display: block;
+}
+
+[hidden] {
+  display: none;
+}
+
+.selectable,
+input,
+textarea,
+.data,
+code,
+kbd {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------- Typografie (DESIGN.md type.skala) ---------- */
+
+.t-label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  line-height: var(--lh-label);
+  font-weight: var(--fw-medium);
+  text-transform: uppercase;
+  letter-spacing: var(--tr-label);
+  color: var(--mute);
+  font-variant-numeric: tabular-nums slashed-zero;
+}
+
+.t-data {
+  font-family: var(--font-mono);
+  font-size: var(--fs-data);
+  line-height: var(--lh-data);
+  font-variant-numeric: tabular-nums slashed-zero;
+}
+
+.t-meta {
+  font-size: var(--fs-meta);
+  line-height: var(--lh-meta);
+}
+
+.t-read {
+  font-size: var(--fs-read);
+  line-height: var(--lh-read);
+  max-width: var(--measure);
+}
+
+.t-section {
+  font-size: var(--fs-section);
+  line-height: var(--lh-section);
+  font-weight: var(--fw-section);
+}
+
+.t-strong {
+  font-weight: var(--fw-strong);
+}
+
+.t-mute {
+  color: var(--mute);
+}
+
+.t-title,
+.t-verdict,
+.t-kennung {
+  font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.t-title {
+  font-size: var(--fs-title);
+  line-height: var(--lh-title);
+  font-stretch: var(--wdth-title);
+  letter-spacing: var(--tr-title);
+}
+
+.t-verdict {
+  font-size: var(--fs-verdict);
+  line-height: var(--lh-verdict);
+  font-stretch: var(--wdth-verdict);
+  letter-spacing: 0;
+}
+
+.t-nowrap {
+  white-space: nowrap;
+}
+
+.t-trunc {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---------- Gerüst ---------- */
+
+.app {
+  display: grid;
+  grid-template-columns: var(--rail-w) minmax(0, 1fr);
+  height: calc(100vh / var(--app-zoom));
+  height: calc(100dvh / var(--app-zoom));
+  width: calc(100vw / var(--app-zoom));
+  zoom: var(--app-zoom);
+  background: var(--bg);
+  position: relative;
+}
+
+.stage {
+  display: grid;
+  grid-template-rows: var(--title-h) minmax(0, 1fr) auto;
+  min-width: 0;
+  min-height: 0;
+  background: var(--bg);
+}
+
+.stage--plain {
+  grid-template-rows: var(--title-h) minmax(0, 1fr);
+}
+
+.titlebar {
+  display: flex;
+  align-items: center;
+  gap: var(--s-5);
+  min-width: 0;
+  padding: 0 var(--margin);
+  background: var(--panel);
+  border-bottom: var(--hair) solid var(--line);
+}
+
+.titlebar__main {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-5);
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.titlebar__context {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--mute);
+}
+
+.titlebar__tools {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  flex: 0 0 auto;
+}
+
+.bench {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--inspector-w);
+  min-height: 0;
+  min-width: 0;
+}
+
+.bench--single {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.preview {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  background: var(--surround);
+  color: var(--fg);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.preview__stage {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.preview__note {
+  flex: 0 0 auto;
+  padding: var(--s-2) var(--s-5);
+  background: var(--panel);
+  border-top: var(--hair) solid var(--line);
+  color: var(--mute);
+}
+
+.inspector {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  background: var(--panel);
+  border-left: var(--hair) solid var(--line);
+}
+
+.inspector__head {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: var(--s-7);
+  padding: var(--s-3) var(--s-5) var(--s-2);
+}
+
+.inspector__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding-bottom: calc(var(--output-h) + var(--s-5));
+  scroll-padding-bottom: var(--output-h);
+}
+
+.stage--plain .inspector__body {
+  padding-bottom: var(--s-5);
+}
+
+.section {
+  padding: var(--s-5);
+  border-top: var(--hair) solid var(--line);
+}
+
+.section:first-child {
+  border-top: 0;
+}
+
+.section__title {
+  margin-bottom: var(--s-3);
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+}
+
+.stack--loose {
+  gap: var(--s-5);
+}
+
+.cluster {
+  display: flex;
+  align-items: center;
+  gap: var(--gap);
+  flex-wrap: wrap;
+}
+
+.spacer {
+  flex: 1 1 auto;
+}
+
+.page {
+  min-height: 0;
+  min-width: 0;
+  overflow: auto;
+  padding: var(--s-6) var(--margin) var(--s-8);
+  scroll-padding-bottom: var(--output-h);
+}
+
+.page--flush {
+  padding: 0;
+}
+
+/* ---------- Fokus-Bereiche (F6) ---------- */
+
+[data-region]:focus {
+  outline: none;
+}
+
+[data-region]:focus-visible {
+  outline: var(--focus-w) solid var(--focus);
+  outline-offset: var(--focus-offset-inset);
+}
+
+/* ---------- Scroll-Sperre bei modalem Dialog ---------- */
+
+body:has(dialog[open]) {
+  overflow: hidden;
+}
+
+/* ---------- Windows-Kontrastdesign ---------- */
+
+@media (forced-colors: active) {
+  .titlebar,
+  .inspector,
+  .section {
+    border-color: CanvasText;
+  }
+}
+
+/* ---------- App-Zoom und Fensterbreite (effektive Breite = Fenster / Zoom) ---------- */
+
+:root[data-bp="narrow"] {
+  --rail-w: var(--rail-w-icon);
+  --inspector-w: 320px;
+  --margin: 16px;
+}
+
+:root[data-bp="std"] {
+  --rail-w: 200px;
+  --inspector-w: 336px;
+  --margin: 24px;
+}
+
+:root[data-bp="wide"] {
+  --rail-w: 216px;
+  --inspector-w: 360px;
+  --margin: 24px;
+}
+
+:root[data-bh="short"] {
+  --title-h: 48px;
+  --output-h: 48px;
+}
+
+:root[data-bh="tall"] {
+  --title-h: 56px;
+  --output-h: 56px;
+}

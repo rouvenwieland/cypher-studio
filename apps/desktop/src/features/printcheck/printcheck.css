@@ -1,0 +1,331 @@
+/* Druckprüfer: Vorschau auf Druckfläche mit Messspur, Inspektor mit Bericht. */
+
+.pc {
+  position: absolute;
+  inset: 0;
+  cursor: grab;
+  touch-action: none;
+  outline: none;
+}
+
+.pc:active {
+  cursor: grabbing;
+}
+
+.pc:focus-visible {
+  outline: var(--focus-w) solid var(--focus);
+  outline-offset: var(--focus-offset-inset);
+}
+
+.pc__svg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.pc__area {
+  fill: var(--pc-garment);
+}
+
+.pc__mess {
+  stroke: var(--mess);
+  stroke-width: 1;
+  fill: none;
+}
+
+.pc__gegen {
+  stroke: var(--mess-gegen);
+  stroke-width: 3;
+  fill: none;
+}
+
+.pc__mess--dash {
+  stroke-dasharray: 4 3;
+}
+
+.pc__frame {
+  fill: none;
+}
+
+.pc__grid line {
+  stroke: var(--mess);
+  stroke-width: 1;
+  opacity: 0.25;
+}
+
+.pc__chip-bg {
+  fill: var(--mess-chip-bg);
+}
+
+.pc__chip-text {
+  fill: var(--mess-chip-fg);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums slashed-zero;
+}
+
+.pc__ruler-bg {
+  fill: var(--surround);
+}
+
+.pc__ruler-num,
+.pc__ruler-unit {
+  fill: var(--mess);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  paint-order: stroke;
+  stroke: var(--surround);
+  stroke-width: 3px;
+}
+
+.pc__ruler-unit {
+  fill: var(--fg-2);
+}
+
+.pc__hatch {
+  stroke: var(--warn-surface);
+  stroke-width: 1.5;
+}
+
+.pc__mark-edge {
+  fill: none;
+  stroke: var(--warn-surface);
+  stroke-width: 1;
+}
+
+.pc__pending {
+  opacity: 0.7;
+}
+
+.pc__tools {
+  position: absolute;
+  top: calc(var(--s-3) + 24px);
+  right: var(--s-4);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: var(--s-1);
+  padding: var(--s-1);
+  border: var(--hair) solid var(--control);
+  background: var(--panel);
+}
+
+.pc__tools .iconbtn {
+  border-color: transparent;
+  background: transparent;
+}
+
+.pc__tools .iconbtn:hover:not(:disabled) {
+  background: var(--hover);
+}
+
+.pc__tools .iconbtn[aria-pressed="true"] {
+  background: var(--select-bg);
+  color: var(--select-fg);
+}
+
+.pc__sep {
+  width: var(--hair);
+  align-self: stretch;
+  margin: var(--s-1) var(--s-1);
+  background: var(--line);
+}
+
+.pc__empty {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+  width: min(380px, calc(100% - 64px));
+  padding: var(--s-5);
+  border: var(--hair) solid var(--fg);
+  background: var(--field);
+  color: var(--fg);
+  cursor: default;
+}
+
+.print-profile {
+  width: min(380px, 40vw);
+}
+
+.chipfile {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-width: 0;
+  white-space: nowrap;
+}
+
+/* Inspektor */
+.section__title {
+  margin-bottom: var(--s-1);
+}
+
+.size-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--s-3);
+  align-items: end;
+}
+
+.size-dpi {
+  min-height: var(--control-h);
+  display: flex;
+  align-items: center;
+}
+
+.slider {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: var(--control-h);
+  touch-action: none;
+  user-select: none;
+}
+
+.slider__track {
+  position: relative;
+  flex: 1 1 auto;
+  height: var(--s-1);
+  background: var(--control);
+}
+
+.slider__range {
+  position: absolute;
+  height: 100%;
+  background: var(--fg);
+}
+
+.slider__thumb {
+  display: block;
+  width: var(--s-4);
+  height: var(--s-6);
+  border: 0;
+  border-radius: 0;
+  background: var(--fg);
+}
+
+.rlist {
+  display: flex;
+  flex-direction: column;
+}
+
+.rrow {
+  border-top: var(--hair) solid var(--line);
+}
+
+.rrow--skel {
+  padding: var(--s-3) var(--s-2);
+  min-height: 52px;
+  background: var(--hover);
+  margin-top: var(--hair);
+  color: var(--mute);
+}
+
+.rrow__head {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) 14px;
+  grid-template-areas:
+    "g t c"
+    ". v .";
+  align-items: center;
+  column-gap: var(--s-2);
+  row-gap: var(--s-1);
+  width: 100%;
+  padding: var(--s-2) var(--s-1);
+  border: 0;
+  background: transparent;
+  color: var(--fg);
+  text-align: left;
+}
+
+.rrow__head:hover {
+  background: var(--hover);
+}
+
+.rrow__head:focus-visible {
+  outline-offset: -2px;
+}
+
+.rrow__glyph {
+  grid-area: g;
+  display: grid;
+  place-items: center;
+}
+
+.rrow--error .rrow__glyph {
+  color: var(--error-text);
+}
+
+.rrow--warning .rrow__glyph {
+  color: var(--warn-text);
+}
+
+.rrow--ok .rrow__glyph {
+  color: var(--mute);
+}
+
+.rrow--info .rrow__glyph,
+.rrow--open .rrow__glyph {
+  color: var(--mute);
+}
+
+.rrow__title {
+  grid-area: t;
+  min-width: 0;
+}
+
+.rrow__chev {
+  grid-area: c;
+  color: var(--mute);
+}
+
+.rrow__vals {
+  grid-area: v;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--s-3);
+  min-width: 0;
+}
+
+.rrow__more {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  padding: var(--s-2) var(--s-2) var(--s-4) calc(20px + var(--s-3));
+}
+
+.rrow__finding {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+  align-items: flex-start;
+}
+
+.rlist__ok {
+  margin-top: var(--s-3);
+}
+
+.exp__sum {
+  cursor: default;
+  padding: var(--s-1) 0;
+}
+
+.exp__body {
+  padding-top: var(--s-3);
+}
+
+.exp__fieldset {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
