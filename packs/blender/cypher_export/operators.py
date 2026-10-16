@@ -179,8 +179,11 @@ class CYPHER_OT_fix_textures(bpy.types.Operator):
         return {"FINISHED"}
 
 
-def gltf_kwargs(filepath, budgets):
-    """Exporter-Einstellungen; unbekannte Namen (andere Blender-Version) werden weggelassen."""
+def gltf_kwargs(filepath, budgets, textured=True):
+    """Exporter-Einstellungen; unbekannte Namen (andere Blender-Version) werden weggelassen.
+
+    Ohne Texturen werden keine UVs geschrieben (kleinere Datei, Ladebudget).
+    """
     quality = int(budgets["textures"].get("webpQuality", 90))
     exp = budgets.get("export", {})
     wanted = dict(
@@ -201,7 +204,7 @@ def gltf_kwargs(filepath, budgets):
         export_jpeg_quality=quality,
         export_keep_originals=False,
         export_vertex_color="ACTIVE",
-        export_texcoords=True,
+        export_texcoords=bool(textured),
         export_normals=True,
         export_tangents=False,
         export_materials="EXPORT",
@@ -266,7 +269,8 @@ class CYPHER_OT_export_glb(bpy.types.Operator):
         undo, copies = shrink_textures(exportable, budgets["textures"])
         try:
             sel.select_only(exportable)
-            result = bpy.ops.export_scene.gltf(**gltf_kwargs(glb_path, budgets))
+            textured = any(checks.material_images(m) for m in _materials_of(exportable))
+            result = bpy.ops.export_scene.gltf(**gltf_kwargs(glb_path, budgets, textured))
         finally:
             restore_textures(undo, copies)
             sel.restore()

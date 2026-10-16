@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Tests für Cypher Export und das App-Template cypher_ps2 (laufen in Blender, headless).
 
-    blender -b --factory-startup --python-exit-code 1 -P tests/run.py [-- --only teilname] [--skip teilname]
+    blender -b --factory-startup --python-exit-code 1 -P tests/run.py [-- --only teilname] [--skip teilname] [--keep ordner]
 
 Jeder Test baut seine Szene selbst (leere Datei) und prüft gezielt erzeugte Verstöße,
 den Export (gültiges glTF, externe Bilder, Dreiecke im Budget) und die Startszene.
@@ -558,6 +558,7 @@ def export_without_textures():
     assert sorted(p.name for p in d.iterdir()) == ["prop-kiste.glb", "prop-kiste.lizenz.json"]
     gltf, _ = glb_check.check_conformance(d / "prop-kiste.glb", expect_tris=12, expect_images=[])
     assert "images" not in gltf
+    assert "TEXCOORD_0" not in gltf["meshes"][0]["primitives"][0]["attributes"], "ohne Textur keine UVs"
 
 
 @test
@@ -666,7 +667,7 @@ def glb_post_repack_keeps_buffers_consistent():
     }
     binary = b"AAAAA\0\0\0" + bytes(range(24)) + b"BBBBBBB\0" + bytes(range(100, 112))
     gltf["buffers"][0]["byteLength"] = len(binary)
-    path = TMP_ROOT / "repack" / "x.glb"
+    path = TMP_ROOT / "_ungueltig" / "repack" / "x.glb"  # synthetische Bytes, kein echtes Modell
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_bytes(glb_post.write_glb(gltf, binary))
     files = glb_post.externalize_images(path, "x")
@@ -685,7 +686,7 @@ def glb_post_repack_keeps_buffers_consistent():
 
 @test
 def glb_post_validation_catches_violations():
-    d = TMP_ROOT / "val"
+    d = TMP_ROOT / "_ungueltig"  # absichtlich kaputte Dateien: nicht an den glTF-Validator geben
     d.mkdir(exist_ok=True)
     gltf = {
         "asset": {"version": "2.0"},
@@ -803,9 +804,12 @@ def startup_scene_builds_reproducibly_and_examples_pass():
             export_coll.objects.unlink(obj)
         for obj in ecoll.all_objects:
             export_coll.objects.link(obj)
+            obj.location.x = 0.0  # im Beispiel nebeneinander gelegt; für den Export an den Ursprung
+        bpy.context.view_layer.update()
         rep = checks.run_checks(bpy.context, scope="COLLECTION", prefix=prefix, name=cname[len(prefix):])
         errs = [(f.key, f.value, f.detail) for f in rep.findings if f.level == "error"]
         assert not errs, f"{cname}: {errs}"
+        assert rep.level in {"ok", "info"}, f"{cname}: {[(f.key, f.level, f.value) for f in rep.findings if f.level not in ('ok', 'info')]}"
         limit = checks.load_budgets()["prefixes"][prefix]["maxTris"]
         assert 0 < rep.stats["tris"] <= limit, (cname, rep.stats["tris"], limit)
         for obj in ecoll.all_objects:
@@ -840,6 +844,7 @@ def main():
     argv = sys.argv[sys.argv.index("--") + 1 :] if "--" in sys.argv else []
     only = argv[argv.index("--only") + 1] if "--only" in argv else None
     skip = argv[argv.index("--skip") + 1] if "--skip" in argv else None
+    keep = argv[argv.index("--keep") + 1] if "--keep" in argv else None
     cypher_export.register()
     failed, ran = [], 0
     for fn in TESTS:
@@ -856,6 +861,8 @@ def main():
             traceback.print_exc()
     print(f"\nBlender {bpy.app.version_string}: {ran - len(failed)} von {ran} Tests bestanden")
     cypher_export.unregister()
+    if keep:  # erzeugte GLB und Texturen für den glTF-Validator aufbewahren
+        shutil.copytree(TMP_ROOT, keep, dirs_exist_ok=True, ignore=shutil.ignore_patterns("*.blend", "*.blend1", "_ungueltig"))
     shutil.rmtree(TMP_ROOT, ignore_errors=True)
     if failed:
         print("Fehlgeschlagen: " + ", ".join(failed))
