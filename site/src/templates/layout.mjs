@@ -29,6 +29,7 @@ export function page({ title, description, path, body, bodyClass = '', themeColo
 <link rel="canonical" href="${esc(ctx.config.siteUrl + path)}">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preload" href="${a['fonts/anybody.woff2']}" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="${a['fonts/martian-mono.woff2']}" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="${a['fonts/atkinson.woff2']}" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="${a['css/site.css']}">
 <script src="${a['js/boot.js']}"></script>

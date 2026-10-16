@@ -5,11 +5,11 @@
 //      ::::schritt Titel          (zählt automatisch; "schritt-unsigned" entfällt, sobald das System signiert ist)
 //      ::::
 //      :::::
-//  - Zeichnungen  ![Beschreibung](svg:name)  → Inline-SVG aus drawings.mjs
+//  - Zeichnungen  ![Beschreibung](svg:name)  → <img> auf die SVG-Datei (drawfile.mjs), Alt-Text = Beschreibung
 //  - Platzhalter {{version}}, {{file.windows}} … (echter Dateiname oder Muster)
 //  - Codeblöcke mit Kopieren-Knopf (das Skript blendet ihn ein, ohne Skript bleibt der Block lesbar)
 import { Marked } from 'marked';
-import { drawing } from './drawings.mjs';
+import { drawingSize } from './drawfile.mjs';
 import { esc } from './layout.mjs';
 
 export function slugify(text) {
@@ -42,6 +42,7 @@ const NOTE = {
  * @param {string} src            Markdown (ohne Kopfdaten)
  * @param {object} opts
  * @param {object} opts.tokens    Platzhalter: { version, file: { windows, macos, … } }
+ * @param {(name: string) => string} [opts.imageUrl] Adresse der Zeichnungsdatei (Bau: mit Hash im Namen)
  * @param {boolean} [opts.signed] System ist signiert → "schritt-unsigned"/"unsigned" entfallen
  * @param {string} [opts.idPrefix] Präfix für Überschrift-IDs (eingebettete Blöcke)
  * @param {number} [opts.baseLevel] Ebene, auf die „##“ gesetzt wird (Standard 2)
@@ -49,7 +50,7 @@ const NOTE = {
  * @returns {{ html: string, headings: {level:number,id:string,text:string}[] }}
  */
 export function renderMarkdown(src, opts = {}) {
-  const { tokens = {}, signed = false, idPrefix = '', baseLevel = 2, stepLevel = 3 } = opts;
+  const { tokens = {}, signed = false, idPrefix = '', baseLevel = 2, stepLevel = 3, imageUrl = (n) => `/assets/img/${n}.svg` } = opts;
   const headings = [];
   const used = new Map();
 
@@ -121,7 +122,11 @@ export function renderMarkdown(src, opts = {}) {
         const href = t.href ?? '';
         if (href.startsWith('svg:')) {
           const name = href.slice(4);
-          return `<figure class="fig">${drawing(name)}<figcaption>${esc(t.text)}</figcaption></figure>`;
+          // Alt-Text des Markdown ist die einzige Beschreibung: Alt-Text des Bildes und sichtbare Bildunterschrift
+          // (die Unterschrift ist für Screenreader verborgen, sonst läse er denselben Satz zweimal)
+          const { w, h } = drawingSize(name);
+          const url = imageUrl(name);
+          return `<figure class="fig"><img class="draw" src="${url}" alt="${esc(t.text)}" width="${w}" height="${h}" loading="lazy" decoding="async"><figcaption aria-hidden="true">${esc(t.text)}</figcaption></figure>`;
         }
         throw new Error(`Bilder nur als svg:name erlaubt, gefunden: ${href}`);
       },

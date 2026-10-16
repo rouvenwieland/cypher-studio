@@ -9,6 +9,7 @@ import { dirname, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadRelease, readJson } from './lib/release.mjs';
 import { lintDist } from './lib/lint.mjs';
+import { drawingFile, drawingNames, readTokens } from '../src/templates/drawfile.mjs';
 import { parseFrontMatter, renderMarkdown } from '../src/templates/markdown.mjs';
 import { esc } from '../src/templates/layout.mjs';
 import { home } from '../src/templates/home.mjs';
@@ -62,12 +63,15 @@ for (const f of readdirSync(join(root, 'public/fonts'))) {
     write(`assets/fonts/${f}`, buf); // OFL-Texte
   }
 }
+/** Nur Kommentare entfernen und Leerraum verdichten (Leerzeichen in calc() bleiben als Einzelzeichen erhalten). */
+const minifyCss = (s) => s.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\s+/g, ' ').replace(/ ?([{};]) ?/g, '$1').trim();
 let css = readFileSync(join(root, 'src/css/site.css'), 'utf8');
 css = css.replace(/\{\{font:([a-z-]+)\}\}/g, (_, n) => {
   const url = assets[`fonts/${n}.woff2`];
   if (!url) throw new Error(`Schrift ${n} fehlt in public/fonts`);
   return url;
 });
+css = minifyCss(css);
 {
   const name = `site.${hash(css)}.css`;
   write(`assets/css/${name}`, css);
@@ -94,13 +98,23 @@ const fileTokens = {
 const tokens = { version, file: fileTokens };
 
 // ── 4. Installationsblöcke (aus content/install/*.md), gleich auf Startseite und in der Anleitung ─
+// Zeichnungen als SVG-Dateien mit Hash im Namen (Farben aus den Tokens der CSS-Quelle)
+const drawTokens = readTokens(readFileSync(join(root, 'src/css/site.css'), 'utf8'));
+for (const n of drawingNames) {
+  const svg = drawingFile(n, drawTokens);
+  const name = `${n}.${hash(svg)}.svg`;
+  write(`assets/img/${name}`, svg);
+  assets[`img/${n}.svg`] = `/assets/img/${name}`;
+}
+const imageUrl = (n) => assets[`img/${n}.svg`];
+
 const OS_ORDER = ['windows', 'macos', 'linux'];
 function installBlocks() {
   return OS_ORDER.map((os) => {
     const src = readFileSync(join(root, `content/install/${os}.md`), 'utf8');
     const { data, body } = parseFrontMatter(src);
     const signed = release.state === 'released' && release.signed?.[os] === true;
-    const { html } = renderMarkdown(body, { tokens, signed, idPrefix: `${os}-`, stepLevel: 4 });
+    const { html } = renderMarkdown(body, { tokens, signed, idPrefix: `${os}-`, stepLevel: 4, imageUrl });
     const kurz = signed ? data.kurzSigniert : data.kurz;
     return `<details class="os" id="${os}" name="os-install" data-os="${os}">
         <summary class="os-s"><h3 class="os-n">${esc(data.titel)}</h3><span class="os-k">${esc(kurz)}</span><span class="os-chev" aria-hidden="true"></span></summary>
@@ -129,11 +143,12 @@ const ctx = {
   config,
   assets,
   fileName: (key) => fileTokens[key],
+  imageUrl,
   installBlocks: installBlocks(),
 };
 
 for (const d of docs) {
-  const { html, headings } = renderMarkdown(d.body, { tokens, stepLevel: 3 });
+  const { html, headings } = renderMarkdown(d.body, { tokens, stepLevel: 3, imageUrl });
   d.html = html.replace('<p>@@install@@</p>', `<div class="os-list os-list-doc">\n      ${ctx.installBlocks}\n    </div>`);
   d.headings = headings;
   if (d.html.includes('@@install@@')) throw new Error(`${d.slug}: @@install@@ steht nicht allein in einem Absatz`);

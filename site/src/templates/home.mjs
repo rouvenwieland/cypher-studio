@@ -1,6 +1,6 @@
 // Startseite: Kennung + Download, Programme, Messspur-Szene, Aufbau, Installieren, Prüfen, Typenschild.
 import { esc, footer, page } from './layout.mjs';
-import { drawing } from './drawings.mjs';
+import { drawingSize } from './drawfile.mjs';
 import { KIND_LABEL, OS_LABEL, datumDe, filesFor, formatSize, hashGroups, hashShort, primaryFile } from '../../scripts/lib/release.mjs';
 
 const ARROW = '<svg class="dl-arrow" viewBox="0 0 40 40" aria-hidden="true" focusable="false"><path d="M20 4v28M8 21l12 12 12-12"/></svg>';
@@ -11,6 +11,8 @@ const OS_META = {
   macos: { name: 'macOS', detail: '13 oder neuer · Apple Silicon und Intel · Disk-Image (.dmg)', cta: 'Cypher Studio für macOS laden' },
   linux: { name: 'Linux', detail: '64 Bit · AppImage', cta: 'Cypher Studio für Linux laden' },
 };
+
+const relAttr = (url) => (/^https?:/.test(url) ? ' rel="noopener noreferrer"' : '');
 
 function altLabel(f) {
   if (f.os === 'macos') return f.arch === 'aarch64' ? 'Apple Silicon (.dmg)' : f.arch === 'x86_64' ? 'Intel (.dmg)' : 'Universal (.dmg)';
@@ -27,13 +29,13 @@ function dlRow(os, ctx) {
   const label = `${m.cta}, Version ${ctx.release.version}, ${formatSize(f.size)}`;
   const detail = os === 'macos' && f.arch !== 'universal' ? `${m.detail.split(' · ')[0]} · ${altLabel(f)}` : m.detail;
   return `<li class="dl-row" data-os="${os}">
-      <a class="dl-main" href="${esc(f.url)}" download aria-label="${esc(label)}" data-dl="${os}">
+      <a class="dl-main" href="${esc(f.url)}" download${relAttr(f.url)} aria-label="${esc(label)}" data-dl="${os}">
         <span class="dl-os">${m.name}<span class="dl-os-d"> · ${esc(detail)}</span></span>
         <span class="dl-cta">${esc(m.cta)}</span>
         <span class="dl-fact"><span>${esc(ctx.release.version)}</span><span>${formatSize(f.size)}</span><span class="dl-sha">SHA-256 ${hashShort(f.sha256)}</span></span>
         ${ARROW}
       </a>${alts.length ? `
-      <p class="dl-alt"><span class="dl-alt-l">Auch als</span> ${alts.map((a) => `<a href="${esc(a.url)}" download data-dl="${os}">${esc(altLabel(a))}</a>`).join('<span class="dl-sep" aria-hidden="true"> · </span>')}</p>` : ''}
+      <p class="dl-alt"><span class="dl-alt-l">Auch als</span> ${alts.map((a) => `<a href="${esc(a.url)}" download${relAttr(a.url)} data-dl="${os}">${esc(altLabel(a))}</a>`).join('<span class="dl-sep" aria-hidden="true"> · </span>')}</p>` : ''}
     </li>`;
 }
 
@@ -41,7 +43,7 @@ function downloadBlock(ctx) {
   const { release } = ctx;
   const mobile = `<div class="dl-mobile" id="dl-mobile">
       <p class="dl-mobile-t">Cypher Studio läuft auf Windows, macOS und Linux.</p>
-      <p class="dl-mobile-s">Öffne diese Seite an deinem Computer, dort lädst du das Programm herunter.</p>
+      <p class="dl-mobile-s">Es gibt Cypher Studio nur für Computer, nicht fürs Handy. Öffne diese Seite an deinem Rechner, dort lädst du es herunter.</p>
       <p class="dl-mobile-u"><span class="data" data-copy-src>${esc(ctx.config.siteUrl)}</span> <button type="button" class="btn-copy" data-copy-page hidden>Link kopieren</button></p>
     </div>`;
   if (release.state !== 'released') {
@@ -204,7 +206,7 @@ function messspur() {
   </section>`;
 }
 
-function aufbau() {
+function aufbau(ctx) {
   return `<section class="aufbau" id="aufbau" aria-labelledby="auf-h">
     <div class="auf-text">
       <h2 class="h2" id="auf-h">Eine Oberfläche, drei Zonen</h2>
@@ -217,7 +219,7 @@ function aufbau() {
       </dl>
     </div>
     <figure class="auf-fig">
-      ${drawing('app-schema')}
+      <img class="draw" src="${ctx.imageUrl('app-schema')}" alt="Schema der App: Rail links, Vorschau mit Messspur in der Mitte, Messung rechts, Ausgangsleiste unten" width="${drawingSize('app-schema').w}" height="${drawingSize('app-schema').h}" loading="lazy" decoding="async">
       <figcaption>Schema der Oberfläche. Ein Bildschirmfoto der App folgt mit der ersten Version.</figcaption>
     </figure>
   </section>`;
@@ -274,7 +276,7 @@ function pruefen(ctx) {
   const sums = rel
     ? `<ul class="sums">
       ${f.map((x) => `<li class="sum" data-os="${x.os}">
-        <div class="sum-h"><a class="sum-name data" href="${esc(x.url)}" download>${esc(x.name)}</a><span class="data sum-size">${formatSize(x.size)}</span></div>
+        <div class="sum-h"><a class="sum-name data" href="${esc(x.url)}" download${relAttr(x.url)}>${esc(x.name)}</a><span class="data sum-size">${formatSize(x.size)}</span></div>
         <p class="sum-hash data" id="h-${esc(x.name)}"><span class="sr">SHA-256: </span>${hashGroups(x.sha256).map((g) => `<span class="grp">${g}</span>`).join(' ')}</p>
         <button type="button" class="btn-copy" data-copy-hash="${x.sha256}" hidden aria-label="SHA-256 von ${esc(x.name)} kopieren">Prüfsumme kopieren</button>
       </li>`).join('\n      ')}
@@ -356,7 +358,7 @@ export function home(ctx) {
 
   ${programme()}
   ${messspur()}
-  ${aufbau()}
+  ${aufbau(ctx)}
   ${voraussetzungen(ctx)}
   ${installieren(ctx)}
   ${pruefen(ctx)}

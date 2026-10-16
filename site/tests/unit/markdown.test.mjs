@@ -58,12 +58,13 @@ test('Hinweisboxen: hinweis, achtung, tipp, auch verschachtelt im Schritt', () =
   assert.throws(() => renderMarkdown(':::unbekannt\nx\n:::\n', { tokens }), /Unbekannter Container/);
 });
 
-test('Zeichnungen als Abbildung, nicht in einem Absatz', () => {
+test('Zeichnungen als Abbildung mit Bilddatei, nicht in einem Absatz', () => {
   const { html } = renderMarkdown('![Beschreibung](svg:win-datei)', { tokens });
-  assert.match(html, /^<figure class="fig"><svg class="draw"/);
-  assert.match(html, /<figcaption>Beschreibung<\/figcaption>/);
+  assert.match(html, /^<figure class="fig"><img class="draw" src="\/assets\/img\/win-datei\.svg" alt="Beschreibung" width="420" height="236" loading="lazy"/);
+  assert.match(html, /<figcaption aria-hidden="true">Beschreibung<\/figcaption>/);
+  assert.doesNotMatch(html, /<svg/);
   assert.doesNotMatch(html, /<p><figure/);
-  assert.throws(() => renderMarkdown('![x](svg:gibt-es-nicht)', { tokens }), /Unbekannte Zeichnung/);
+  assert.throws(() => renderMarkdown('![x](svg:gibt-es-nicht)', { tokens }));
   assert.throws(() => renderMarkdown('![x](https://example.org/a.png)', { tokens }), /nur als svg/);
 });
 

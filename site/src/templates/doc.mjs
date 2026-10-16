@@ -12,7 +12,7 @@ export function docPage(doc, all, ctx) {
 ${topbar('anleitung')}
 <main id="main">
   <header class="phead">
-    <p class="lbl phead-k">${doc.slug === 'anleitung' ? 'Anleitung' : 'Anleitung · Ablauf'} · Kanal 3</p>
+    ${doc.slug === 'anleitung' ? '' : '<nav class="crumb lbl" aria-label="Pfad"><a href="/anleitung/">Anleitung</a><span aria-hidden="true"> / </span><span aria-current="page">Ablauf</span></nav>'}
     <h1 class="phead-t">${esc(doc.titel)}</h1>
     <p class="phead-lead">${esc(doc.lead)}</p>
     ${doc.stand ? `<p class="phead-stand lbl">${esc(doc.stand)}</p>` : ''}

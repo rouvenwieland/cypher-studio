@@ -17,6 +17,8 @@
   document.body.appendChild(live);
   function say(text) { live.textContent = ''; setTimeout(function () { live.textContent = text; }, 30); }
 
+  var os = root.getAttribute('data-os');
+
   // ── 1. Kopieren ────────────────────────────────────────────
   var canCopy = !!(navigator.clipboard && navigator.clipboard.writeText);
   function copy(btn, text, doneLabel) {
@@ -46,8 +48,17 @@
     });
   }
 
+  // ── 1b. Handy: Dateinamen in der Prüfsummenliste sind nur Text, nichts lädt versehentlich 80 MB aufs Handy ──
+  if (os === 'android' || os === 'ios') {
+    document.querySelectorAll('a[download]').forEach(function (a) {
+      var span = document.createElement('span');
+      span.className = a.className;
+      span.textContent = a.textContent;
+      a.replaceWith(span);
+    });
+  }
+
   // ── 2. Anleitung für das erkannte System aufklappen ────────
-  var os = root.getAttribute('data-os');
   function openGuide(name, focus) {
     var d = document.getElementById(name);
     if (!d || d.tagName !== 'DETAILS') return null;
