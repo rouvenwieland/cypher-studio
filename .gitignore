@@ -1,0 +1,17 @@
+node_modules/
+dist/
+target/
+*.log
+.DS_Store
+Thumbs.db
+# Signierschlüssel nie einchecken
+*.key
+*.key.pub.bak
+.env
+.env.*
+!.env.example
+test-results/
+playwright-report/
+.wrangler/
+apps/desktop/src-tauri/gen/schemas/
+dist-builds/

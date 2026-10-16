@@ -1,0 +1,358 @@
+/*
+ * Cypher Studio · Tokens „Regie“ (Kanal 3) · Stand 16.10.2026
+ * Quelle und Begründung: docs/DESIGN.md. Farben NUR hier definieren (Stylelint verbietet Farbwerte anderswo).
+ *
+ * Thema:   folgt dem System; <html data-theme="light|dark"> erzwingt Papier bzw. Tinte.
+ * Dichte:  <html data-density="compact|normal|large">  (Standard: normal)
+ * Bewegung:<html data-motion="reduced|full">          (Standard: System)
+ * Umfeld:  <section class="vorschau" data-umfeld="hell|mittel|dunkel">  (Standard je Thema)
+ *
+ * Die beiden Tinte-Blöcke (Media-Query und [data-theme="dark"]) müssen identisch bleiben.
+ * WebKit unter macOS 13 kennt light-dark() nicht, darum bewusst doppelt.
+ */
+
+/* ---------- Schriften (lokal im App-Paket, OFL) ---------- */
+@font-face { font-family: "Anybody"; src: url("./fonts/anybody-latin-standard-normal.woff2") format("woff2"); font-weight: 100 900; font-stretch: 50% 150%; font-display: swap; }
+@font-face { font-family: "Atkinson Hyperlegible Next"; src: url("./fonts/atkinson-hyperlegible-next-latin-wght-normal.woff2") format("woff2"); font-weight: 200 800; font-display: swap; }
+@font-face { font-family: "Martian Mono"; src: url("./fonts/martian-mono-latin-wght-normal.woff2") format("woff2"); font-weight: 100 800; font-display: swap; }
+/* Anybody hat keine deutschen Anführungszeichen: „ “ ‚ ‘ aus einer Systemschrift (wie im Shop) */
+@font-face { font-family: "Cypher Quotes"; src: local("Arial Black"), local("Arial Bold"), local("Helvetica Neue Bold"), local("Arial"); unicode-range: U+201A, U+201C, U+201E, U+2018, U+2019, U+201D; }
+
+:root {
+  color-scheme: light;
+
+  /* ---------- Familie ---------- */
+  --c-ink: #0d0d0d;
+  --c-paper: #efeee9;
+  --c-news: #ff4f12;            /* Kanal 1 */
+  --c-shop: #e4f531;            /* Kanal 2 */
+  --c-studio: #00d4d8;          /* Kanal 3 · Studio-Cyan · Tinte darauf 10,56:1 */
+  --c-studio-on: #0d0d0d;
+  --c-studio-deep: #00676b;     /* Tiefcyan · auf Papier 5,73:1 */
+
+  /* Kollektionen und Textilien (Shop-Katalog), nur als Daten: Paletten, Bühne, Textilfelder */
+  --c-rauschen: #e4f531;
+  --c-rauschen-on: #0b0b0a;
+  --c-mittelwelle: #1f2bd0;
+  --c-mittelwelle-on: #f3f4f7;
+  --c-gold: #c9a03f;
+  --c-gold-min: #a47c2a;
+  --c-gold-on: #0d0a05;
+  --c-textil-schwarz: #141210;
+  --c-textil-weiss: #f2efe8;
+  --c-textil-grau: #8c8a86;
+  --c-textil-navy: #1d2738;
+  --c-textil-sand: #cdbb9a;
+  --c-textil-creme: #efe4cc;
+
+  /* ---------- Gehäuse (Rail) – in beiden Themen gleich ---------- */
+  --case-bg: #0d0d0d;
+  --case-fg: #efeee9;           /* 16,73:1 */
+  --case-mute: #a3a29d;         /* 7,60:1 */
+  --case-line: #2e2e2b;         /* trennt nur */
+  --case-hover: #1f1f1d;        /* fg 14,21 · mute 6,46 */
+  --case-select-bg: #efeee9;    /* gedrückte Taste = invertiert */
+  --case-select-fg: #0d0d0d;
+  --case-focus: #00d4d8;
+
+  /* ---------- Thema Papier (hell) ---------- */
+  --bg: #efeee9;
+  --panel: #e7e6e0;
+  --field: #f8f7f3;
+  --hover: #e2e1db;
+  --line: #cfcec7;              /* Haarlinie, trägt keine Information */
+  --control: #7a7974;           /* Kanten von Bedienelementen ≥ 3:1 */
+  --fg: #0d0d0d;                /* 16,73 bg */
+  --fg-2: #2f2f2d;              /* 11,55 bg */
+  --mute: #5b5a56;              /* 5,94 bg · 5,52 panel */
+  --focus: #00676b;             /* 5,73 bg */
+  --select-bg: #0d0d0d;
+  --select-fg: #efeee9;
+  --scrim: rgb(13 13 13 / 0.48);
+  --action-bg: var(--c-studio); /* Ausgangs-Aktion */
+  --action-fg: var(--c-studio-on);
+  --action-edge: #0d0d0d;       /* Cyan gegen Papier 1,58:1 → Tintenkante */
+  --progress: var(--c-studio-deep);
+  --progress-track: #cfcec7;
+
+  /* Status (Form + Wort + Farbe) */
+  --ok-surface: #3ccf6e;   --ok-on: #0d0d0d;   --ok-text: #1d6b38;
+  --warn-surface: #f5b700; --warn-on: #0d0d0d; --warn-text: #7a5300;
+  --error-surface: #ff5a5a; --error-on: #0d0d0d; --error-text: #b0222d;
+  --status-edge: #0d0d0d;       /* Statusflächen auf Papier < 3:1 → Kante */
+
+  /* Umfeld der Vorschau (unbunt) und Messspur */
+  --surround-hell: #d6d6d6;
+  --surround-mittel: #777777;
+  --surround-dunkel: #202020;
+  --surround: var(--surround-hell);
+  --mess: var(--c-studio-deep);
+  --mess-gegen: rgb(239 238 233 / 0.7);
+  --mess-chip-bg: var(--mess);
+  --mess-chip-fg: #efeee9;      /* Papier auf Tiefcyan 5,73:1 */
+  --mess-alt-magenta: #ff4fd8;
+
+  /* ---------- Typografie ---------- */
+  --font-display: "Cypher Quotes", "Anybody", "Arial Narrow", Arial, sans-serif;
+  --font-text: "Atkinson Hyperlegible Next", system-ui, "Segoe UI", sans-serif;
+  --font-mono: "Martian Mono", ui-monospace, Consolas, "SF Mono", monospace;
+
+  --fs-label: 11px;   --lh-label: 14px;   --tr-label: 0.06em;
+  --fs-data: 12px;    --lh-data: 16px;
+  --fs-meta: 13px;    --lh-meta: 18px;
+  --fs-ui: 14px;      --lh-ui: 20px;
+  --fs-read: 15px;    --lh-read: 22px;    --measure: 64ch;
+  --fs-section: 16px; --lh-section: 22px;
+  --fs-verdict: 22px; --lh-verdict: 24px; --wdth-verdict: 72%;
+  --fs-title: 28px;   --lh-title: 28px;   --wdth-title: 78%;  --tr-title: -0.01em;
+  --fs-kennung-min: 48px; --fs-kennung-max: 160px; --lh-kennung: 0.8; --tr-kennung: -0.02em;
+
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-strong: 600;
+  --fw-section: 700;
+  --fw-display: 800;
+
+  /* ---------- Abstände (4er-Raster) ---------- */
+  --s-0: 0;
+  --s-1: 2px;
+  --s-2: 4px;
+  --s-3: 8px;
+  --s-4: 12px;
+  --s-5: 16px;
+  --s-6: 24px;
+  --s-7: 32px;
+  --s-8: 48px;
+  --s-9: 64px;
+  --s-10: 96px;
+
+  /* ---------- Raster / Bereiche ---------- */
+  --rail-w: 200px;              /* 216 ab 1360, 56 unter 1180 (siehe Media-Queries unten) */
+  --rail-w-icon: 56px;
+  --inspector-w: 336px;
+  --title-h: 56px;
+  --output-h: 56px;
+  --preview-min-w: 600px;
+  --cols: 12;
+  --gutter: 16px;
+  --margin: 24px;
+
+  /* ---------- Form und Linien ---------- */
+  --radius: 0;
+  --hair: 1px;
+  --edge-strong: 2px;
+  --focus-w: 2px;
+  --focus-offset: 2px;
+  --focus-offset-inset: -2px;
+  --mess-w: 1px;
+  --mess-dash: 4px 3px;         /* Hilfslinien: 4 an, 3 aus */
+  --hatch: repeating-linear-gradient(45deg, currentColor 0 1px, transparent 1px 6px); /* Prüfmarke Halbtransparenz */
+
+  /* ---------- Bewegung ---------- */
+  --ease-schub: cubic-bezier(.2, .8, .2, 1);
+  --ease-vorhang: cubic-bezier(.76, 0, .24, 1);
+  --ease-ankunft: cubic-bezier(.16, 1, .3, 1);
+  --ease-linear: linear;
+  --dur-schnitt: 0ms;
+  --dur-mikro: 80ms;
+  --dur-ui: 140ms;
+  --dur-ui-aus: 100ms;
+  --dur-fuellung: 240ms;
+  --dur-einrasten: 480ms;
+  --dur-suchlauf-takt: 800ms;
+
+  /* ---------- Dichte (normal) ---------- */
+  --row-h: 32px;
+  --control-h: 32px;
+  --gap: 8px;
+  --thumb: 160px;
+  --icon-btn: 32px;
+  --icon-size: 16px;
+  --icon-size-rail: 20px;
+
+  /* ---------- Ebenen ---------- */
+  --z-basis: 0;
+  --z-leiste: 10;
+  --z-popover: 100;
+  --z-dialog: 200;
+  --z-meldung: 300;
+  --z-kennung: 400;
+}
+
+/* ---------- Thema Tinte (dunkel) · System ---------- */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #151515;
+    --panel: #1c1c1c;
+    --field: #222222;
+    --hover: #262626;
+    --line: #2e2e2e;
+    --control: #7a7a7a;         /* 4,25 bg · 3,97 panel · 3,71 field */
+    --fg: #efeee9;              /* 15,72 bg */
+    --fg-2: #cfcfcb;            /* 11,69 bg */
+    --mute: #a3a3a3;            /* 7,24 bg · 6,76 panel */
+    --focus: #00d4d8;           /* 9,92 bg */
+    --select-bg: #efeee9;
+    --select-fg: #0d0d0d;
+    --scrim: rgb(0 0 0 / 0.6);
+    --action-bg: var(--c-studio);
+    --action-fg: var(--c-studio-on);
+    --action-edge: transparent; /* Cyan gegen Tinte 9,92:1, keine Kante nötig */
+    --progress: var(--c-studio);
+    --progress-track: #2e2e2e;
+    --ok-text: #4fd17c;
+    --warn-text: #f5b700;
+    --error-text: #ff6b6b;
+    --status-edge: transparent;
+    --surround: var(--surround-dunkel);
+    --mess: var(--c-studio);
+    --mess-gegen: rgb(13 13 13 / 0.7);
+    --mess-chip-bg: var(--c-studio);
+    --mess-chip-fg: #0d0d0d;
+  }
+}
+
+/* ---------- Thema Tinte (dunkel) · erzwungen ---------- */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #151515;
+  --panel: #1c1c1c;
+  --field: #222222;
+  --hover: #262626;
+  --line: #2e2e2e;
+  --control: #7a7a7a;
+  --fg: #efeee9;
+  --fg-2: #cfcfcb;
+  --mute: #a3a3a3;
+  --focus: #00d4d8;
+  --select-bg: #efeee9;
+  --select-fg: #0d0d0d;
+  --scrim: rgb(0 0 0 / 0.6);
+  --action-bg: var(--c-studio);
+  --action-fg: var(--c-studio-on);
+  --action-edge: transparent;
+  --progress: var(--c-studio);
+  --progress-track: #2e2e2e;
+  --ok-text: #4fd17c;
+  --warn-text: #f5b700;
+  --error-text: #ff6b6b;
+  --status-edge: transparent;
+  --surround: var(--surround-dunkel);
+  --mess: var(--c-studio);
+  --mess-gegen: rgb(13 13 13 / 0.7);
+  --mess-chip-bg: var(--c-studio);
+  --mess-chip-fg: #0d0d0d;
+}
+
+/* ---------- Umfeld der Vorschau (Taste U) · Messfarbe folgt dem Umfeld ---------- */
+[data-umfeld="hell"] {
+  --surround: var(--surround-hell);
+  --mess: var(--c-studio-deep);          /* 4,58:1 */
+  --mess-gegen: rgb(239 238 233 / 0.7);
+  --mess-chip-bg: var(--c-studio-deep);
+  --mess-chip-fg: #efeee9;
+}
+[data-umfeld="mittel"] {
+  --surround: var(--surround-mittel);    /* L* ≈ 50 */
+  --mess: var(--c-studio);               /* 2,43:1 → Gegenlinie trägt den Kontrast */
+  --mess-gegen: rgb(13 13 13 / 0.7);
+  --mess-chip-bg: var(--c-studio);
+  --mess-chip-fg: #0d0d0d;
+}
+[data-umfeld="dunkel"] {
+  --surround: var(--surround-dunkel);
+  --mess: var(--c-studio);               /* 8,85:1 */
+  --mess-gegen: rgb(13 13 13 / 0.7);
+  --mess-chip-bg: var(--c-studio);
+  --mess-chip-fg: #0d0d0d;
+}
+[data-messfarbe="magenta"] { --mess: var(--mess-alt-magenta); --mess-chip-bg: var(--mess-alt-magenta); --mess-chip-fg: #0d0d0d; }
+[data-messfarbe="tinte"]   { --mess: #0d0d0d; --mess-gegen: rgb(239 238 233 / 0.7); --mess-chip-bg: #0d0d0d; --mess-chip-fg: #efeee9; }
+[data-messfarbe="papier"]  { --mess: #efeee9; --mess-gegen: rgb(13 13 13 / 0.7); --mess-chip-bg: #efeee9; --mess-chip-fg: #0d0d0d; }
+
+/* ---------- Dichte ---------- */
+:root[data-density="compact"] {
+  --row-h: 28px;
+  --control-h: 28px;
+  --gap: 4px;
+  --thumb: 128px;
+  --icon-btn: 28px;
+}
+:root[data-density="large"] {
+  --row-h: 44px;
+  --control-h: 44px;
+  --gap: 12px;
+  --thumb: 200px;
+  --icon-btn: 44px;
+  --fs-ui: 15px;
+  --lh-ui: 22px;
+}
+
+/* ---------- Fenstergrößen ---------- */
+@media (min-width: 1360px) {
+  :root { --rail-w: 216px; --inspector-w: 360px; }
+}
+@media (max-width: 1179px) {
+  :root { --rail-w: var(--rail-w-icon); --inspector-w: 320px; --margin: 16px; }
+}
+@media (max-height: 759px) {
+  :root { --title-h: 48px; --output-h: 48px; }
+}
+
+/* ---------- Bewegung reduziert (System oder Einstellung) ---------- */
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-motion="full"]) {
+    --dur-mikro: 0ms;
+    --dur-ui: 0ms;
+    --dur-ui-aus: 0ms;
+    --dur-fuellung: 0ms;
+    --dur-einrasten: 0ms;
+    --dur-suchlauf-takt: 0ms;
+  }
+}
+:root[data-motion="reduced"] {
+  --dur-mikro: 0ms;
+  --dur-ui: 0ms;
+  --dur-ui-aus: 0ms;
+  --dur-fuellung: 0ms;
+  --dur-einrasten: 0ms;
+  --dur-suchlauf-takt: 0ms;
+}
+
+/* ---------- Browser-Flächen, die sonst fremd aussehen ---------- */
+:where(html) {
+  background: var(--bg);
+  color: var(--fg);
+  font: var(--fw-regular) var(--fs-ui) / var(--lh-ui) var(--font-text);
+  font-synthesis: none;
+  -webkit-font-smoothing: antialiased;
+  accent-color: var(--focus);
+  caret-color: var(--focus);
+  scrollbar-color: var(--control) transparent;
+  scrollbar-width: thin;
+}
+:where(:lang(de)) { hyphens: auto; }
+::selection { background: var(--c-studio); color: var(--c-studio-on); }
+:where(:focus-visible) { outline: var(--focus-w) solid var(--focus); outline-offset: var(--focus-offset); }
+:where(:focus:not(:focus-visible)) { outline: none; }
+:where(.rail :focus-visible) { outline-color: var(--case-focus); }
+:where([role="grid"], [role="listbox"], table) :focus-visible { outline-offset: var(--focus-offset-inset); }
+:where(code, kbd, samp, .data) { font-family: var(--font-mono); font-size: var(--fs-data); line-height: var(--lh-data); font-variant-numeric: tabular-nums slashed-zero; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: var(--control); border: 3px solid transparent; background-clip: padding-box; border-radius: 0; }
+::-webkit-scrollbar-track { background: transparent; }
+
+/* ---------- Windows-Kontrastdesign ---------- */
+@media (forced-colors: active) {
+  :root {
+    --line: CanvasText;
+    --control: CanvasText;
+    --focus: Highlight;
+    --case-focus: Highlight;
+    --action-edge: ButtonText;
+    --status-edge: CanvasText;
+    --mess: Highlight;
+  }
+  :where(:focus-visible) { outline: 2px solid Highlight; }
+}
