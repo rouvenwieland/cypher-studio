@@ -1,0 +1,16 @@
+{
+  "formatVersion": 1,
+  "prefixes": {
+    "prop-": { "maxTris": 500 },
+    "furn-": { "maxTris": 1500 },
+    "prod-": { "maxTris": 1500 },
+    "fig-": { "maxTris": 4000 },
+    "room-": { "maxTris": 15000 }
+  },
+  "scene": { "mobileMaxTris": 45000, "desktopMaxTris": 120000, "mobileMaxDrawCalls": 90, "desktopMaxDrawCalls": 180 },
+  "textures": { "powerOfTwo": true, "minPx": 8, "defaultPx": 256, "maxPx": 512, "format": "webp", "embed": false, "filter": "linear-mipmap", "webpQuality": 90 },
+  "materials": { "max": 2, "channels": ["baseColor", "emission"], "alphaMode": "MASK", "vertexColors": "erwünscht" },
+  "export": { "draco": false, "meshopt": false, "ktx2": false, "cameras": false, "lights": false, "upAxis": "+Y", "units": "m" },
+  "loadBudget": { "firstSceneBytes": 2000000, "perWorldBytes": 1500000, "totalBytes": 5000000 },
+  "checks": { "warnRatio": 0.9, "originZTolerance": 0.01, "originXYTolerance": 0.05, "originXYRatio": 0.1, "transformTolerance": 0.0001 }
+}

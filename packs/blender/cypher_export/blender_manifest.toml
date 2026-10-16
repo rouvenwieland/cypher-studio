@@ -1,0 +1,20 @@
+schema_version = "1.0.0"
+
+id = "cypher_export"
+version = "1.0.0"
+name = "Cypher Export"
+tagline = "Modelle für den Cypher-Shop prüfen und als GLB exportieren"
+maintainer = "Cypher Kollektiv"
+type = "add-on"
+
+tags = ["Import-Export", "3D View"]
+
+blender_version_min = "4.2.0"
+license = ["SPDX:GPL-3.0-or-later"]
+copyright = ["2026 Cypher Kollektiv"]
+
+[permissions]
+files = "glTF und Texturen exportieren"
+
+[build]
+paths_exclude_pattern = ["__pycache__/", "*.pyc", "/*.zip"]

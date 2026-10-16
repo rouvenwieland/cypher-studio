@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+# erzeugte Ergebnisse
+/dist/
+startup.blend
+startup.blend1
+*.blend1
