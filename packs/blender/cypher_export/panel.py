@@ -20,7 +20,8 @@ LEVEL_UI = {
     "warn": ("ERROR", "Hinweis"),
     "error": ("CANCEL", "Fehler"),
 }
-AMPEL_ICON = {"ok": "SEQUENCE_COLOR_04", "info": "SEQUENCE_COLOR_04", "warn": "SEQUENCE_COLOR_03", "error": "SEQUENCE_COLOR_01"}
+# Farbige Sammlungssymbole gibt es in 4.x und 5.x gleich (die Streifenfarben heißen seit 5.0 anders)
+AMPEL_ICON = {"ok": "COLLECTION_COLOR_04", "info": "COLLECTION_COLOR_04", "warn": "COLLECTION_COLOR_03", "error": "COLLECTION_COLOR_01"}
 AMPEL_TEXT = {"ok": "Grün: alles erfüllt", "info": "Grün: alles erfüllt", "warn": "Gelb: Hinweise", "error": "Rot: Fehler"}
 
 _cache = {"report": None, "scene": None}

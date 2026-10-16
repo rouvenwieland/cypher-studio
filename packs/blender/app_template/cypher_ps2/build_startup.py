@@ -26,7 +26,7 @@ from pathlib import Path
 import bmesh
 import bpy
 import numpy as np
-from mathutils import Matrix, Vector
+from mathutils import Vector
 
 HERE = Path(__file__).resolve().parent
 BRAND_JSON = HERE.parents[1] / "shared" / "brand" / "brand.json"

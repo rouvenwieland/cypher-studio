@@ -59,7 +59,24 @@ for bl in "$BL52" "$BL45"; do
   cp "$PACK/app_template/cypher_ps2/__init__.py" "$TPL/__init__.py"
   check "Template per --app-template geladen" "$bl" -b --app-template cypher_ps2 --python-exit-code 1 -P "$HERE/check_template.py"
 
-  # 4. glTF-Validator
+  # 3b. Oberfläche: Seitenleiste in einer echten Blender-Sitzung zeichnen (nur mit Display, z. B. WSLg)
+  if [ -n "${DISPLAY:-}" ] && [ -n "$ZIP" ]; then
+    timeout 150 "$bl" --app-template cypher_ps2 --window-geometry 0 0 1400 900 --python "$HERE/check_gui.py" > "$WORK/gui-$tag.log" 2>&1
+    if grep -q "GUI-CHECK fertig" "$WORK/gui-$tag.log" && ! grep -qE "Python script error|Traceback" "$WORK/gui-$tag.log"; then
+      printf '  ok      %s
+' "Seitenleiste zeichnet in drei Zuständen ohne Python-Fehler"
+    else
+      printf '  FEHLER  %s
+' "Seitenleiste (Zeichentest)"; grep -E "GUI-CHECK|Python script error|Traceback|Error" "$WORK/gui-$tag.log" | head -20 | sed 's/^/          /'; fail=1
+    fi
+  else
+    echo "  übersprungen: Seitenleiste (kein DISPLAY oder keine Extension)"
+  fi
+
+  # 4. Mockup-Grundlagen (Ebenen, Wertebereiche, Druckfläche)
+  check "Mockup-Grundlagen geprüft" "$bl" -b --factory-startup --python-exit-code 1 -P "$HERE/check_mockups.py"
+
+  # 5. glTF-Validator
   if [ -x "$NODE" ] && [ -d "$GLTF_VALIDATOR_DIR/node_modules/gltf-validator" ]; then
     mapfile -t glbs < <(find "$WORK/keep-$tag" -name '*.glb' | sort)
     if [ ${#glbs[@]} -gt 0 ]; then

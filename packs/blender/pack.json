@@ -1,0 +1,93 @@
+{
+  "$schema": "../schema/pack.schema.json",
+  "formatVersion": 1,
+  "id": "blender",
+  "programId": "blender",
+  "version": "1.0.0",
+  "title": "Cypher-Einrichtung für Blender",
+  "description": "Startszene „Cypher PS2“ (Datei → Neu) für Modelle im PS2-Retro-Stil und die Erweiterung „Cypher Export“ mit Prüfbericht und GLB-Export für den Cypher-Shop.",
+  "programVersions": ">=4.5, <6",
+  "requiresPacks": [],
+  "requiresProgramClosed": false,
+  "components": [
+    {
+      "id": "app-template",
+      "kind": "appTemplate",
+      "label": "Startszene „Cypher PS2“ (Datei → Neu)",
+      "optional": false,
+      "files": [
+        "tpl-init",
+        "tpl-startup"
+      ],
+      "preview": {
+        "colors": [
+          "#0d0d0d",
+          "#efeee9",
+          "#ff4f12",
+          "#e4f531",
+          "#00d4d8",
+          "#0b0b0a",
+          "#1f2bd0",
+          "#f3f4f7",
+          "#c9a03f",
+          "#a47c2a",
+          "#0d0a05",
+          "#141210",
+          "#f2efe8",
+          "#8c8a86",
+          "#1d2738",
+          "#cdbb9a",
+          "#efe4cc"
+        ],
+        "formats": [
+          "Meter, Raster 0,1 m",
+          "Vorschau 640 × 448"
+        ],
+        "fonts": []
+      }
+    },
+    {
+      "id": "extension",
+      "kind": "extension",
+      "label": "Erweiterung „Cypher Export“ (Prüfbericht, GLB-Export, Asset-Bibliothek)",
+      "optional": false,
+      "files": [
+        "ext-license"
+      ]
+    }
+  ],
+  "files": [
+    {
+      "id": "tpl-init",
+      "src": "app_template/cypher_ps2/__init__.py",
+      "root": "blenderScripts",
+      "rel": "startup/bl_app_templates_user/cypher_ps2/__init__.py"
+    },
+    {
+      "id": "tpl-startup",
+      "src": "app_template/cypher_ps2/startup.blend",
+      "root": "blenderScripts",
+      "rel": "startup/bl_app_templates_user/cypher_ps2/startup.blend"
+    },
+    {
+      "id": "ext-license",
+      "src": "cypher_export/LICENSE",
+      "root": "blenderExtensionConfig",
+      "rel": "LICENSE-cypher-export.txt"
+    }
+  ],
+  "actions": [
+    {
+      "type": "blenderExtensionInstall",
+      "zip": "dist/cypher_export-1.0.0.zip"
+    },
+    {
+      "type": "writeConfig",
+      "root": "blenderExtensionConfig",
+      "rel": "cypher_studio.json",
+      "fields": {
+        "assetLibraryPath": "{libraryRoot}/3D"
+      }
+    }
+  ]
+}

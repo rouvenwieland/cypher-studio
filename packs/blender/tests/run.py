@@ -646,8 +646,6 @@ def export_selection_scope_and_hierarchy():
 @test
 def glb_post_repack_keeps_buffers_consistent():
     """Direkter Test der Umpack-Logik mit mehreren Bildern vor, zwischen und nach Geometrie."""
-    import struct
-
     gltf = {
         "asset": {"version": "2.0"},
         "buffers": [{"byteLength": 0}],

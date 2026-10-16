@@ -5,3 +5,4 @@ __pycache__/
 startup.blend
 startup.blend1
 *.blend1
+app_template/cypher_ps2/startup.json
