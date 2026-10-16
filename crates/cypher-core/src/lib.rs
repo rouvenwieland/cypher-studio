@@ -4,6 +4,8 @@
 //! öffentliche API dieses Crates auf. Alle IPC-Typen stehen in [`api`].
 
 pub mod api;
+pub mod app;
+pub mod bgremove;
 pub mod brand;
 pub mod catalog;
 pub mod detect;

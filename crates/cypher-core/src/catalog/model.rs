@@ -132,6 +132,24 @@ pub enum RootId {
     ProjectTemplates,
 }
 
+impl RootId {
+    /// Name wie in `pack.json` und im Katalog.
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            RootId::KritaResources => "kritaResources",
+            RootId::InkscapeProfile => "inkscapeProfile",
+            RootId::BlenderConfig => "blenderConfig",
+            RootId::BlenderScripts => "blenderScripts",
+            RootId::BlenderExtensions => "blenderExtensions",
+            RootId::BlenderExtensionConfig => "blenderExtensionConfig",
+            RootId::KdenliveData => "kdenliveData",
+            RootId::KdenliveLocalData => "kdenliveLocalData",
+            RootId::UserFonts => "userFonts",
+            RootId::ProjectTemplates => "projectTemplates",
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub enum ConfigVersionDir {

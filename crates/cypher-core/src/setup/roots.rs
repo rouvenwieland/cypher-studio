@@ -6,8 +6,6 @@
 use std::collections::BTreeMap;
 use std::path::PathBuf;
 
-use serde::{Deserialize, Serialize};
-
 use crate::api::{InstallKind, Os, ScopeKind, SetupUnsupportedReason};
 use crate::catalog::ProgVer;
 use crate::platform::KnownDirs;
@@ -15,37 +13,7 @@ use crate::util::short_hash;
 
 use super::pack::PackManifest;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub enum RootId {
-    KritaResources,
-    InkscapeProfile,
-    BlenderConfig,
-    BlenderScripts,
-    BlenderExtensions,
-    BlenderExtensionConfig,
-    KdenliveData,
-    KdenliveLocalData,
-    UserFonts,
-    ProjectTemplates,
-}
-
-impl RootId {
-    pub const fn as_str(self) -> &'static str {
-        match self {
-            RootId::KritaResources => "kritaResources",
-            RootId::InkscapeProfile => "inkscapeProfile",
-            RootId::BlenderConfig => "blenderConfig",
-            RootId::BlenderScripts => "blenderScripts",
-            RootId::BlenderExtensions => "blenderExtensions",
-            RootId::BlenderExtensionConfig => "blenderExtensionConfig",
-            RootId::KdenliveData => "kdenliveData",
-            RootId::KdenliveLocalData => "kdenliveLocalData",
-            RootId::UserFonts => "userFonts",
-            RootId::ProjectTemplates => "projectTemplates",
-        }
-    }
-}
+pub use crate::catalog::RootId;
 
 /// Umgebung, aus der die Wurzeln berechnet werden (testbar mit festen Ordnern).
 #[derive(Debug, Clone)]

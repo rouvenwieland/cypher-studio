@@ -36,13 +36,13 @@ impl FontInstaller for NoFontRegistration {
 }
 
 /// Linux: Schriftcache des Ordners aktualisieren.
-pub struct FcCacheFonts<'a> {
-    pub runner: &'a dyn CommandRunner,
+pub struct FcCacheFonts {
+    pub runner: std::sync::Arc<dyn CommandRunner>,
     /// Pfad zu `fc-cache`, falls vorhanden.
     pub fc_cache: Option<std::path::PathBuf>,
 }
 
-impl FcCacheFonts<'_> {
+impl FcCacheFonts {
     fn refresh(&self, file: &Path) -> io::Result<()> {
         let (Some(tool), Some(dir)) = (&self.fc_cache, file.parent()) else { return Ok(()) };
         let args: Vec<OsString> = vec!["-f".into(), dir.as_os_str().to_owned()];
@@ -52,7 +52,7 @@ impl FcCacheFonts<'_> {
     }
 }
 
-impl FontInstaller for FcCacheFonts<'_> {
+impl FontInstaller for FcCacheFonts {
     fn register(&self, file: &Path, _display_name: &str) -> io::Result<Option<String>> {
         self.refresh(file)?;
         Ok(None)
@@ -65,21 +65,21 @@ impl FontInstaller for FcCacheFonts<'_> {
 }
 
 /// Die Anmeldung für das laufende Betriebssystem.
-pub fn system_installer<'a>(runner: &'a dyn CommandRunner) -> Box<dyn FontInstaller + 'a> {
+pub fn system_installer(runner: std::sync::Arc<dyn CommandRunner>) -> std::sync::Arc<dyn FontInstaller> {
     #[cfg(windows)]
     {
         let _ = runner;
-        Box::new(win::WindowsFonts)
+        std::sync::Arc::new(win::WindowsFonts)
     }
     #[cfg(target_os = "macos")]
     {
         let _ = runner;
-        Box::new(NoFontRegistration)
+        std::sync::Arc::new(NoFontRegistration)
     }
     #[cfg(not(any(windows, target_os = "macos")))]
     {
         let fc_cache = which::which("fc-cache").ok();
-        Box::new(FcCacheFonts { runner, fc_cache })
+        std::sync::Arc::new(FcCacheFonts { runner, fc_cache })
     }
 }
 
@@ -188,7 +188,8 @@ mod tests {
     #[test]
     fn fc_cache_runs_for_the_font_folder_and_ignores_failures() {
         let runner = FakeRunner::new().fail("fc-cache", 1, "kaputt");
-        let fonts = FcCacheFonts { runner: &runner, fc_cache: Some("/usr/bin/fc-cache".into()) };
+        let runner = std::sync::Arc::new(runner);
+        let fonts = FcCacheFonts { runner: runner.clone(), fc_cache: Some("/usr/bin/fc-cache".into()) };
         assert_eq!(fonts.register(Path::new("/home/a/.local/share/fonts/cypher/A.ttf"), "A").unwrap(), None);
         let calls = runner.calls();
         assert_eq!(calls.len(), 1);
@@ -200,7 +201,8 @@ mod tests {
     #[test]
     fn without_fc_cache_nothing_is_run() {
         let runner = FakeRunner::new();
-        let fonts = FcCacheFonts { runner: &runner, fc_cache: None };
+        let runner = std::sync::Arc::new(runner);
+        let fonts = FcCacheFonts { runner: runner.clone(), fc_cache: None };
         fonts.register(Path::new("/x/A.ttf"), "A").unwrap();
         assert!(runner.calls().is_empty());
     }
