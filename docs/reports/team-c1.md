@@ -120,3 +120,182 @@ Nur in der WSL (AppImages, `authoring/wsl/`): `setup-apps.sh` (laden, prüfen, e
 - **B (Frontend):** Marke und Schriften in `brand.json` (statische Anybody-Schnitte upright); Social-`safeZones` = Innenboxen; Vorschauen in `preview.png`; Projektvorlagen als `TemplateInfo` ohne `aspect`/`source`.
 - **C2:** `mockup.schema.json` (Quad als `{x, y}`), Pfade relativ zum Vorlagenordner; `validate.mjs` prüft eure `template.json` gegen das Schema.
 - **I (Integration):** ARCHITEKTUR-Stellen zu `packs/fonts/` anpassen; `THIRD_PARTY.md` aus `docs/third-party/C1.md` ergänzen; `scripts/zone-check.mjs` kennt die neuen Pfade `packs/tools/**` (Zone C).
+
+---
+
+## Anhang A: Smoke-Test-Protokoll (Rohausgabe von `smoke-all.sh`, 16.10.2026)
+
+### Smoke-Test-Protokoll (ungekürzte Befehle, Ausgaben auf 200 Zeichen je Zeile gekürzt)
+
+Stand: 16.10.2026 · Ubuntu 24.04 (WSL2) · Quelle der Programme: offizielle AppImages, Prüfsumme/Signatur geprüft (setup-apps.sh)
+
+### 0. Programme
+
+#### Prüfsummen und Signaturen (setup-apps.sh, idempotent)
+
+```
+$ bash /mnt/c/Users/Nevuor/Code/cypher-studio/packs/tools/authoring/wsl/setup-apps.sh
+krita-5.3.4.1-x86_64.AppImage: OK
+Krita: Signatur gültig (E9FB 29E7 …)
+kdenlive-26.08.2-x86_64.AppImage: OK
+Inkscape: Signatur gültig (74E8 DA13 …, DSA-1024/SHA-1)
+Inkscape-1.4.4.AppImage: OK
+entpackt: app-krita
+entpackt: app-inkscape
+entpackt: app-kdenlive
+```
+
+### 1. Krita 5.3.4.1
+
+#### Vorlagen frisch erzeugen (kritarunner, Python-API von Krita)
+
+```
+$ bash /mnt/c/Users/Nevuor/Code/cypher-studio/packs/tools/authoring/wsl/run-krita.sh build_kra main
+kritarunner beendet mit Code 0
+Schrift für Beschriftung: Martian Mono
+Krita 5.3.4.1 (git bd6e8d0)
+gespeichert /home/nevuor/c1work/smoke-out/krita-neu/Cypher/.source/cypher-shirt-front.kra
+gespeichert /home/nevuor/c1work/smoke-out/krita-neu/Cypher/.source/cypher-shirt-back.kra
+gespeichert /home/nevuor/c1work/smoke-out/krita-neu/Cypher/.source/cypher-hoodie-front.kra
+gespeichert /home/nevuor/c1work/smoke-out/krita-neu/Cypher/.source/cypher-hoodie-back.kra
+gespeichert /home/nevuor/c1work/smoke-out/krita-neu/Cypher/.source/cypher-poster-a2.kra
+gespeichert /home/nevuor/c1work/smoke-out/krita-neu/Cypher/.source/cypher-sticker-quadrat.kra
+gespeichert /home/nevuor/c1work/smoke-out/krita-neu/Cypher/.source/cypher-post.kra
+gespeichert /home/nevuor/c1work/smoke-out/krita-neu/Cypher/.source/cypher-story.kra
+gespeichert /home/nevuor/c1work/smoke-out/krita-neu/Cypher/.source/cypher-reel-cover.kra
+FERTIG 9 Vorlagen
+```
+
+#### frisch erzeugte .kra im Programm öffnen und messen
+
+```
+$ bash /mnt/c/Users/Nevuor/Code/cypher-studio/packs/tools/authoring/wsl/run-krita.sh verify_kra main
+kritarunner beendet mit Code 0
+{"krita": "5.3.4.1 (git bd6e8d0)"}
+{"file": "cypher-hoodie-back.kra", "width": 3898, "height": 4606, "xRes": 300.0, "yRes": 300.0, "colorModel": "RGBA", "colorDepth": "U8", "profile": "sRGB-elle-V2-srgbtrc.icc", "layers": [{"name": "Mo …
+{"file": "cypher-hoodie-front.kra", "width": 3898, "height": 3307, "xRes": 300.0, "yRes": 300.0, "colorModel": "RGBA", "colorDepth": "U8", "profile": "sRGB-elle-V2-srgbtrc.icc", "layers": [{"name": "M …
+{"file": "cypher-post.kra", "width": 1080, "height": 1350, "xRes": 72.0, "yRes": 72.0, "colorModel": "RGBA", "colorDepth": "U8", "profile": "sRGB-elle-V2-srgbtrc.icc", "layers": [{"name": "Motiv", "ty …
+{"file": "cypher-poster-a2.kra", "width": 5031, "height": 7087, "xRes": 300.0, "yRes": 300.0, "colorModel": "RGBA", "colorDepth": "U8", "profile": "sRGB-elle-V2-srgbtrc.icc", "layers": [{"name": "Moti …
+{"file": "cypher-reel-cover.kra", "width": 1080, "height": 1920, "xRes": 72.0, "yRes": 72.0, "colorModel": "RGBA", "colorDepth": "U8", "profile": "sRGB-elle-V2-srgbtrc.icc", "layers": [{"name": "Motiv …
+{"file": "cypher-shirt-back.kra", "width": 3898, "height": 5315, "xRes": 300.0, "yRes": 300.0, "colorModel": "RGBA", "colorDepth": "U8", "profile": "sRGB-elle-V2-srgbtrc.icc", "layers": [{"name": "Mot …
+{"file": "cypher-shirt-front.kra", "width": 3898, "height": 5315, "xRes": 300.0, "yRes": 300.0, "colorModel": "RGBA", "colorDepth": "U8", "profile": "sRGB-elle-V2-srgbtrc.icc", "layers": [{"name": "Mo …
+{"file": "cypher-sticker-quadrat.kra", "width": 945, "height": 945, "xRes": 300.0, "yRes": 300.0, "colorModel": "RGBA", "colorDepth": "U8", "profile": "sRGB-elle-V2-srgbtrc.icc", "layers": [{"name": " …
+{"file": "cypher-story.kra", "width": 1080, "height": 1920, "xRes": 72.0, "yRes": 72.0, "colorModel": "RGBA", "colorDepth": "U8", "profile": "sRGB-elle-V2-srgbtrc.icc", "layers": [{"name": "Motiv", "t …
+{"done": true}
+```
+
+#### eingecheckte .kra im Programm öffnen und messen
+
+```
+$ bash /mnt/c/Users/Nevuor/Code/cypher-studio/packs/tools/authoring/wsl/run-krita.sh verify_kra main
+kritarunner beendet mit Code 0
+{"krita": "5.3.4.1 (git bd6e8d0)"}
+{"file": "cypher-hoodie-back.kra", "width": 3898, "height": 4606, "xRes": 300.0, "yRes": 300.0, "colorModel": "RGBA", "colorDepth": "U8", "profile": "sRGB-elle-V2-srgbtrc.icc", "layers": [{"name": "Mo …
+{"file": "cypher-hoodie-front.kra", "width": 3898, "height": 3307, "xRes": 300.0, "yRes": 300.0, "colorModel": "RGBA", "colorDepth": "U8", "profile": "sRGB-elle-V2-srgbtrc.icc", "layers": [{"name": "M …
+{"file": "cypher-post.kra", "width": 1080, "height": 1350, "xRes": 72.0, "yRes": 72.0, "colorModel": "RGBA", "colorDepth": "U8", "profile": "sRGB-elle-V2-srgbtrc.icc", "layers": [{"name": "Motiv", "ty …
+{"file": "cypher-poster-a2.kra", "width": 5031, "height": 7087, "xRes": 300.0, "yRes": 300.0, "colorModel": "RGBA", "colorDepth": "U8", "profile": "sRGB-elle-V2-srgbtrc.icc", "layers": [{"name": "Moti …
+{"file": "cypher-reel-cover.kra", "width": 1080, "height": 1920, "xRes": 72.0, "yRes": 72.0, "colorModel": "RGBA", "colorDepth": "U8", "profile": "sRGB-elle-V2-srgbtrc.icc", "layers": [{"name": "Motiv …
+{"file": "cypher-shirt-back.kra", "width": 3898, "height": 5315, "xRes": 300.0, "yRes": 300.0, "colorModel": "RGBA", "colorDepth": "U8", "profile": "sRGB-elle-V2-srgbtrc.icc", "layers": [{"name": "Mot …
+{"file": "cypher-shirt-front.kra", "width": 3898, "height": 5315, "xRes": 300.0, "yRes": 300.0, "colorModel": "RGBA", "colorDepth": "U8", "profile": "sRGB-elle-V2-srgbtrc.icc", "layers": [{"name": "Mo …
+{"file": "cypher-sticker-quadrat.kra", "width": 945, "height": 945, "xRes": 300.0, "yRes": 300.0, "colorModel": "RGBA", "colorDepth": "U8", "profile": "sRGB-elle-V2-srgbtrc.icc", "layers": [{"name": " …
+{"file": "cypher-story.kra", "width": 1080, "height": 1920, "xRes": 72.0, "yRes": 72.0, "colorModel": "RGBA", "colorDepth": "U8", "profile": "sRGB-elle-V2-srgbtrc.icc", "layers": [{"name": "Motiv", "t …
+{"done": true}
+```
+
+#### Paletten und Arbeitsfläche aus den Bundles laden (cypher.bundle, cypher-arbeitsflaeche.bundle)
+
+```
+$ bash /mnt/c/Users/Nevuor/Code/cypher-studio/packs/tools/authoring/wsl/run-krita.sh verify_resources main
+kritarunner beendet mit Code 0
+{"workspaces": ["Cypher Druck"]}
+{"palette": "Cypher Kollektionen", "file": "cypher-kollektionen.kpl", "total": 17, "columns": 6, "entries": [{"group": "", "name": "Tinte", "hex": "#0d0d0d"}, {"group": "", "name": "Papier", "hex": "# …
+{"palette": "Cypher Textil (Druckfarben)", "file": "cypher-textil-druck.kpl", "total": 6, "columns": 6, "entries": [{"group": "", "name": "Schwarz (Black)", "hex": "#201e1f"}, {"group": "", "name": "W …
+{"done": true}
+```
+
+#### Paletten und Arbeitsfläche als lose Dateien laden (Ausweichweg)
+
+```
+$ bash /mnt/c/Users/Nevuor/Code/cypher-studio/packs/tools/authoring/wsl/run-krita.sh verify_resources main
+kritarunner beendet mit Code 0
+{"workspaces": ["Cypher Druck"]}
+{"palette": "Cypher Kollektionen", "file": "cypher-kollektionen.kpl", "total": 17, "columns": 6, "entries": [{"group": "", "name": "Tinte", "hex": "#0d0d0d"}, {"group": "", "name": "Papier", "hex": "# …
+{"palette": "Cypher Textil (Druckfarben)", "file": "cypher-textil-druck.kpl", "total": 6, "columns": 6, "entries": [{"group": "", "name": "Schwarz (Black)", "hex": "#201e1f"}, {"group": "", "name": "W …
+{"done": true}
+```
+
+### 2. Inkscape 1.4.4
+
+#### Profil einrichten, Vorlagen exportieren
+
+```
+$ bash /mnt/c/Users/Nevuor/Code/cypher-studio/packs/tools/authoring/wsl/smoke-inkscape.sh
+$ inkscape --version
+Inkscape 1.4.4 (dcaf3e7, 2026-05-05)
+$ inkscape --user-data-directory
+/home/nevuor/c1work/prof-inkscape-smoke
+$ inkscape templates/cypher-hoodie-back.svg --export-type=png --export-dpi=300 -o cypher-hoodie-back.png
+cypher-hoodie-back.png: PNG image data, 3898 x 4606, 8-bit/color RGBA, non-interlaced
+$ inkscape templates/cypher-hoodie-front.svg --export-type=png --export-dpi=300 -o cypher-hoodie-front.png
+cypher-hoodie-front.png: PNG image data, 3898 x 3307, 8-bit/color RGBA, non-interlaced
+$ inkscape templates/cypher-post.svg --export-type=png --export-dpi=96 -o cypher-post.png
+cypher-post.png: PNG image data, 1080 x 1350, 8-bit/color RGBA, non-interlaced
+$ inkscape templates/cypher-poster-a2.svg --export-type=png --export-dpi=300 -o cypher-poster-a2.png
+cypher-poster-a2.png: PNG image data, 5031 x 7087, 8-bit/color RGBA, non-interlaced
+$ inkscape templates/cypher-reel-cover.svg --export-type=png --export-dpi=96 -o cypher-reel-cover.png
+cypher-reel-cover.png: PNG image data, 1080 x 1920, 8-bit/color RGBA, non-interlaced
+$ inkscape templates/cypher-shirt-back.svg --export-type=png --export-dpi=300 -o cypher-shirt-back.png
+cypher-shirt-back.png: PNG image data, 3898 x 5315, 8-bit/color RGBA, non-interlaced
+$ inkscape templates/cypher-shirt-front.svg --export-type=png --export-dpi=300 -o cypher-shirt-front.png
+cypher-shirt-front.png: PNG image data, 3898 x 5315, 8-bit/color RGBA, non-interlaced
+$ inkscape templates/cypher-sticker-quadrat.svg --export-type=png --export-dpi=300 -o cypher-sticker-quadrat.png
+cypher-sticker-quadrat.png: PNG image data, 945 x 945, 8-bit/color RGBA, non-interlaced
+$ inkscape templates/cypher-story.svg --export-type=png --export-dpi=96 -o cypher-story.png
+cypher-story.png: PNG image data, 1080 x 1920, 8-bit/color RGBA, non-interlaced
+```
+
+### 3. Kdenlive 26.08.2
+
+#### Titel mit melt rendern
+
+```
+$ bash /mnt/c/Users/Nevuor/Code/cypher-studio/packs/tools/authoring/wsl/smoke-kdenlive.sh
+$ melt --version
+melt 7.43.0
+$ fc-list | grep -c cypher  (statische Schriften sichtbar)
+20
+$ melt -profile cypher_reel_1080x1350_30 "kdenlivetitle:titles/Cypher Bauchbinde 4x5.kdenlivetitle" out=0 -consumer avformat:Cypher_Bauchbinde_4x5.png vframes=1 vcodec=png
+Cypher_Bauchbinde_4x5.png: PNG image data, 1080 x 1350, 8-bit/color RGBA, non-interlaced
+$ melt -profile cypher_reel_1080x1920_30 "kdenlivetitle:titles/Cypher Bauchbinde 9x16.kdenlivetitle" out=0 -consumer avformat:Cypher_Bauchbinde_9x16.png vframes=1 vcodec=png
+Cypher_Bauchbinde_9x16.png: PNG image data, 1080 x 1920, 8-bit/color RGBA, non-interlaced
+$ melt -profile cypher_reel_1080x1350_30 "kdenlivetitle:titles/Cypher Reel-Hook 4x5.kdenlivetitle" out=0 -consumer avformat:Cypher_Reel-Hook_4x5.png vframes=1 vcodec=png
+Cypher_Reel-Hook_4x5.png: PNG image data, 1080 x 1350, 8-bit/color RGBA, non-interlaced
+$ melt -profile cypher_reel_1080x1920_30 "kdenlivetitle:titles/Cypher Reel-Hook 9x16.kdenlivetitle" out=0 -consumer avformat:Cypher_Reel-Hook_9x16.png vframes=1 vcodec=png
+Cypher_Reel-Hook_9x16.png: PNG image data, 1080 x 1920, 8-bit/color RGBA, non-interlaced
+$ melt -profile cypher_reel_1080x1350_30 "kdenlivetitle:titles/Cypher Titelkarte 4x5.kdenlivetitle" out=0 -consumer avformat:Cypher_Titelkarte_4x5.png vframes=1 vcodec=png
+Cypher_Titelkarte_4x5.png: PNG image data, 1080 x 1350, 8-bit/color RGBA, non-interlaced
+$ melt -profile cypher_reel_1080x1920_30 "kdenlivetitle:titles/Cypher Titelkarte 9x16.kdenlivetitle" out=0 -consumer avformat:Cypher_Titelkarte_9x16.png vframes=1 vcodec=png
+Cypher_Titelkarte_9x16.png: PNG image data, 1080 x 1920, 8-bit/color RGBA, non-interlaced
+$ melt -profile cypher_reel_1080x1350_30 "kdenlivetitle:titles/Cypher Untertitel-Stil 4x5.kdenlivetitle" out=0 -consumer avformat:Cypher_Untertitel-Stil_4x5.png vframes=1 vcodec=png
+Cypher_Untertitel-Stil_4x5.png: PNG image data, 1080 x 1350, 8-bit/color RGBA, non-interlaced
+$ melt -profile cypher_reel_1080x1920_30 "kdenlivetitle:titles/Cypher Untertitel-Stil 9x16.kdenlivetitle" out=0 -consumer avformat:Cypher_Untertitel-Stil_9x16.png vframes=1 vcodec=png
+Cypher_Untertitel-Stil_9x16.png: PNG image data, 1080 x 1920, 8-bit/color RGBA, non-interlaced
+```
+
+#### Reel-Projekt laden und öffnen
+
+```
+$ bash /mnt/c/Users/Nevuor/Code/cypher-studio/packs/tools/authoring/wsl/smoke-kdenlive-project.sh
+$ melt reel.kdenlive out=0 -consumer avformat:reel-melt.png vframes=1 vcodec=png
+reel-melt.png: PNG image data, 1080 x 1920, 8-bit/color RGBA, non-interlaced
+$ kdenlive reel.kdenlive  (xvfb, Bildschirmfoto nach dem Laden)
+0x20006b "reel / Cypher Reel 9:16 (1080x1920, 30 fps) — Kdenlive": ("kdenlive" "kdenlive")  1280x800+0+0  +0+0
+```
+
+FERTIG
+
+### Oberflächenprüfungen (xvfb, per xdotool bedient)
+
+- Krita: `gui-krita-templates.sh` → Fenster `Create new document — Krita`; Gruppe „Cypher“ mit Symbolen und Beschreibung; nach „Use This Template“ Fenstertitel ` [Not Saved]  — Krita`.
+- Inkscape: `gui-inkscape-templates.sh` → Fenster `Inkscape 1.4.4 (dcaf3e7, 2026-05-05)`, Reiter „Time to Draw“, Kategorien Print, Video, Social, Screen, Shape Builder, Other, **Cypher**, Custom.
+- Kdenlive: `kdenlive` → „Project Settings“, Suche „Cypher“ → unter „Custom“: „Cypher Reel 4:5 (1080x1350, 30 fps)“ und „Cypher Reel 9:16 (1080x1920, 30 fps)“; Fenstertitel nach dem Anlegen und Speichern: `cypher-reel-test / Cypher Reel 9:16 (1080x1920, 30 fps) — Kdenlive`.
