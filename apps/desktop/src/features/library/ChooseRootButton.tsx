@@ -3,7 +3,13 @@ import { Button } from "../../ui/Button";
 import { useChooseRoot } from "./ChooseRoot";
 
 /** Knopf „Ordner wählen“ mit dem gemeinsamen Dialog (Zusammenfassung vor der Bestätigung). */
-export function ChooseRootButton({ variant = "default", label }: { variant?: "default" | "action"; label?: string }) {
+export function ChooseRootButton({
+  variant = "default",
+  label,
+}: {
+  variant?: "default" | "primary" | "action";
+  label?: string;
+}) {
   const choose = useChooseRoot();
   return (
     <>

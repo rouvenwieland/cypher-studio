@@ -34,7 +34,7 @@ export const onboarding = {
       blender: "3D",
       kdenlive: "Video",
     } as Record<string, string>,
-    sizeLine: (total: string) => `Zusammen ${total} bei deiner Wahl. Die Zeit schätzen wir, sobald der Download läuft.`,
+    sizeLine: (total: string) => `Zusammen ${total} bei deiner Wahl.`,
     none: "Wähle mindestens ein Programm oder überspring den Schritt.",
     group: "Programme zum Installieren",
   },
@@ -62,12 +62,12 @@ export const onboarding = {
     },
     details: "Details",
     hideDetails: "Weniger",
-    loading: "Prüfungsanzeigen werden erstellt …",
+    loading: "Übersichten vor dem Laden werden erstellt …",
     all: "Alle laden und installieren",
     afterSetup: "Danach mit Cypher-Paletten, Schriften und Vorlagen einrichten",
     nothing: "Du hast kein Programm gewählt. Weiter geht es mit dem Probelauf.",
     failed: (name: string) =>
-      `Für ${name} gibt es gerade keine Prüfungsanzeige. Du kannst es später unter Programme nachholen.`,
+      `Für ${name} gibt es gerade keine Übersicht vor dem Laden. Du kannst es später unter Programme nachholen.`,
     retry: "Erneut versuchen",
   },
   step4: {

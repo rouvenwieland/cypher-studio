@@ -25,6 +25,7 @@ import { Bench } from "../../ui/Frames";
 import { SelectField } from "../../ui/Inputs";
 import {
   IconActualSize,
+  IconExternal,
   IconFit,
   IconGrid,
   IconClose,
@@ -341,11 +342,12 @@ export default function PrintCheck() {
             {p.output.reveal}
           </Button>
           <Button
+            icon={IconExternal}
             onClick={() =>
               void call("app_open_external", { req: { target: { kind: "catalogLink", linkId: "shirtigo" } } })
             }
           >
-            {p.output.openShirtigo} ↗
+            {p.output.openShirtigo}
           </Button>
         </>
       ),
@@ -365,7 +367,7 @@ export default function PrintCheck() {
     state = {
       kind: "blocked",
       label: p.output.label,
-      reason: p.output.errorsFirst(sum.errors),
+      reason: p.output.errorsFirst(sum.errors, checks.find((c) => c.state === "error")?.title ?? ""),
       onJump: jumpToFirstError,
       forceLabel: p.forceExport,
       onForce: () => setForce(true),
@@ -445,7 +447,7 @@ export default function PrintCheck() {
     <div className="pc__empty" data-testid="print-empty">
       <p className="t-section">{p.empty.drop}</p>
       <div className="cluster">
-        <Button variant="action" combo="mod+o" onClick={pick} data-testid="print-pick">
+        <Button variant="primary" combo="mod+o" onClick={pick} data-testid="print-pick">
           {p.empty.choose}
         </Button>
       </div>
@@ -574,6 +576,21 @@ export default function PrintCheck() {
             </div>
             {profile && garment ? (
               <>
+                {handle && !unreadable ? (
+                  <div className="section">
+                    <ReportSection
+                      report={report}
+                      checks={checks}
+                      profile={profile}
+                      loading={analyzing}
+                      expandedId={expanded}
+                      setExpandedId={setExpanded}
+                      onFix={onFix}
+                      fixed={fixed}
+                      headRefs={headRefs}
+                    />
+                  </div>
+                ) : null}
                 <div className="section">
                   <GarmentSection garments={garments} value={garment.id} onChange={setGarmentId} />
                 </div>
@@ -592,21 +609,6 @@ export default function PrintCheck() {
                     onOffsetTop={setOffsetTop}
                   />
                 </div>
-                {handle && !unreadable ? (
-                  <div className="section">
-                    <ReportSection
-                      report={report}
-                      checks={checks}
-                      profile={profile}
-                      loading={analyzing}
-                      expandedId={expanded}
-                      setExpandedId={setExpanded}
-                      onFix={onFix}
-                      fixed={fixed}
-                      headRefs={headRefs}
-                    />
-                  </div>
-                ) : null}
                 <div className="section">
                   <ExportSection
                     options={options}

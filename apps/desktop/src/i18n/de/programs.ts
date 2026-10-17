@@ -31,6 +31,7 @@ export const programs = {
     verifying: "wird geprüft",
     installing: "wird installiert",
     installed: "installiert",
+    checksumOk: "stimmte beim Laden",
     setUp: "eingerichtet",
     updateAvailable: "Update verfügbar",
     found: "gefunden",
@@ -137,7 +138,7 @@ export const programs = {
 export const install = {
   title: (name: string) => `${name} installieren`,
   titleUpdate: (name: string) => `${name} aktualisieren`,
-  loadingPlan: "Prüfungsanzeige wird erstellt …",
+  loadingPlan: "Übersicht vor dem Laden wird erstellt …",
   labels: {
     source: "Quelle",
     version: "Version",
@@ -152,7 +153,7 @@ export const install = {
   whyThisSource: "Warum diese Quelle?",
   whyThisSourceText: (name: string, mirrors: boolean) =>
     mirrors
-      ? `Steht im Cypher-Manifest als offizielle Quelle von ${name}. Weiterleitungen nur zu Spiegeln derselben Liste; der Inhalt ist über die Prüfsumme festgenagelt.`
+      ? `Steht im Cypher-Manifest als offizielle Quelle von ${name}. Weiterleitungen gehen nur zu Servern derselben Liste; was ankommt, muss zur Prüfsumme passen.`
       : `Steht im Cypher-Manifest als offizielle Quelle von ${name}. Es gibt keine Weiterleitung auf andere Server.`,
   versionLine: (version: string, channel: string, released: string | null) =>
     `${version} · ${channel}${released ? ` · erschienen ${released}` : ""}`,
@@ -244,14 +245,18 @@ export const install = {
   },
   errors: {
     checksum: {
-      title: "Die geladene Datei ist nicht die erwartete.",
-      safe: "Wir haben sie gelöscht. Installiert wurde nichts.",
-      why: "Das passiert bei abgebrochenen Downloads oder einem veränderten Spiegel.",
-      otherMirror: "Von anderem Spiegel laden",
+      title: "Prüfsumme stimmt nicht. Die Datei wurde verworfen.",
+      safe: "Es wurde nichts installiert und nichts ausgeführt. Dein Rechner ist nicht betroffen.",
+      why: "Meist ist der Download unterwegs beschädigt worden. Selten wurde die Datei am Server verändert. Darum installieren wir nur, was zur Prüfsumme passt.",
+      retry: "Erneut laden und prüfen",
       copy: "Details kopieren",
       copied: "Details kopiert",
       expected: "Erwartet",
+      expectedFrom: "aus dem Manifest",
       actual: "Berechnet",
+      actualFrom: "aus deiner Datei",
+      differs: (n: number, total: number) =>
+        n === 1 ? `1 von ${total} Blöcken weicht ab.` : `${n} von ${total} Blöcken weichen ab.`,
       region: "Sicherheitswarnung",
       detailsText: (name: string, file: string, expected: string, actual: string) =>
         `${name}: Prüfsumme falsch\nDatei: ${file}\nErwartet: ${expected}\nBerechnet: ${actual}`,
@@ -260,9 +265,8 @@ export const install = {
       title: (host: string, done: string, total: string) =>
         `Verbindung zu ${host} abgebrochen bei ${done} von ${total} MB.`,
       titlePlain: (host: string) => `Verbindung zu ${host} abgebrochen.`,
-      safe: "Nichts ist installiert. Geht automatisch weiter, sobald du online bist.",
+      safe: "Nichts ist installiert. Mit „Jetzt erneut“ geht es weiter, sobald du online bist.",
       now: "Jetzt erneut",
-      mirror: "Anderen Spiegel",
     },
     disk: {
       title: (drive: string, missing: string) => `Auf ${drive} fehlen ${missing}.`,
@@ -281,7 +285,7 @@ export const install = {
       again: "Erneut starten",
     },
     expiredPlan: {
-      title: "Die Prüfungsanzeige ist abgelaufen.",
+      title: "Die Übersicht vor dem Laden ist abgelaufen.",
       text: "Sie gilt 10 Minuten. Es wurde nichts geladen.",
       again: "Neu anzeigen",
     },

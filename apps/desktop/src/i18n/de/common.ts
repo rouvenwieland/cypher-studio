@@ -4,6 +4,8 @@ export const common = {
   windowTitle: (module: string) => `${module} – Cypher Studio`,
   close: "Schließen",
   unitMm: "mm",
+  /** Name der Farbe beim Hersteller (Bestellnummer-Name), klar beschriftet */
+  shirtigoColor: (name: string) => `Shirtigo: ${name}`,
   hundredMm: "100 mm",
   cancel: "Abbrechen",
   back: "Zurück",
@@ -75,7 +77,6 @@ export const nav = {
   settings: "Einstellungen",
   jobs: "Aufträge",
   groups: { material: "Material", output: "Ausgabe", extra: "Extra" },
-  optional: "optional",
   brandHome: "Cypher Studio · Start",
   brandName: "Cypher Studio",
   brandShort: "CS",

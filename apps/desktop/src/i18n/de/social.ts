@@ -16,6 +16,7 @@ export const social = {
     title: "Wähle eine Vorlage",
     text: "Wähle eine Vorlage. Text und Bild füllst du rechts aus.",
     none: "Für dieses Format gibt es noch keine Vorlage.",
+    inspector: "Hier erscheint die Messung, sobald du eine Vorlage gewählt hast.",
   },
   loading: "Vorlagen werden geladen",
   templates: {
@@ -54,6 +55,7 @@ export const social = {
     ink: "Tinte",
     help: "Setzt Grund und Textfarbe gemeinsam, damit der Kontrast stimmt.",
   },
+  verdict: { ok: "Bereit", warn: "Bereit mit Hinweisen" },
   measure: {
     title: "Messung",
     zone: "Text in Sicherheitszone",

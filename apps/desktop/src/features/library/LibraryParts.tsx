@@ -162,6 +162,7 @@ export function Cell({
   index,
   onClick,
   onDoubleClick,
+  nameChars,
 }: {
   entry: LibraryEntry;
   selected: boolean;
@@ -169,6 +170,8 @@ export function Cell({
   index: number;
   onClick: (e: React.MouseEvent) => void;
   onDoubleClick: () => void;
+  /** So viele Zeichen passen unter das Vorschaubild; längere Namen werden in der Mitte gekürzt, die Endung bleibt */
+  nameChars: number;
 }) {
   const g = L.grid;
   return (
@@ -193,7 +196,7 @@ export function Cell({
         ) : null}
       </div>
       <span className="cell__name t-meta" title={entry.fileName}>
-        {ellipsizeMiddle(entry.fileName, 32)}
+        {ellipsizeMiddle(entry.fileName, nameChars)}
       </span>
       <span className="cell__meta t-data t-mute">
         {g.typeAndSize(extOf(entry.fileName).toUpperCase(), fmtBytes(entry.size))}

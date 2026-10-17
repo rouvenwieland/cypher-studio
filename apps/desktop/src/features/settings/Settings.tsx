@@ -624,12 +624,14 @@ function UpdatesSection({ settings }: { settings: Settings }) {
             <ul className="ilist">
               {pending.map((p) => (
                 <li key={p.id} className="ilist__row">
-                  <span className="t-data">
-                    {u.programLine(
-                      p.name,
-                      p.installations.find((i) => i.kind === "cypher")?.version ?? "—",
-                      p.latest?.version ?? "—",
-                    )}
+                  <span>
+                    <span className="t-strong">{p.name}</span>{" "}
+                    <span className="t-data">
+                      {u.versionStep(
+                        p.installations.find((i) => i.kind === "cypher")?.version ?? "—",
+                        p.latest?.version ?? "—",
+                      )}
+                    </span>
                   </span>
                   <Button
                     small

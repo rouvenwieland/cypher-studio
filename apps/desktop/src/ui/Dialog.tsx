@@ -13,6 +13,8 @@ interface DialogProps {
   children: ReactNode;
   footer?: ReactNode;
   footerStart?: ReactNode;
+  /** Volle Breite über den Knöpfen im festen Fuß (z. B. Zustimmung): bleibt ohne Scrollen sichtbar */
+  footerLead?: ReactNode;
   /** Zusatzbeschreibung für Screenreader */
   describedBy?: string | undefined;
   testId?: string | undefined;
@@ -32,6 +34,7 @@ export function Dialog({
   children,
   footer,
   footerStart,
+  footerLead,
   describedBy,
   testId,
   onKeyDown,
@@ -103,8 +106,9 @@ export function Dialog({
           >
             {children}
           </div>
-          {footer || footerStart ? (
+          {footer || footerStart || footerLead ? (
             <footer className="dialog__foot">
+              {footerLead ? <div className="dialog__foot-lead">{footerLead}</div> : null}
               {footerStart ? <div className="dialog__foot-start">{footerStart}</div> : null}
               {footer}
             </footer>

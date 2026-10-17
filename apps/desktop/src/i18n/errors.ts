@@ -65,13 +65,13 @@ export function errorText(e: AppError): ErrorMessage {
       };
     case "planExpired":
       return {
-        title: "Die Prüfungsanzeige ist abgelaufen",
+        title: "Die Übersicht vor dem Laden ist abgelaufen",
         text: "Sie gilt nur 10 Minuten, damit Zustimmung und Datei zusammenpassen.",
         safe: "Es wurde nichts geladen.",
       };
     case "consentMismatch":
       return {
-        title: "Zustimmung und Prüfungsanzeige passen nicht zusammen",
+        title: "Zustimmung und Übersicht vor dem Laden passen nicht zusammen",
         text: "Die Angaben haben sich seit der Anzeige geändert.",
         safe: "Es wurde nichts geladen.",
       };
@@ -133,9 +133,9 @@ export function errorText(e: AppError): ErrorMessage {
       };
     case "checksumMismatch":
       return {
-        title: "Die geladene Datei ist nicht die erwartete",
-        text: "Das passiert bei abgebrochenen Downloads oder einem veränderten Spiegel.",
-        safe: "Wir haben sie gelöscht. Installiert wurde nichts.",
+        title: "Prüfsumme stimmt nicht",
+        text: "Meist ist der Download unterwegs beschädigt worden.",
+        safe: "Die Datei wurde verworfen. Es wurde nichts installiert und nichts ausgeführt.",
       };
     case "sizeMismatch":
       return {

@@ -4,6 +4,8 @@
   position: fixed;
   inset: 0;
   display: grid;
+  /* Die Spalte darf nicht mit dem Wort wachsen: sonst misst die Anpassung ihre eigene Breite (Rückkopplung bei manchen Fensterbreiten) */
+  grid-template-columns: minmax(0, 1fr);
   grid-template-rows: auto 1fr auto auto;
   padding: var(--s-6) var(--margin);
   background: var(--c-ink);
@@ -129,7 +131,15 @@
   display: flex;
   justify-content: center;
   padding-top: var(--s-5);
-  min-height: calc(var(--control-h) + var(--s-5));
+  min-height: calc(var(--s-8) + var(--s-5));
+}
+
+/* Der Einstieg ist die eine Handlung dieses Bildes: groß genug gegen die Kennung */
+.kennung__go .btn {
+  min-height: var(--s-8);
+  padding: 0 var(--s-7);
+  font-size: var(--fs-read);
+  line-height: var(--lh-read);
 }
 
 .kennung__hint {
@@ -273,6 +283,7 @@
 }
 
 .scale__tick {
+  white-space: nowrap;
   position: absolute;
   top: 0;
   color: var(--mute);
@@ -282,6 +293,32 @@
 
 .scale__tick:first-child {
   translate: 0 0;
+}
+
+.scale__tick:last-child {
+  translate: -100% 0;
+}
+
+/* Namen der Schritte: die Kästen der Zeitleiste sind zu schmal für Worte */
+.scale__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-1) var(--s-5);
+  margin: var(--s-3) 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--fs-meta);
+  line-height: var(--lh-meta);
+  color: var(--mute);
+}
+
+.scale__step[data-state="now"] {
+  color: var(--fg);
+  font-weight: var(--fw-strong);
+}
+
+.scale__step[data-state="done"] {
+  color: var(--fg-2);
 }
 
 .scale__tracks {

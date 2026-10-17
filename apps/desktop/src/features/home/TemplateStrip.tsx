@@ -88,7 +88,7 @@ function CreatePopover({
       <div className="stack">
         <p className="t-meta">{s.popover.needsProject}</p>
         <Button
-          variant="action"
+          variant="primary"
           onClick={() => {
             onClose();
             onNewProject();

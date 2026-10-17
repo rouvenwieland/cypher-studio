@@ -25,12 +25,24 @@
   min-width: 0;
 }
 
+/* Schmales Fenster: beide Spalten gleich breit, damit Version und Status der Programme nicht abgeschnitten werden */
+:root[data-bp="narrow"] .start__projects {
+  grid-column: 1 / span 6;
+}
+
+:root[data-bp="narrow"] .start__side {
+  grid-column: 7 / span 6;
+}
+
+/* Gleiche Höhe in beiden Spalten, damit die Haarlinien unter den Köpfen fluchten */
 .panel__head {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: var(--s-4);
   min-width: 0;
+  box-sizing: border-box;
+  height: calc(var(--s-7) + var(--s-3) + var(--hair));
   padding-bottom: var(--s-3);
   border-bottom: var(--hair) solid var(--fg);
 }
@@ -64,7 +76,8 @@
 
 .prow {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto auto 32px;
+  /* feste Spalten: Kollektion, Anzahl und Datum fluchten über alle Zeilen */
+  grid-template-columns: minmax(0, 1fr) 152px 88px 92px 32px;
   align-items: center;
   gap: var(--s-4);
   min-height: 56px;
@@ -123,12 +136,17 @@
   text-align: right;
 }
 
-.prow__time {
-  min-width: 88px;
+.prow__time,
+.prow__count {
+  min-width: 0;
 }
 
-.prow__count {
-  min-width: 72px;
+:root[data-bp="narrow"] .prow {
+  grid-template-columns: minmax(0, 1fr) 128px 84px 32px;
+}
+
+:root[data-bp="narrow"] .prow__count {
+  display: none;
 }
 
 .prow__menu {
@@ -144,7 +162,7 @@
 
 .pl__row {
   display: grid;
-  grid-template-columns: 104px minmax(0, 1fr) auto;
+  grid-template-columns: 128px minmax(0, 1fr) auto;
   align-items: center;
   gap: var(--s-4);
   min-height: 64px;
@@ -171,6 +189,13 @@
   flex-direction: column;
   gap: var(--s-1);
   min-width: 0;
+}
+
+/* Rolle einzeilig, ohne hängendes „·“ am Zeilenende */
+.pl__name .t-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .pl__state {

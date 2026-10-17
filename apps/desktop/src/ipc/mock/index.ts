@@ -25,8 +25,12 @@ declare global {
     __CYPHER_SCENARIO__?: string;
     __CYPHER_MOCK_SPEED__?: number;
     __CYPHER_PICK__?: string;
+    __CYPHER_MOCK_LATENCY__?: number;
   }
 }
+
+/** Diese Commands antworten auch bei künstlicher Antwortzeit sofort (Einstellungen und Marke tragen das Gerüst). */
+const INSTANT = new Set(["settings_get", "settings_update", "app_info", "brand_get", "jobs_active", "jobs_recent"]);
 
 /** Szenario aus `window.__CYPHER_SCENARIO__` oder `?scenario=`; mehrere mit „+“ kombinierbar. */
 function readScenario(): string {
@@ -120,6 +124,9 @@ export function installMock(): void {
       db.calls.push({ cmd, args: payload });
       if (!handler)
         throw { kind: "internal", message: `Mock: Command „${cmd}“ ist nicht bekannt`, correlationId: "mock" };
+      // Künstliche Antwortzeit (nur für Fotos der Laden-Zustände): `window.__CYPHER_MOCK_LATENCY__` in ms
+      const latency = window.__CYPHER_MOCK_LATENCY__ ?? 0;
+      if (latency > 0 && !INSTANT.has(cmd)) await new Promise((r) => setTimeout(r, latency));
       try {
         return await handler(payload ?? {});
       } catch (error) {

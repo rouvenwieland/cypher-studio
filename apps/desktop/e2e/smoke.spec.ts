@@ -82,6 +82,7 @@ const SCREENS: Screen[] = [
     prep: async (p) => {
       await p.getByTestId("tpl-drop-ankuendigung").first().click();
       await p.getByTestId("pick-bild").click();
+      await p.getByTestId("focal-picker").waitFor();
       await p.keyboard.press("Control+Enter");
       await expect(p.getByTestId("social-output")).toHaveAttribute("data-state", "done");
     },

@@ -58,19 +58,43 @@ function drive(dir: string): string {
   return m ? m[0] : dir.startsWith("/") ? "/" : "dem Datenträger";
 }
 
-function ReviewBody({
-  plan,
+/** Zustimmung und „Danach“ stehen im festen Fuß des Dialogs: Sie sind sichtbar, bevor Strg+Enter auslöst. */
+function ReviewLead({
+  hasPack,
   applySetup,
   onApplySetup,
-  hasPack,
+}: {
+  hasPack: boolean;
+  applySetup: boolean;
+  onApplySetup: (v: boolean) => void;
+}) {
+  return (
+    <div className="install__lead">
+      <span className="t-label">{i.labels.consent}</span>
+      {hasPack ? (
+        <div className="install__after">
+          <Checkbox checked={applySetup} onChange={onApplySetup} describedBy="install-after-hint">
+            {i.after}
+          </Checkbox>
+          <p className="t-meta t-mute" id="install-after-hint">
+            {i.afterHint}
+          </p>
+        </div>
+      ) : null}
+      <p className="t-read install__consent" data-testid="install-consent">
+        {i.consentText}
+      </p>
+    </div>
+  );
+}
+
+function ReviewBody({
+  plan,
   releasedAt,
   onChangeTarget,
   stale,
 }: {
   plan: InstallPlan;
-  applySetup: boolean;
-  onApplySetup: (v: boolean) => void;
-  hasPack: boolean;
   releasedAt: string | null;
   onChangeTarget: () => void;
   stale: string | null;
@@ -100,14 +124,16 @@ function ReviewBody({
             ),
             sub: (
               <>
-                <span className="install__path t-data selectable">{new URL(plan.source.url).pathname}</span>
                 <button type="button" className="linkbtn" aria-expanded={why} onClick={() => setWhy(!why)}>
                   {i.whyThisSource}
                 </button>
                 {why ? (
-                  <span className="install__why">
-                    {i.whyThisSourceText(plan.programName, plan.source.mirrorRedirects)}
-                  </span>
+                  <>
+                    <span className="install__why">
+                      {i.whyThisSourceText(plan.programName, plan.source.mirrorRedirects)}
+                    </span>
+                    <span className="install__path t-data selectable">{new URL(plan.source.url).pathname}</span>
+                  </>
                 ) : null}
               </>
             ),
@@ -115,7 +141,7 @@ function ReviewBody({
           {
             label: i.labels.version,
             value: (
-              <span className="t-data">
+              <span>
                 {i.versionLine(plan.version, i.channel[plan.channel], releasedAt ? fmtDate(releasedAt) : null)}
               </span>
             ),
@@ -123,7 +149,7 @@ function ReviewBody({
           {
             label: i.labels.size,
             value: (
-              <span className="t-data">
+              <span>
                 {i.sizeLine(
                   fmtBytes(plan.artifact.size),
                   fmtBytes(unpacked),
@@ -137,7 +163,7 @@ function ReviewBody({
             label: i.labels.license,
             value: (
               <span className="install__license">
-                <span className="t-data">{i.licenseLine(plan.license.spdx, plan.license.name)}</span>
+                <span>{i.licenseLine(plan.license.spdx, plan.license.name)}</span>
                 <button type="button" className="linkbtn" onClick={openLicense}>
                   {i.licenseText} <IconExternal size={12} />
                 </button>
@@ -205,21 +231,6 @@ function ReviewBody({
           {i.notes.note(n)}
         </p>
       ))}
-      {hasPack ? (
-        <div className="install__after">
-          <span className="t-label">{i.labels.after}</span>
-          <Checkbox checked={applySetup} onChange={onApplySetup} describedBy="install-after-hint">
-            {i.after}
-          </Checkbox>
-          <p className="t-meta t-mute" id="install-after-hint">
-            {i.afterHint}
-          </p>
-        </div>
-      ) : null}
-      <div className="install__consent">
-        <span className="t-label">{i.labels.consent}</span>
-        <p className="t-read">{i.consentText}</p>
-      </div>
     </div>
   );
 }
@@ -356,6 +367,9 @@ function ChecksumError({
 }) {
   const c = i.errors.checksum;
   const push = useToasts((s) => s.push);
+  const expectedGroups = checksumGroups(error.expected);
+  const actualGroups = checksumGroups(error.actual);
+  const differing = expectedGroups.filter((g, idx) => actualGroups[idx] !== g).length;
   return (
     <div className="stack stack--loose" data-testid="checksum-error">
       <Notice
@@ -378,10 +392,21 @@ function ChecksumError({
         <strong>{c.safe}</strong>
       </Notice>
       <div className="compare">
-        <span className="t-label">{c.expected}</span>
-        <ChecksumGroups sha={error.expected} diffAgainst={error.actual} label={c.expected} />
-        <span className="t-label">{c.actual}</span>
-        <ChecksumGroups sha={error.actual} diffAgainst={error.expected} label={c.actual} />
+        <div className="compare__block">
+          <span className="t-label">
+            {c.expected} <span className="t-mute">({c.expectedFrom})</span>
+          </span>
+          <ChecksumGroups sha={error.expected} diffAgainst={error.actual} label={c.expected} />
+        </div>
+        <div className="compare__block">
+          <span className="t-label">
+            {c.actual} <span className="t-mute">({c.actualFrom})</span>
+          </span>
+          <ChecksumGroups sha={error.actual} diffAgainst={error.expected} label={c.actual} />
+        </div>
+        <p className="t-strong" data-testid="checksum-diff">
+          {c.differs(differing, expectedGroups.length)}
+        </p>
       </div>
       <p className="t-read">{c.why}</p>
     </div>
@@ -535,6 +560,7 @@ function InstallDialog({
 
   let body: ReactNode;
   let footer: ReactNode;
+  let footerLead: ReactNode = null;
   if (stage.kind === "loading") {
     body = (
       <p className="t-read" role="status">
@@ -546,14 +572,12 @@ function InstallDialog({
     body = (
       <ReviewBody
         plan={stage.plan}
-        applySetup={flow.applySetup}
-        onApplySetup={flow.setApplySetup}
-        hasPack={hasPack}
         releasedAt={program?.latest?.releasedAt ?? null}
         onChangeTarget={changeTarget}
         stale={staleNote}
       />
     );
+    footerLead = <ReviewLead hasPack={hasPack} applySetup={flow.applySetup} onApplySetup={flow.setApplySetup} />;
     footer = (
       <>
         <Button onClick={close}>{i.cancel}</Button>
@@ -634,50 +658,27 @@ function InstallDialog({
     const err = stage;
     const kind = err.error.kind;
     body = <ErrorBody error={err.error} plan={err.plan} progress={err.progress} />;
+    // Ein Hauptknopf je Fehler, mit Startfokus: Die Meldung wird angesagt (role=alert), Enter wiederholt sicher
+    const retry: { label: string; run: () => void } =
+      kind === "network"
+        ? { label: i.errors.network.now, run: flow.reload }
+        : kind === "checksumMismatch"
+          ? { label: i.errors.checksum.retry, run: flow.reload }
+          : kind === "diskFull"
+            ? { label: i.errors.disk.other, run: changeTarget }
+            : kind === "busy"
+              ? { label: i.errors.running.retry, run: flow.reload }
+              : kind === "cancelled"
+                ? { label: i.errors.cancelled.again, run: flow.reload }
+                : kind === "planExpired" || kind === "consentMismatch"
+                  ? { label: i.errors.expiredPlan.again, run: flow.reload }
+                  : { label: i.errors.generic.retry, run: flow.reload };
     footer = (
       <>
         <Button onClick={close}>{i.errors.generic.close}</Button>
-        {kind === "network" ? (
-          <Button variant="action" onClick={flow.reload}>
-            {i.errors.network.now}
-          </Button>
-        ) : null}
-        {kind === "checksumMismatch" ? (
-          <Button variant="action" onClick={flow.reload} data-testid="install-mirror">
-            {i.errors.checksum.otherMirror}
-          </Button>
-        ) : null}
-        {kind === "diskFull" ? (
-          <Button variant="action" onClick={changeTarget}>
-            {i.errors.disk.other}
-          </Button>
-        ) : null}
-        {kind === "busy" ? (
-          <Button variant="action" onClick={flow.reload}>
-            {i.errors.running.retry}
-          </Button>
-        ) : null}
-        {kind === "cancelled" ? (
-          <Button variant="action" onClick={flow.reload}>
-            {i.errors.cancelled.again}
-          </Button>
-        ) : null}
-        {kind === "planExpired" || kind === "consentMismatch" ? (
-          <Button variant="action" onClick={flow.reload}>
-            {i.errors.expiredPlan.again}
-          </Button>
-        ) : null}
-        {kind !== "network" &&
-        kind !== "checksumMismatch" &&
-        kind !== "diskFull" &&
-        kind !== "busy" &&
-        kind !== "cancelled" &&
-        kind !== "planExpired" &&
-        kind !== "consentMismatch" ? (
-          <Button variant="action" onClick={flow.reload}>
-            {i.errors.generic.retry}
-          </Button>
-        ) : null}
+        <Button variant="primary" autoFocus onClick={retry.run} data-testid="install-retry">
+          {retry.label}
+        </Button>
       </>
     );
   }
@@ -689,6 +690,7 @@ function InstallDialog({
       onClose={close}
       dismissible={!running}
       testId="install-dialog"
+      footerLead={footerLead}
       footer={footer}
       onKeyDown={onKeyDown}
     >

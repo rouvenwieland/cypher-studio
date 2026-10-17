@@ -46,6 +46,23 @@ describe("Prüfpunkte aus Befunden", () => {
     expect(checks.find((c) => c.id === "strokes")?.measured).toBe("0,6 mm");
     expect(checks.find((c) => c.id === "resolution")?.measured).toBe("300 dpi bei 280 mm");
   });
+  it("Messwert und Grenze widersprechen sich nie: Grenzen sind als „erlaubt/nötig“ formuliert, Befunde stehen im Messwert", () => {
+    const checks = evaluateChecks(report("signal_v3.png"), profile);
+    expect(checks.find((c) => c.id === "semi")?.limit).toBe("erlaubt ≤ 0,1 %");
+    expect(checks.find((c) => c.id === "strokes")?.limit).toBe("nötig ≥ 0,8 mm");
+    expect(checks.find((c) => c.id === "resolution")?.limit).toMatch(/^nötig ≥ \d+ dpi$/);
+    // ein Kontrast-Befund darf nicht mit „kein Befund“ im Messwert erscheinen
+    const withFinding = evaluateChecks(
+      {
+        ...report("signal_v3.png"),
+        findings: [{ ruleId: "contrast.lowOnGarment", severity: "warning", params: {}, fix: null }] as never,
+      },
+      profile,
+    );
+    const contrast = withFinding.find((c) => c.id === "contrast");
+    expect(contrast?.state).toBe("warning");
+    expect(contrast?.measured).not.toBe("kein Befund");
+  });
   it("Linienstärke ist „nicht geprüft“, wenn der Kern sie nicht misst", () => {
     const checks = evaluateChecks(report("schriftzug_foto.jpg"), profile);
     const strokes = checks.find((c) => c.id === "strokes");

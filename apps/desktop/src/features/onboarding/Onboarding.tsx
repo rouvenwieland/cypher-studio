@@ -43,7 +43,7 @@ function Scale({ step, downloadMin, needle }: { step: number; downloadMin: numbe
       <div className="scale__ticks" aria-hidden="true">
         {[0, 5, 10, 15, 20, 25, 30].map((m) => (
           <span key={m} className="scale__tick t-data" style={{ left: pct(m) }}>
-            {m}
+            {m === total ? `${m} ${o.schedule.minutes}` : m}
           </span>
         ))}
       </div>
@@ -71,6 +71,18 @@ function Scale({ step, downloadMin, needle }: { step: number; downloadMin: numbe
         })}
         <span className="scale__needle" style={{ left: pct(needle) }} aria-hidden="true" />
       </div>
+      <ol className="scale__legend" aria-label={o.schedule.label}>
+        {o.schedule.steps.map((name, idx) => (
+          <li
+            key={name}
+            className="scale__step"
+            data-state={idx + 1 < step ? "done" : idx + 1 === step ? "now" : "todo"}
+            {...(idx + 1 === step ? { "aria-current": "step" as const } : {})}
+          >
+            <span className="t-data">{idx + 1}</span> {name}
+          </li>
+        ))}
+      </ol>
     </div>
   );
 }
@@ -261,7 +273,7 @@ export default function Onboarding() {
           </div>
         ) : (
           <div className="cluster">
-            <Button variant="action" onClick={choose.start} data-testid="ob-choose-folder">
+            <Button variant="primary" onClick={choose.start} data-testid="ob-choose-folder">
               {o.step2.choose}
             </Button>
             <Button variant="text" onClick={() => go(3)}>
@@ -545,7 +557,7 @@ export default function Onboarding() {
         </span>
         <div className="ob__scale">
           <Scale step={step} downloadMin={downloadMin} needle={needle} />
-          <p className="t-data ob__remaining" data-testid="ob-remaining">
+          <p className="t-meta ob__remaining" data-testid="ob-remaining">
             {step >= 4 && dlTotal > 0 ? o.schedule.remaining(remaining) : o.schedule.estimating}
           </p>
         </div>

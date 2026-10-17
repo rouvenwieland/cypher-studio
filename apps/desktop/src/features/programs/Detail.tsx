@@ -17,7 +17,6 @@ import { FitText } from "../../ui/FitText";
 import { PlainPage } from "../../ui/Frames";
 import { IconBack } from "../../ui/icons";
 import { ActionMenu, Tabs, type MenuEntry } from "../../ui/Overlays";
-import { Status } from "../../ui/Status";
 import { useInstallUi } from "../install/store";
 import { deriveProgramState } from "./state";
 import { roleOf, StatusCell } from "./parts";
@@ -271,7 +270,7 @@ export function ProgramDetail() {
     { label: t.common.labels.license, value: program.license.spdx },
     {
       label: t.common.labels.checksum,
-      value: inst?.verified ? <Status kind="ok">{t.programs.status.installed}</Status> : "—",
+      value: inst?.verified ? t.programs.status.checksumOk : "—",
     },
     ...(inst
       ? [

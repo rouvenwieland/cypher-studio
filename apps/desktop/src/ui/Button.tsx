@@ -7,7 +7,11 @@ export function Kbd({ combo }: { combo: string }) {
   return <kbd className="kbd">{formatCombo(combo)}</kbd>;
 }
 
-type Variant = "default" | "action" | "ghost" | "text" | "danger";
+/**
+ * `action` (Cyan) gehört der einen Ausgangs-Aktion und dem Bestätigen im Dialog (DESIGN §1).
+ * `primary` (Tinte) ist der „nächste Schritt“ eines Zustands, z. B. Datei wählen oder Erneut versuchen.
+ */
+type Variant = "default" | "action" | "primary" | "ghost" | "text" | "danger";
 
 interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "className"> {
   variant?: Variant | undefined;

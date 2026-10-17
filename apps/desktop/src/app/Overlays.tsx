@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { Command } from "cmdk";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { call } from "../ipc/commands";
 import { useCmd } from "../ipc/queries";
@@ -89,6 +89,9 @@ export function Palette() {
     setUi({
       surround: dark ? { paper: surround?.paper ?? "light", ink: v } : { paper: v, ink: surround?.ink ?? "dark" },
     });
+  // „Umfeld“ wirkt nur in den Vorschau-Ansichten; dort allein bietet die Palette es an
+  const { pathname } = useLocation();
+  const hasPreview = ["/druck", "/mockups", "/social", "/freistellen"].some((x) => pathname.startsWith(x));
   const p = t.shell.palette;
 
   return (
@@ -144,27 +147,31 @@ export function Palette() {
                 <span>{p.openFile}</span>
                 <kbd className="kbd">{formatCombo("mod+o")}</kbd>
               </Command.Item>
-              <Command.Item
-                value={p.surround.hell}
-                className="palette__item"
-                onSelect={() => run(() => setSurround("light"))}
-              >
-                <span>{p.surround.hell}</span>
-              </Command.Item>
-              <Command.Item
-                value={p.surround.mittel}
-                className="palette__item"
-                onSelect={() => run(() => setSurround("mid"))}
-              >
-                <span>{p.surround.mittel}</span>
-              </Command.Item>
-              <Command.Item
-                value={p.surround.dunkel}
-                className="palette__item"
-                onSelect={() => run(() => setSurround("dark"))}
-              >
-                <span>{p.surround.dunkel}</span>
-              </Command.Item>
+              {hasPreview ? (
+                <>
+                  <Command.Item
+                    value={p.surround.hell}
+                    className="palette__item"
+                    onSelect={() => run(() => setSurround("light"))}
+                  >
+                    <span>{p.surround.hell}</span>
+                  </Command.Item>
+                  <Command.Item
+                    value={p.surround.mittel}
+                    className="palette__item"
+                    onSelect={() => run(() => setSurround("mid"))}
+                  >
+                    <span>{p.surround.mittel}</span>
+                  </Command.Item>
+                  <Command.Item
+                    value={p.surround.dunkel}
+                    className="palette__item"
+                    onSelect={() => run(() => setSurround("dark"))}
+                  >
+                    <span>{p.surround.dunkel}</span>
+                  </Command.Item>
+                </>
+              ) : null}
               <Command.Item
                 value={p.theme.system}
                 className="palette__item"

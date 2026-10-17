@@ -280,9 +280,28 @@
   margin-top: var(--s-3);
 }
 
+/* Eigenes Zeichen statt der Standardmarke des Browsers (Vertrag: keine Browser-Standardflächen) */
 .exp__sum {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
   cursor: default;
   padding: var(--s-1) 0;
+  list-style: none;
+}
+
+.exp__sum::-webkit-details-marker {
+  display: none;
+}
+
+.exp__caret {
+  display: grid;
+  place-items: center;
+  transition: rotate var(--dur-ui) var(--ease-schub);
+}
+
+.exp[open] .exp__caret {
+  rotate: 90deg;
 }
 
 .exp__body {

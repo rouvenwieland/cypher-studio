@@ -27,7 +27,7 @@ describe("Mock-Handler (ARCHITEKTUR 8.2)", () => {
       programs: { id: string; installations: unknown[]; updateAvailable: boolean }[];
     };
     expect(view.programs.map((p) => p.id)).toEqual(["krita", "inkscape", "blender", "kdenlive"]);
-    expect(view.programs.find((p) => p.id === "inkscape")?.updateAvailable).toBe(true);
+    expect(view.programs.find((p) => p.id === "krita")?.updateAvailable).toBe(true);
     expect(view.programs.find((p) => p.id === "blender")?.installations).toHaveLength(0);
   });
 

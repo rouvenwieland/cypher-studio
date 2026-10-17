@@ -163,7 +163,7 @@ export function useSetupTab(
         <EmptyState
           testId="setup-empty"
           actions={
-            <Button variant="action" onClick={() => openInstall({ programId: program.id })}>
+            <Button variant="primary" onClick={() => openInstall({ programId: program.id })}>
               {s.installFirst(program.name)}
             </Button>
           }

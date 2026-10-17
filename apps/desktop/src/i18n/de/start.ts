@@ -68,6 +68,7 @@ export const start = {
     title: "Gemeinsamer Ordner",
     none: "Noch nicht gewählt",
     summary: (path: string, files: string) => `${path} · ${files} Dateien`,
+    unreachable: (path: string) => `${path} · nicht erreichbar`,
     change: "Ordner wechseln",
     choose: "Ordner wählen",
   },

@@ -1,4 +1,4 @@
-import { NavLink } from "react-router";
+import { NavLink, useLocation } from "react-router";
 import { t } from "../i18n/de";
 import { formatCombo } from "../lib/keys";
 import { FitText } from "../ui/FitText";
@@ -8,7 +8,6 @@ import { MODULES, SETTINGS_PATH, type ModuleDef } from "./modules";
 import { JobsPopover } from "./JobsPopover";
 import { lampOf, useJobs, useUpdate } from "./stores";
 import { useBreakpoint } from "./theme";
-import { useCmd } from "../ipc/queries";
 
 function RailLink({
   to,
@@ -25,10 +24,14 @@ function RailLink({
   narrow: boolean;
   testId?: string;
 }) {
+  // Den aktiven Zustand selbst berechnen und die Klasse als Zeichenkette geben: Radix `asChild` im Tooltip
+  // (schmale Rail) macht aus einer className-Funktion sonst Quelltext im class-Attribut.
+  const { pathname } = useLocation();
+  const active = pathname === to || pathname.startsWith(`${to}/`);
   const link = (
     <NavLink
       to={to}
-      className={({ isActive }) => (isActive ? "rail__item rail__item--on" : "rail__item")}
+      className={active ? "rail__item rail__item--on" : "rail__item"}
       aria-label={narrow ? label : undefined}
       {...(testId ? { "data-testid": testId } : {})}
       aria-keyshortcuts={combo.replace("mod", "Control")}
@@ -65,8 +68,6 @@ export function Rail() {
   const unseen = useJobs((s) => s.unseenFailures);
   const lamp = lampOf(active, unseen);
   const update = useUpdate((s) => s.available);
-  const bgremove = useCmd("bgremove_status", undefined, { staleTime: 60_000 });
-  const modelReady = bgremove.data?.models.some((m) => m.installed) ?? false;
   const start = MODULES[0];
 
   return (
@@ -104,13 +105,7 @@ export function Rail() {
         {groupedModules().map((g) => (
           <div key={g.key ?? "none"} role="group" aria-labelledby={`rail-g-${g.key}`}>
             <h2 className="rail__group t-label" id={`rail-g-${g.key}`}>
-              {narrow
-                ? ""
-                : g.key
-                  ? g.key === "extra" && !modelReady
-                    ? `${t.nav.groups[g.key]} · ${t.nav.optional}`
-                    : t.nav.groups[g.key]
-                  : ""}
+              {narrow ? "" : g.key ? t.nav.groups[g.key] : ""}
             </h2>
             <ul className="rail__list">
               {g.items.map((m) => (

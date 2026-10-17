@@ -8,7 +8,7 @@ export const mockup = {
     label: "Produkt",
     tee: "Shirt",
     hoodie: "Hoodie",
-    hoodieMissing: "Die Hoodie-Vorlage fehlt, das Paket ist nicht geladen. Nur das Shirt ist wählbar.",
+    hoodieMissing: "Für den Hoodie gibt es keine Vorlage. Nur das Shirt ist wählbar.",
   },
   view: { label: "Ansicht", front: "vorne", back: "hinten" },
   color: {
@@ -60,6 +60,7 @@ export const mockup = {
   measure: {
     title: "Messung",
     empty: "Die Messung beginnt, sobald ein Motiv gewählt ist.",
+    scope: "Gemessen wird für die gewählte Textilfarbe und für alle Farben, die du exportierst.",
     noDesign: "noch kein Motiv",
     measuring: "wird gemessen",
     width: "Motivbreite",
@@ -71,10 +72,11 @@ export const mockup = {
     contrast: "Kontrast zum Textil",
     contrastOk: "ausreichend",
     contrastLow: (names: string) => `heben sich kaum ab auf ${names}`,
-    hoodie: "Vorlage fehlt, das Paket ist nicht geladen",
-    altText: (name: string) => `Ansicht, Farbe kann abweichen: ${name}`,
-    altLabel: "Vorschlag für den Alt-Text",
+    hoodie: "Es gibt keine Vorlage für den Hoodie.",
   },
+  /** Zugänglicher Name der Vorschau: Produkt, Farbe, Motiv (nicht als sichtbare Zeile) */
+  canvasLabel: (template: string, color: string, design: string | null) =>
+    design ? `${template}, ${color}, mit Motiv ${design}` : `${template}, ${color}, ohne Motiv`,
   contact: {
     toggle: "Kontaktbogen",
     on: "Kontaktbogen: alle Textilfarben nebeneinander",
@@ -114,5 +116,5 @@ export const mockup = {
     aborted: "Abgebrochen.",
     disposed: "Beendet.",
   } satisfies Record<MockupErrorCode, string>,
-  empty: { noTemplates: "Es gibt noch keine Mockup-Vorlage. Das Paket der Vorlagen ist nicht geladen." },
+  empty: { noTemplates: "Es sind noch keine Mockup-Vorlagen installiert." },
 } as const;

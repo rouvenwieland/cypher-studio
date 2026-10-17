@@ -13,15 +13,36 @@ async function exportsOf(page: Page) {
 }
 
 test.describe("Mockups (CONCEPT.md 6.5)", () => {
-  test("Leerer Zustand: Shirt sichtbar, Motiv wählen, Ausgang gesperrt, Hoodie fehlt ehrlich", async ({ page }) => {
+  test("Leerer Zustand: echtes Shirt aus dem Paket sichtbar, Motiv wählen, Ausgang gesperrt", async ({ page }) => {
     await openApp(page, "mockups");
     await expect(page.getByTestId("mockup-empty")).toContainText("Motiv aus der Bibliothek wählen");
     await expect(page.locator(".mock__canvas")).toBeVisible();
     const out = page.getByTestId("mockup-output");
     await expect(out).toHaveAttribute("data-state", "blocked");
     await expect(out).toContainText("Erst ein Motiv wählen");
-    await expect(page.getByRole("radio", { name: "Hoodie" })).toBeDisabled();
-    await expect(page.getByTestId("measure-hoodie")).toContainText("Vorlage fehlt");
+    await expect(page.getByRole("radio", { name: "Hoodie" })).toBeEnabled();
+    await expect(page.getByTestId("measure-hoodie")).toHaveCount(0);
+  });
+
+  test("Hoodie und Rückseite kommen aus dem Paket: eigene Druckfläche, Motiv passt sich an", async ({ page }) => {
+    await openApp(page, "mockups", { pick: "signal_v3.png" });
+    await page.getByTestId("mockup-pick").click();
+    await expect(page.getByTestId("measure-width")).toContainText("von 330 mm Druckfläche");
+    await page.getByRole("radio", { name: "Hoodie" }).click();
+    // Hoodie vorne: Druckfläche 330 × 280 mm, das hohe Motiv wird kleiner als beim Shirt (kein Überstand)
+    await expect(page.getByTestId("measure-width")).toHaveAttribute("data-state", "ok");
+    await expect(page.getByTestId("mockup-width")).not.toHaveValue("280");
+    await page.getByRole("radio", { name: "hinten" }).click();
+    await expect(page.locator(".mock__canvas")).toHaveAttribute("aria-label", /Hoodie hinten/);
+    await expect(page.getByTestId("measure-width")).toContainText("330 mm Druckfläche");
+  });
+
+  test("Dunkles Textil auf dunklem Umfeld: das Umfeld wird mittel, damit eine Kontur bleibt", async ({ page }) => {
+    await openApp(page, "mockups", { pick: "signal_v3.png", theme: "dark" });
+    await page.getByTestId("mockup-pick").click();
+    await expect(page.locator("[data-umfeld]").first()).toHaveAttribute("data-umfeld", "mittel");
+    await page.getByRole("radio", { name: "Weiß" }).click();
+    await expect(page.locator("[data-umfeld]").first()).toHaveAttribute("data-umfeld", "dunkel");
   });
 
   test("Motiv wählen: Shirt zeigt das Motiv, Messung nennt Breite, Hintergrund und Kontrast", async ({ page }) => {

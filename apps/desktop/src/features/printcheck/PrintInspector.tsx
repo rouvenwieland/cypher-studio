@@ -96,7 +96,9 @@ export function GarmentSection({
       />
       <p className="t-meta" data-testid="garment-name">
         {current?.name ?? ""}
-        {current?.providerColorName ? <span className="t-mute"> · {current.providerColorName}</span> : null}
+        {current?.providerColorName ? (
+          <span className="t-mute"> · {t.common.shirtigoColor(current.providerColorName)}</span>
+        ) : null}
       </p>
     </div>
   );
@@ -134,7 +136,7 @@ export function SizeSection({
     if (Number.isFinite(n) && n > 0) onWidth(Math.min(profile.printAreaMm.width + 100, Math.max(10, n)));
   };
   return (
-    <div className="stack">
+    <div className="stack stack--loose">
       <h3 className="t-section section__title">{p.size.title}</h3>
       <div className="size-row">
         <Field label={p.size.width} htmlFor="print-width">
@@ -187,15 +189,17 @@ export function SizeSection({
           />
         </Field>
       ) : null}
-      <Field label={p.size.technique}>
-        <Segmented
-          label={p.size.technique}
-          value={technique}
-          onChange={onTechnique}
-          options={profile.techniques.map((x) => ({ value: x, label: p.size.techniques[x] }))}
-        />
-      </Field>
-      <p className="t-meta t-mute">{p.size.techniqueHelp}</p>
+      <div className="stack">
+        <Field label={p.size.technique}>
+          <Segmented
+            label={p.size.technique}
+            value={technique}
+            onChange={onTechnique}
+            options={profile.techniques.map((x) => ({ value: x, label: p.size.techniques[x] }))}
+          />
+        </Field>
+        <p className="t-meta t-mute">{p.size.techniqueHelp}</p>
+      </div>
       <Field label={p.size.offsetTop} htmlFor="print-offset-top">
         <div className="input-group">
           <input
@@ -246,7 +250,7 @@ function CheckRow({
         </span>
         <span className="rrow__vals">
           <span className="t-data rrow__measured">{check.state === "open" ? p.report.notChecked : check.measured}</span>
-          <span className="t-data t-mute rrow__limit">{check.limit}</span>
+          <span className="t-data t-mute rrow__limit">({check.limit})</span>
         </span>
         <span className="sr-only">{stateWord(check.state)}</span>
       </button>
@@ -381,7 +385,12 @@ export function ExportSection({
   const dest = options.destination.kind === "project" ? `project:${projectId}` : options.destination.kind;
   return (
     <details className="exp" data-testid="export-settings">
-      <summary className="exp__sum t-section">{e.title}</summary>
+      <summary className="exp__sum t-section">
+        <span className="exp__caret" aria-hidden="true">
+          <IconRight size={14} />
+        </span>
+        {e.title}
+      </summary>
       <div className="stack stack--loose exp__body">
         <Field label={e.mode}>
           <Segmented

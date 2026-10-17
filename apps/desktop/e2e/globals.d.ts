@@ -6,6 +6,7 @@ declare global {
     __CYPHER_SCENARIO__?: string;
     __CYPHER_MOCK_SPEED__?: number;
     __CYPHER_PICK__?: string;
+    __CYPHER_MOCK_LATENCY__?: number;
     __CYPHER_MOCK__?: {
       emit: (name: string, payload: unknown) => Promise<void>;
       calls: () => { cmd: string; args: unknown }[];

@@ -7,7 +7,7 @@ test.describe("Start (CONCEPT.md 6.1)", () => {
     await expect(page.getByTestId("project-proj-herbst-drop-26")).toContainText("Herbst-Drop 26");
     await expect(page.getByTestId("project-proj-herbst-drop-26")).toContainText("Rauschen");
     await expect(page.getByTestId("project-proj-herbst-drop-26")).toContainText("heute 14:32");
-    await expect(page.getByTestId("start-programs")).toContainText("1.4.3 → 1.5.0");
+    await expect(page.getByTestId("start-programs")).toContainText("5.3.3 → 5.3.4.1");
     const boxes = await page.locator('button[data-testid^="template-"] .tile__img').evaluateAll((els) =>
       els.map((e) => {
         const r = e.getBoundingClientRect();
@@ -95,8 +95,8 @@ test.describe("Programme (CONCEPT.md 6.2)", () => {
       .first()
       .evaluate((e) => Math.round(e.getBoundingClientRect().width));
     for (const w of widths) expect(Math.abs(w - col)).toBeLessThanOrEqual(6);
-    await expect(page.getByTestId("program-krita")).toContainText("eingerichtet");
-    await expect(page.getByTestId("program-inkscape")).toContainText("Update verfügbar");
+    await expect(page.getByTestId("program-krita")).toContainText("Update verfügbar");
+    await expect(page.getByTestId("program-inkscape")).toContainText("eingerichtet");
     await expect(page.getByTestId("program-blender")).toContainText("nicht installiert");
   });
 
@@ -114,7 +114,7 @@ test.describe("Programme (CONCEPT.md 6.2)", () => {
 
   test("Strg+Enter auf der Tafel führt die Zeilenaktion aus (Starten)", async ({ page }) => {
     await openApp(page, "programme");
-    await page.getByTestId("program-krita").focus();
+    await page.getByTestId("program-inkscape").focus();
     await page.keyboard.press("Control+Enter");
     await expect.poll(async () => (await mockCalls(page)).includes("program_launch")).toBe(true);
   });
@@ -122,7 +122,7 @@ test.describe("Programme (CONCEPT.md 6.2)", () => {
   test("Manifest nicht erreichbar: Hinweis, installierte Programme laufen weiter", async ({ page }) => {
     await openApp(page, "programme", { scenario: "offline" });
     await expect(page.getByTestId("manifest-error")).toContainText("Keine Verbindung zum Cypher-Manifest");
-    await expect(page.getByTestId("program-krita")).toContainText("eingerichtet");
+    await expect(page.getByTestId("program-inkscape")).toContainText("eingerichtet");
   });
 
   test("Deinstallieren nennt, was gelöscht wird und was bleibt", async ({ page }) => {

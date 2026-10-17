@@ -53,7 +53,8 @@ export const cutout = {
     soft: "Weiche Kante",
     size: "Maße",
     none: "Noch nichts gemessen. Starte das Freistellen.",
-    semiHint: "Kanten unsicher, zum Beispiel bei Haaren oder Glas. Für den Druck hart machen.",
+    semiHint: (limit: string) =>
+      `Über der Grenze (erlaubt ≤ ${limit}). Für den Druck die Kanten hart machen, besonders bei Haaren oder Glas.`,
     semiOk: "Kanten sauber",
   },
   file: { title: "Bild", none: "Noch kein Bild" },

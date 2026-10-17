@@ -142,7 +142,7 @@ export const settings = {
     programsTitle: "Programm-Updates",
     programsNone: "Alle Programme sind aktuell.",
     programsAll: "Alle aktualisieren",
-    programLine: (name: string, from: string, to: string) => `${name} ${from} → ${to}`,
+    versionStep: (from: string, to: string) => `${from} → ${to}`,
     upToDate: "Du hast die neueste Version.",
     offline: "Keine Verbindung. Cypher Studio prüft später erneut.",
     lastCheck: (when: string) => `zuletzt geprüft ${when}`,

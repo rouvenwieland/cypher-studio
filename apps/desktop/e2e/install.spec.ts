@@ -2,7 +2,9 @@ import { expect, test } from "@playwright/test";
 import { mockCalls, openApp } from "./helpers";
 
 test.describe("Programm installieren (CONCEPT.md 6.2, DESIGN.md Vertrag „Vertrauen“)", () => {
-  test("Prüfungsanzeige zeigt die sechs Felder und verlangt eine ausdrückliche Aktion", async ({ page }) => {
+  test("Die Übersicht vor dem Laden zeigt die sechs Felder und verlangt eine ausdrückliche Aktion", async ({
+    page,
+  }) => {
     await openApp(page, "programme");
     await page.getByTestId("row-action-blender").click();
     const dialog = page.getByTestId("install-dialog");
@@ -73,12 +75,15 @@ test.describe("Programm installieren (CONCEPT.md 6.2, DESIGN.md Vertrag „Vertr
     await page.getByTestId("install-confirm").click();
     const err = page.getByTestId("checksum-error");
     await expect(err).toBeVisible({ timeout: 30_000 });
-    await expect(err.getByText("Die geladene Datei ist nicht die erwartete.")).toBeVisible();
-    await expect(err.getByText("Wir haben sie gelöscht. Installiert wurde nichts.")).toBeVisible();
+    await expect(err.getByText("Prüfsumme stimmt nicht. Die Datei wurde verworfen.")).toBeVisible();
+    await expect(err.getByText("Es wurde nichts installiert und nichts ausgeführt.")).toBeVisible();
+    await expect(err.getByTestId("checksum-diff")).toContainText(/von 16 Blöcken weich/);
     await expect(err.getByRole("group", { name: "Erwartet" })).toBeVisible();
     await expect(err.getByRole("group", { name: "Berechnet" })).toBeVisible();
     await expect(err.locator(".sum__g--diff").first()).toBeVisible();
-    await expect(page.getByTestId("install-mirror")).toBeVisible();
+    const retry = page.getByTestId("install-retry");
+    await expect(retry).toHaveText("Erneut laden und prüfen");
+    await expect(retry).toBeFocused();
     await page.getByRole("button", { name: "Schließen" }).first().click();
     await expect(page.getByTestId("program-blender")).toContainText("nicht installiert");
   });
@@ -109,10 +114,10 @@ test.describe("Programm installieren (CONCEPT.md 6.2, DESIGN.md Vertrag „Vertr
 
   test("Aktualisieren zeigt den Ersatz der alten Version", async ({ page }) => {
     await openApp(page, "programme");
-    await page.getByTestId("row-action-inkscape").click();
+    await page.getByTestId("row-action-krita").click();
     const dialog = page.getByTestId("install-dialog");
-    await expect(dialog.getByRole("heading", { name: /Inkscape aktualisieren/i })).toBeVisible();
-    await expect(dialog.getByText(/Ersetzt Inkscape 1\.4\.3/)).toBeVisible();
+    await expect(dialog.getByRole("heading", { name: /Krita aktualisieren/i })).toBeVisible();
+    await expect(dialog.getByText(/Ersetzt Krita 5\.3\.3/)).toBeVisible();
     await expect(dialog.getByText("vom Kollektiv festgeschrieben", { exact: false })).toBeVisible();
   });
 });

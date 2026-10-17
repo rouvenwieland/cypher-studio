@@ -95,6 +95,7 @@
 
 .notes {
   margin: 0;
+  font-family: var(--font-text); /* Fließtext, kein Messwert: nicht in Mono */
   white-space: pre-wrap;
   max-width: var(--measure);
   padding: var(--s-3) var(--s-4);

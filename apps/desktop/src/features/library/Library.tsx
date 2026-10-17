@@ -379,7 +379,7 @@ export default function Library() {
             <EmptyState
               title={L.empty.noFolder.title}
               testId="library-empty"
-              actions={<ChooseRootButton variant="action" />}
+              actions={<ChooseRootButton variant="primary" />}
             >
               {L.empty.noFolder.text}
             </EmptyState>
@@ -535,6 +535,7 @@ export default function Library() {
                         index={index}
                         onClick={onClick}
                         onDoubleClick={() => open(entry)}
+                        nameChars={Math.max(12, Math.floor(cellW / 8))}
                       />
                     ) : (
                       <ListRow

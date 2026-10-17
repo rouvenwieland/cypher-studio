@@ -66,6 +66,28 @@
   border-color: var(--control);
 }
 
+.btn--primary {
+  background: var(--select-bg);
+  color: var(--select-fg);
+  border-color: var(--select-bg);
+}
+
+.btn--primary:hover:not(:disabled, [aria-disabled="true"]) {
+  background: color-mix(in srgb, var(--select-bg) 82%, var(--bg));
+}
+
+.btn--primary:active:not(:disabled, [aria-disabled="true"]) {
+  background: var(--fg);
+  color: var(--bg);
+}
+
+.btn--primary:disabled,
+.btn--primary[aria-disabled="true"] {
+  background: transparent;
+  color: var(--mute);
+  border-color: var(--control);
+}
+
 .btn--ghost {
   background: transparent;
   border-color: transparent;
@@ -312,6 +334,8 @@
 
 .seg {
   display: inline-flex;
+  align-self: flex-start;
+  width: fit-content;
   max-width: 100%;
   border: var(--hair) solid var(--control);
   background: var(--field);
@@ -579,6 +603,11 @@
   margin-right: auto;
 }
 
+.dialog__foot-lead {
+  flex: 1 0 100%;
+  min-width: 0;
+}
+
 /* ---------- Fakten (Prüfungsanzeige) ---------- */
 
 .facts {
@@ -693,8 +722,9 @@
   flex: 0 0 auto;
 }
 
+/* Grün gehört dem Urteil (DESIGN: Farbe für das, was Arbeit braucht): „in Ordnung“ in Listen ist ruhig */
 .status--ok {
-  color: var(--ok-text);
+  color: var(--fg-2);
 }
 
 .status--warn {
@@ -961,6 +991,24 @@
   align-items: baseline;
   gap: var(--s-4);
   padding: var(--s-2) 0;
+  overflow: hidden;
+}
+
+/* Die Zusammenfassung bleibt einzeilig und kürzt hinten, statt mit hängendem „·“ umzubrechen */
+.outbar__summary .mz {
+  flex-wrap: nowrap;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.outbar__summary .mz__item {
+  flex: 0 1 auto;
+  overflow: hidden;
+}
+
+.outbar__summary .mz__value {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .outbar__target {
@@ -977,6 +1025,11 @@
 
 .outbar__reason {
   color: var(--mute);
+}
+
+/* Schmales Fenster, Ausgang gesperrt: der Grund geht vor der Messzeile, sonst bliebe für sie kein Platz */
+:root[data-bp="narrow"] .outbar[data-state="blocked"] .outbar__summary .mz {
+  display: none;
 }
 
 .outbar[data-state="done"] {

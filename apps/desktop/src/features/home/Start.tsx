@@ -97,6 +97,7 @@ function ProgramsPanel() {
 
 function FolderPanel() {
   const status = useCmd("library_status", undefined);
+  const projects = useCmd("projects_list", undefined, { retry: false });
   const choose = useChooseRoot();
   const f = s.folder;
   return (
@@ -107,20 +108,24 @@ function FolderPanel() {
         </h2>
       </div>
       <div className="stack">
-        {status.data?.configured && status.data.root ? (
+        {status.isPending ? (
+          <div className="skel" role="status" aria-label={t.common.loading}>
+            <div className="skel__row" />
+          </div>
+        ) : status.data?.configured && status.data.root ? (
           <>
-            <p className="t-data selectable">{f.summary(status.data.root, fmtCount(status.data.entryCount))}</p>
+            <p className="t-data selectable">
+              {projects.isError
+                ? f.unreachable(status.data.root)
+                : f.summary(status.data.root, fmtCount(status.data.entryCount))}
+            </p>
             <div>
               <Button onClick={choose.start}>{f.change}</Button>
             </div>
           </>
         ) : (
-          <>
-            <p className="t-meta t-mute">{f.none}</p>
-            <div>
-              <Button onClick={choose.start}>{f.choose}</Button>
-            </div>
-          </>
+          // die Einladung „Ordner wählen“ steht links bei den Projekten, hier nur der Zustand
+          <p className="t-meta t-mute">{f.none}</p>
         )}
       </div>
       {choose.dialog}

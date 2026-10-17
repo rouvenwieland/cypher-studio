@@ -148,6 +148,7 @@ export default function Cutout() {
     }
   };
 
+  const semiLimit = profiles.data?.[0]?.alpha.warnShare ?? 0.001;
   const modelUsable = status.data?.modelFeature === true;
   const methodNeedsModel = kind === "model" && !modelReady;
   const canRun = !!handle && running === null && !(kind === "model" && (!modelUsable || !modelReady));
@@ -229,7 +230,7 @@ export default function Cutout() {
             <div className="cut__empty">
               <p className="t-section">{c.empty.drop}</p>
               <p className="t-read">{c.empty.local}</p>
-              <Button variant="action" combo="mod+o" onClick={pick} data-testid="cutout-pick">
+              <Button variant="primary" combo="mod+o" onClick={pick} data-testid="cutout-pick">
                 {c.empty.choose}
               </Button>
             </div>
@@ -284,7 +285,7 @@ export default function Cutout() {
                     actions={
                       modelUsable && model ? (
                         <Button
-                          variant="action"
+                          variant="primary"
                           onClick={() => openInstall({ programId: model.id, modelId: model.id })}
                           data-testid="model-load"
                         >
@@ -305,7 +306,12 @@ export default function Cutout() {
               </>
             )}
             <div className="stack">
-              <Button variant={result ? "default" : "action"} onClick={run} disabled={!canRun} data-testid="cutout-run">
+              <Button
+                variant={result ? "default" : "primary"}
+                onClick={run}
+                disabled={!canRun}
+                data-testid="cutout-run"
+              >
                 {running !== null ? stageName : result ? c.run.again : c.run.start}
               </Button>
               {running !== null ? (
@@ -343,7 +349,9 @@ export default function Cutout() {
                   ]}
                 />
                 <p className="t-meta">
-                  {report.alpha.semiAreaShareOfVisible > 0.001 ? c.measure.semiHint : c.measure.semiOk}
+                  {report.alpha.semiAreaShareOfVisible > semiLimit
+                    ? c.measure.semiHint(fmtPercent(semiLimit, 1))
+                    : c.measure.semiOk}
                 </p>
                 {result ? <p className="t-meta t-mute">{c.run.done}</p> : null}
               </div>

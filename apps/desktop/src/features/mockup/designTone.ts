@@ -16,10 +16,12 @@ export interface DesignSample {
   luminances: Float32Array;
   /** Anteil der Pixel mit Transparenz (Alpha unter 250), 0 bis 1. */
   transparentShare: number;
+  /** Breite durch Höhe des Motivs (für die Passung auf die Druckfläche) */
+  aspect: number;
 }
 
 /** Fasst RGBA-Pixel zu Leuchtdichten der sichtbaren Pixel und dem Transparenzanteil zusammen. */
-export function summarizePixels(rgba: Uint8ClampedArray): DesignSample {
+export function summarizePixels(rgba: Uint8ClampedArray, aspect = 1): DesignSample {
   const total = rgba.length / 4;
   const lum = new Float32Array(total);
   let n = 0;
@@ -31,7 +33,7 @@ export function summarizePixels(rgba: Uint8ClampedArray): DesignSample {
     lum[n] = relativeLuminance({ r: rgba[i] ?? 0, g: rgba[i + 1] ?? 0, b: rgba[i + 2] ?? 0 });
     n += 1;
   }
-  return { luminances: lum.slice(0, n), transparentShare: total === 0 ? 0 : transparent / total };
+  return { luminances: lum.slice(0, n), transparentShare: total === 0 ? 0 : transparent / total, aspect };
 }
 
 /** Anteil (0 bis 1) der sichtbaren Pixel, deren Kontrast zur Textilfarbe unter `LOW_CONTRAST` liegt. */
@@ -57,7 +59,7 @@ export async function sampleDesign(url: string, signal?: AbortSignal): Promise<D
     const ctx = canvas.getContext("2d", { willReadFrequently: true });
     if (!ctx) throw new Error("Kein 2D-Kontext");
     ctx.drawImage(bmp, 0, 0, w, h);
-    return summarizePixels(ctx.getImageData(0, 0, w, h).data);
+    return summarizePixels(ctx.getImageData(0, 0, w, h).data, bmp.width / Math.max(1, bmp.height));
   } finally {
     bmp.close();
   }

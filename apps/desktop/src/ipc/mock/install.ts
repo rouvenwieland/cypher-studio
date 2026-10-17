@@ -51,7 +51,7 @@ export function makePlan(programId: string, version?: string): InstallPlan {
       size: p.downloadSize,
       sha256: fakeSha(`${p.id}-${v}`),
       checksumSource: `https://${p.host}${p.urlPath(v)}.sha256`,
-      checksumOrigin: p.id === "inkscape" ? "cypherPinned" : "upstream",
+      checksumOrigin: p.id === "krita" ? "cypherPinned" : "upstream",
       signature: null,
     },
     license: p.license,

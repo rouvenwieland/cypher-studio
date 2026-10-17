@@ -26,7 +26,7 @@ import { Field, Segmented, SelectField } from "../../ui/Inputs";
 import { GlyphSafeZone, GlyphSurround, IconGrid } from "../../ui/icons";
 import { ActionMenu } from "../../ui/Overlays";
 import { OutputBar, type OutputState } from "../../ui/OutputBar";
-import { StatusGlyph } from "../../ui/Status";
+import { StatusGlyph, Verdict } from "../../ui/Status";
 import { useInstallUi } from "../install/store";
 import {
   BACKGROUND_LAYER_ID,
@@ -147,6 +147,7 @@ function SocialPane({
             <div
               key={c.zoneIndex}
               className="soc__zone"
+              data-side={c.side}
               style={{
                 left: pct(c.rect.x, width),
                 top: pct(c.rect.y, height),
@@ -753,10 +754,46 @@ export default function Social() {
               </Notice>
             </div>
           ) : null}
-          <div className="section stack">
-            <h3 className="t-section">{s.templates.title}</h3>
-            {templateList(false)}
-          </div>
+          {current ? (
+            <div className="section stack" data-testid="social-measure">
+              <Verdict
+                kind={warnings.length > 0 ? "warn" : "ok"}
+                word={warnings.length > 0 ? s.verdict.warn : s.verdict.ok}
+                count={warnings.length > 0 ? s.measure.count(warnings.length) : s.measure.summaryNone}
+                testId="social-verdict"
+              />
+              <ul className="mlist">
+                {measureRows.map((r) => (
+                  <li key={r.id} className="mrow" data-state={r.ok ? "ok" : "warn"} data-testid={`measure-${r.id}`}>
+                    <span className={r.ok ? "mrow__g mrow__g--ok" : "mrow__g mrow__g--warn"}>
+                      <StatusGlyph kind={r.ok ? "ok" : "warn"} />
+                    </span>
+                    <span className="t-strong">{r.label}</span>
+                    {r.lines.map((l, i) => (
+                      <span key={i} className={r.ok ? "t-data mrow__line" : "t-meta mrow__line"}>
+                        {l}
+                      </span>
+                    ))}
+                  </li>
+                ))}
+                {otherWarnings.map((w, i) => (
+                  <li key={`o${i}`} className="mrow" data-state="warn">
+                    <span className="mrow__g mrow__g--warn">
+                      <StatusGlyph kind="warn" />
+                    </span>
+                    <span className="t-meta">{warningText(w)}</span>
+                  </li>
+                ))}
+              </ul>
+              {warnings.length > 0 ? <p className="t-meta t-mute">{s.warn.exportAnyway}</p> : null}
+            </div>
+          ) : null}
+          {current ? (
+            <div className="section stack">
+              <h3 className="t-section">{s.templates.title}</h3>
+              {templateList(false)}
+            </div>
+          ) : null}
           {current ? (
             <>
               <div className="section stack stack--loose" data-testid="social-content">
@@ -836,33 +873,6 @@ export default function Social() {
                 />
                 <p className="t-meta t-mute">{s.world.help}</p>
               </div>
-              <div className="section stack" data-testid="social-measure">
-                <h3 className="t-section">{s.measure.title}</h3>
-                <ul className="mlist">
-                  {measureRows.map((r) => (
-                    <li key={r.id} className="mrow" data-state={r.ok ? "ok" : "warn"} data-testid={`measure-${r.id}`}>
-                      <span className={r.ok ? "mrow__g mrow__g--ok" : "mrow__g mrow__g--warn"}>
-                        <StatusGlyph kind={r.ok ? "ok" : "warn"} />
-                      </span>
-                      <span className="t-strong">{r.label}</span>
-                      {r.lines.map((l, i) => (
-                        <span key={i} className="t-data mrow__line">
-                          {l}
-                        </span>
-                      ))}
-                    </li>
-                  ))}
-                  {otherWarnings.map((w, i) => (
-                    <li key={`o${i}`} className="mrow" data-state="warn">
-                      <span className="mrow__g mrow__g--warn">
-                        <StatusGlyph kind="warn" />
-                      </span>
-                      <span className="t-meta">{warningText(w)}</span>
-                    </li>
-                  ))}
-                </ul>
-                {warnings.length > 0 ? <p className="t-meta t-mute">{s.warn.exportAnyway}</p> : null}
-              </div>
               <div className="section stack">
                 <h3 className="t-section">{s.export.title}</h3>
                 <Field label={s.export.format}>
@@ -883,7 +893,7 @@ export default function Social() {
               </div>
             </>
           ) : (
-            <p className="section t-meta t-mute">{s.empty.text}</p>
+            <p className="section t-meta t-mute">{s.empty.inspector}</p>
           )}
         </>
       }

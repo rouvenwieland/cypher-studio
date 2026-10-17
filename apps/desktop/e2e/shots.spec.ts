@@ -15,11 +15,16 @@ interface Shot {
   hash: string;
   scenario?: string;
   pick?: string;
+  /** künstliche Antwortzeit: zeigt den Laden-Zustand */
+  latency?: number;
   prep?: (page: Page) => Promise<void>;
 }
 
 const SHOTS: Shot[] = [
   { name: "start", hash: "start" },
+  { name: "start-laedt", hash: "start", latency: 4000 },
+  { name: "programme-laedt", hash: "programme", latency: 4000 },
+  { name: "bibliothek-laedt", hash: "bibliothek", latency: 4000 },
   { name: "start-leer", hash: "start", scenario: "libraryEmpty" },
   { name: "programme", hash: "programme" },
   { name: "programm-detail", hash: "programme/krita" },
@@ -69,6 +74,18 @@ const SHOTS: Shot[] = [
     prep: async (p) => {
       await p.getByTestId("mockup-pick").click();
       await p.locator(`[data-testid="measure-contrast"]:not([data-state="open"])`).waitFor();
+      await p.waitForTimeout(1500); // das Shirt wird im Worker gerechnet
+    },
+  },
+  {
+    name: "mockups-hoodie",
+    hash: "mockups",
+    pick: "signal_v3.png",
+    prep: async (p) => {
+      await p.getByTestId("mockup-pick").click();
+      await p.getByRole("radio", { name: "Hoodie" }).click();
+      await p.getByTestId("measure-contrast").waitFor();
+      await p.waitForTimeout(1500);
     },
   },
   {
@@ -79,7 +96,7 @@ const SHOTS: Shot[] = [
       await p.getByTestId("mockup-pick").click();
       await p.getByTestId("mockup-stage").focus();
       await p.keyboard.press("k");
-      await p.getByTestId("contact-sheet").locator("canvas").nth(5).waitFor({ timeout: 15_000 });
+      await p.getByTestId("contact-sheet").locator("canvas").nth(5).waitFor({ timeout: 40_000 });
       await p.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
     },
   },
@@ -116,7 +133,16 @@ const SHOTS: Shot[] = [
   },
   { name: "einstellungen", hash: "einstellungen/darstellung" },
   { name: "einstellungen-updates", hash: "einstellungen/updates", scenario: "updateAvailable" },
-  { name: "erststart-kennung", hash: "erststart", scenario: "fresh" },
+  {
+    name: "erststart-kennung",
+    hash: "erststart",
+    scenario: "fresh",
+    // erst nach dem Einrasten fotografieren: der Start-Knopf steht und keine Animation läuft mehr
+    prep: async (p) => {
+      await p.getByTestId("kennung-start").waitFor();
+      await p.waitForFunction(() => document.getAnimations().length === 0);
+    },
+  },
   {
     name: "erststart-auswahl",
     hash: "erststart",
@@ -139,6 +165,7 @@ const SHOTS: Shot[] = [
 const SIZES = [
   { w: 1280, h: 800 },
   { w: 1100, h: 700 },
+  { w: 1024, h: 680 },
 ];
 
 for (const theme of ["light", "dark"] as const) {
@@ -150,6 +177,7 @@ for (const theme of ["light", "dark"] as const) {
           await openApp(page, shot.hash, {
             theme,
             speed: 40,
+            ...(shot.latency ? { latency: shot.latency } : {}),
             ...(shot.scenario ? { scenario: shot.scenario } : {}),
             ...(shot.pick ? { pick: shot.pick } : {}),
           });

@@ -151,7 +151,9 @@ export function evaluateChecks(report: PrintReport, profile: PrintProfile): Chec
       notCheckedWhy = t.print.report.notCheckedWhy.strokes;
     }
     if (id === "contrast" && !report.garment && sev === null) state = "open";
-    return { id, state, findings, notCheckedWhy, ...base[id] };
+    // Der Messwert darf dem Befund nicht widersprechen: bei einem Kontrast-Befund steht dort nicht „kein Befund“
+    const measuredText = id === "contrast" && findings.length > 0 ? t.print.values.contrastLow : base[id].measured;
+    return { id, state, findings, notCheckedWhy, ...base[id], measured: measuredText };
   });
 }
 

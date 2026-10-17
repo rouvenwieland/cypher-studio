@@ -421,12 +421,13 @@ export function createDb(scenarioText: string): MockDb {
   const b = CATALOG.find((p) => p.id === "blender");
   const d = CATALOG.find((p) => p.id === "kdenlive");
   if (!fresh && scenario !== "onboardingPartial" && k && i && b && d) {
-    installations["krita"] = [makeInstallation(k, "5.3.1")];
-    installations["inkscape"] = [makeInstallation(i, scenario === "updateAvailable" ? "1.4.3" : "1.4.3")];
+    // Beispiel für ein Update: Krita 5.3.3 → 5.3.4.1; Inkscape ist aktuell
+    installations["krita"] = [makeInstallation(k, "5.3.3")];
+    installations["inkscape"] = [makeInstallation(i, "1.4.4")];
     if (scenario === "allInstalled") {
+      installations["krita"] = [makeInstallation(k, "5.3.4.1")];
       installations["blender"] = [makeInstallation(b, "5.2.2")];
       installations["kdenlive"] = [makeInstallation(d, "26.08.2")];
-      installations["inkscape"] = [makeInstallation(i, "1.5.0")];
     } else if (
       scenario === "default" ||
       scenario === "busy" ||

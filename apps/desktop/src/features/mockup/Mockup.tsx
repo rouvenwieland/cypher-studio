@@ -22,6 +22,8 @@ import {
   createMockupRenderer,
   isAbortError,
   isMockupEngineError,
+  parseHexColor,
+  relativeLuminance,
   type MockupRenderInput,
   type MockupRendererHandle,
 } from "./engine";
@@ -50,7 +52,11 @@ function BitmapCanvas({ bitmap, label }: { bitmap: ImageBitmap | null; label: st
   useLayoutEffect(() => {
     const c = ref.current;
     if (!c || !bitmap) return;
-    c.getContext("2d")?.drawImage(bitmap, 0, 0);
+    const ctx = c.getContext("2d");
+    if (!ctx) return;
+    // Bei gleicher Größe bleibt die Leinwand stehen: erst leeren, sonst scheint die vorige Vorlage durch
+    ctx.clearRect(0, 0, c.width, c.height);
+    ctx.drawImage(bitmap, 0, 0);
   }, [bitmap]);
   // Größe schon beim ersten Zeichnen setzen (sonst stünde kurz die Standardgröße 300 × 150 im Layout)
   return (
@@ -82,6 +88,8 @@ export default function Mockup() {
   const [widthMm, setWidthMm] = useState(280);
   const [topMm, setTopMm] = useState(60);
   const [centerMm, setCenterMm] = useState(0);
+  // Solange niemand die Platzierung angefasst hat, passt sie sich dem Produkt und dem Motiv an
+  const [touched, setTouched] = useState(false);
   const [stage, setStage] = useState("transparent");
   const [outId, setOutId] = useState("shop");
   const [contact, setContact] = useState(false);
@@ -110,6 +118,20 @@ export default function Mockup() {
     return (brand.data?.garmentColors ?? []).filter((g) => ids.has(g.id));
   }, [template, brand.data]);
   const garment: GarmentColor | undefined = garments.find((g) => g.id === colorId) ?? garments[0];
+  const hasTemplateStage = template?.variants.some((v) => v.layers.background !== null) ?? false;
+  const areaWidth = profile?.printAreaMm.width ?? 330;
+  const areaHeight = profile?.printAreaMm.height ?? 450;
+
+  useEffect(() => {
+    setTouched(false);
+  }, [template?.id]);
+  useEffect(() => {
+    if (touched || !profile) return;
+    const top = Math.round(Math.min(60, profile.printAreaMm.height * 0.14));
+    const byHeight = sample ? Math.floor((profile.printAreaMm.height - top) * sample.aspect) : Number.POSITIVE_INFINITY;
+    setWidthMm(Math.max(20, Math.min(profile.defaultWidthMm, profile.printAreaMm.width, byHeight)));
+    setTopMm(top);
+  }, [touched, profile, sample]);
 
   useEffect(() => {
     if (garments.length > 0 && !garments.some((g) => g.id === colorId)) setColorId(garments[0]?.id ?? "");
@@ -136,7 +158,9 @@ export default function Mockup() {
       ...(paperHex
         ? [{ id: "paper", label: m.stage.options.paper, bg: { kind: "color" as const, hex: paperHex } }]
         : []),
-      { id: "template", label: m.stage.options.template, bg: { kind: "template" } },
+      ...(hasTemplateStage
+        ? [{ id: "template", label: m.stage.options.template, bg: { kind: "template" as const } }]
+        : []),
     ];
     for (const c of brand.data?.collections ?? []) {
       const key = c.id === "gold-lounge" ? "gold" : c.id;
@@ -144,7 +168,10 @@ export default function Mockup() {
       out.push({ id: c.id, label, bg: { kind: "color", hex: c.hex } });
     }
     return out;
-  }, [brand.data, paperHex]);
+  }, [brand.data, paperHex, hasTemplateStage]);
+  useEffect(() => {
+    if (stage === "template" && !hasTemplateStage) setStage("transparent");
+  }, [stage, hasTemplateStage]);
   const background = useMemo(
     () => stages.find((x) => x.id === stage)?.bg ?? { kind: "transparent" as const },
     [stages, stage],
@@ -314,14 +341,14 @@ export default function Mockup() {
   const watched = garments.filter((g) => g.id === garment?.id || exportColors.includes(g.id));
   const lowWatched = watched.filter((g) => lowIds.has(g.id));
   const lowContrast = lowWatched.length > 0;
-  const areaWidth = profile?.printAreaMm.width ?? 330;
   const hasHoodie = products.has("hoodie");
   const hoodieMissing = !hasHoodie && !templates.isPending;
   // Die drei Messzeilen stehen immer da (offen, bis gemessen ist), damit der Inspektor nicht springt, wenn das Motiv kommt
   const waiting = design ? m.measure.measuring : m.measure.noDesign;
   const measureRows: { id: string; state: "ok" | "warn" | "open"; label: string; line: string }[] = [];
   if (design && profile) {
-    const over = widthMm > areaWidth;
+    const motifHeight = sample ? widthMm / sample.aspect : 0;
+    const over = widthMm > areaWidth || topMm + motifHeight > areaHeight;
     measureRows.push({
       id: "width",
       state: over ? "warn" : "ok",
@@ -430,7 +457,10 @@ export default function Mockup() {
   else state = { kind: "ready", label: m.output.label, onRun: () => void doExport() };
 
   const surround = settings.data?.ui.surround[theme === "ink" ? "ink" : "paper"] ?? "light";
-  const surroundAttr = surround === "light" ? "hell" : surround === "mid" ? "mittel" : "dunkel";
+  // Dunkles Textil auf dunklem Umfeld hätte keine Kontur: dann gilt „mittel“, ohne die Einstellung zu ändern
+  const darkTextile = garment ? relativeLuminance(parseHexColor(garment.hex)) < 0.12 : false;
+  const surroundAttr =
+    surround === "light" ? "hell" : surround === "mid" || (surround === "dark" && darkTextile) ? "mittel" : "dunkel";
   const setUi = (patch: Record<string, unknown>) => void call("settings_update", { req: { ui: patch } });
   const cycleSurround = () => {
     const order = ["light", "mid", "dark"] as const;
@@ -493,7 +523,7 @@ export default function Mockup() {
                   <span className="t-data t-mute">{m.contact.rendering}</span>
                 )}
               </div>
-              <span className="t-meta t-strong">
+              <span className="t-meta t-strong mock__cap">
                 {g.name}
                 {lowIds.has(g.id) ? (
                   <span className="mock__low">
@@ -509,14 +539,17 @@ export default function Mockup() {
           {renderError ? (
             <Notice kind="error" title={renderError} role="alert" />
           ) : bitmap ? (
-            <BitmapCanvas bitmap={bitmap} label={`${template.title}, ${garment?.name ?? ""}`} />
+            <BitmapCanvas
+              bitmap={bitmap}
+              label={m.canvasLabel(template.title, garment?.name ?? "", design?.handle.name ?? null)}
+            />
           ) : (
             <div className="mock__loading" role="status" aria-label={m.loading} />
           )}
           {!design ? (
             <div className="mock__hint" data-testid="mockup-empty">
               <p className="t-read">{m.design.none}</p>
-              <Button variant="action" onClick={pickDesign} data-testid="mockup-pick">
+              <Button variant="primary" onClick={pickDesign} data-testid="mockup-pick">
                 {m.design.choose}
               </Button>
             </div>
@@ -561,13 +594,11 @@ export default function Mockup() {
                     <StatusGlyph kind={r.state} />
                   </span>
                   <span className="t-strong">{r.label}</span>
-                  <span className="t-data mrow__line">{r.line}</span>
+                  <span className={r.state === "ok" ? "t-data mrow__line" : "t-meta mrow__line"}>{r.line}</span>
                 </li>
               ))}
             </ul>
-            <p className="t-meta t-mute">
-              {design ? `${m.measure.altLabel}: ${m.measure.altText(design.handle.name)}` : m.measure.empty}
-            </p>
+            <p className="t-meta t-mute">{design ? m.measure.scope : m.measure.empty}</p>
           </div>
           <div className="section stack stack--loose">
             <h3 className="t-section">{m.design.title}</h3>
@@ -625,7 +656,9 @@ export default function Mockup() {
             />
             <p className="t-meta" data-testid="mockup-color-name">
               {garment?.name}
-              {garment?.providerColorName ? <span className="t-mute"> · {garment.providerColorName}</span> : null}
+              {garment?.providerColorName ? (
+                <span className="t-mute"> · {t.common.shirtigoColor(garment.providerColorName)}</span>
+              ) : null}
             </p>
             <fieldset className="mock__export">
               <legend className="t-label">{m.color.export}</legend>
@@ -645,7 +678,10 @@ export default function Mockup() {
                   value={presets.find((p) => Math.abs(p.widthMm - widthMm) < 0.5)?.id ?? ""}
                   onChange={(id) => {
                     const p = presets.find((x) => x.id === id);
-                    if (p) setWidthMm(p.widthMm);
+                    if (p) {
+                      setTouched(true);
+                      setWidthMm(p.widthMm);
+                    }
                   }}
                   options={presets.map((p) => ({ value: p.id, label: p.label }))}
                 />
@@ -656,11 +692,32 @@ export default function Mockup() {
               value={widthMm}
               min={20}
               max={Math.round(areaWidth + 40)}
-              onChange={setWidthMm}
+              onChange={(v) => {
+                setTouched(true);
+                setWidthMm(v);
+              }}
               testId="mockup-width"
             />
-            <MmField label={m.placement.top} value={topMm} min={0} max={450} onChange={setTopMm} />
-            <MmField label={m.placement.center} value={centerMm} min={-120} max={120} onChange={setCenterMm} />
+            <MmField
+              label={m.placement.top}
+              value={topMm}
+              min={0}
+              max={Math.round(areaHeight)}
+              onChange={(v) => {
+                setTouched(true);
+                setTopMm(v);
+              }}
+            />
+            <MmField
+              label={m.placement.center}
+              value={centerMm}
+              min={-120}
+              max={120}
+              onChange={(v) => {
+                setTouched(true);
+                setCenterMm(v);
+              }}
+            />
             <p className="t-meta t-mute">{m.placement.help}</p>
             <SelectField
               label={m.stage.label}

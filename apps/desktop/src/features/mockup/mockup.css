@@ -127,3 +127,10 @@
   color: var(--warn-text);
   font-weight: 400;
 }
+
+/* Beschriftung auf einem Chip: Auf dem mittelgrauen Umfeld erreicht kein Text allein 4,5:1 */
+.mock__cap {
+  padding: var(--s-1) var(--s-3);
+  background: var(--panel);
+  color: var(--fg);
+}

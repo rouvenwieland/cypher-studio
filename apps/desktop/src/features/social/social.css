@@ -74,6 +74,20 @@
   position: absolute;
   top: var(--s-1);
   left: var(--s-1);
+  max-width: calc(100% - var(--s-2));
+  max-height: calc(100% - var(--s-2));
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Seitenstreifen sind schmal: Beschriftung läuft senkrecht, damit sie ganz lesbar bleibt */
+.soc__zone[data-side="left"] .soc__zone-chip,
+.soc__zone[data-side="right"] .soc__zone-chip {
+  writing-mode: vertical-rl;
+  rotate: 180deg;
+  top: auto;
+  bottom: var(--s-1);
 }
 
 .soc__tools {
@@ -120,7 +134,7 @@
   flex-direction: column;
   align-items: flex-start;
   gap: var(--s-1);
-  width: 96px;
+  width: 112px;
   padding: var(--s-2);
   border: var(--hair) solid transparent;
   background: transparent;
@@ -137,13 +151,22 @@
 }
 
 .soc__tpls--large .soc__tpl {
-  width: 144px;
+  width: 160px;
+}
+
+.soc__tpls--large .soc__thumb {
+  height: 200px;
+}
+
+.soc__tpl .t-data {
+  white-space: nowrap;
 }
 
 .soc__thumb {
   display: block;
-  width: 100%;
-  height: auto;
+  width: auto;
+  max-width: 100%;
+  height: 128px; /* gleiche Höhe: Titel und Maße stehen auf einer Linie */
   background: var(--panel);
   border: var(--hair) solid var(--control);
 }

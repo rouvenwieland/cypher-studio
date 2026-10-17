@@ -44,7 +44,7 @@ test.describe("Druckprüfer (CONCEPT.md 6.4)", () => {
     await expect(page.getByTestId("print-output")).toHaveAttribute("data-state", "blocked");
   });
 
-  test("Fehler sperren den Export: „1 Fehler zuerst beheben“ springt zum Fehler, Trotzdem exportieren fragt nach", async ({
+  test("Fehler sperren den Export: „Zuerst beheben“ springt zum Fehler, Trotzdem exportieren fragt nach", async ({
     page,
   }) => {
     await openApp(page, "druck", { pick: "kleines_motiv.png" });
@@ -52,7 +52,7 @@ test.describe("Druckprüfer (CONCEPT.md 6.4)", () => {
     await expect(page.getByTestId("verdict")).toContainText("Nicht druckbar");
     const out = page.getByTestId("print-output");
     await expect(out).toHaveAttribute("data-state", "blocked");
-    await expect(out).toContainText(/Fehler zuerst beheben/);
+    await expect(out).toContainText(/Zuerst beheben: /);
     // gesperrt, aber fokussierbar (aria-disabled): Klick springt zum ersten Fehler
     await page.getByTestId("output-action").click({ force: true });
     await expect(page.getByTestId("check-resolution").getByRole("button").first()).toBeFocused();

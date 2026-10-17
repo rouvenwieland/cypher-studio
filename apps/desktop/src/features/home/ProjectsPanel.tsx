@@ -94,7 +94,7 @@ export function ProjectsPanel({ onCreate }: { onCreate: () => void }) {
         <div className="empty">
           <p className="t-section">{e.title}</p>
           <p className="t-read">{e.text}</p>
-          <Button variant="action" onClick={choose.start} data-testid="choose-folder">
+          <Button variant="primary" onClick={choose.start} data-testid="choose-folder">
             {e.action}
           </Button>
         </div>
@@ -139,7 +139,7 @@ export function ProjectsPanel({ onCreate }: { onCreate: () => void }) {
         {header}
         <div className="empty">
           <p className="t-read">{s.empty.noProjects.text(status.data?.root ?? "")}</p>
-          <Button variant="action" onClick={onCreate}>
+          <Button variant="primary" onClick={onCreate}>
             {s.empty.noProjects.action}
           </Button>
         </div>

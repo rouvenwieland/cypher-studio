@@ -75,11 +75,11 @@ test.describe("Einstellungen und Updates (CONCEPT.md 6.9)", () => {
     await expect(page.getByText("Alle Programme sind aktuell.")).toBeVisible();
   });
 
-  test("Updates: „Alle aktualisieren“ öffnet die Prüfungsanzeigen nacheinander", async ({ page }) => {
+  test("Updates: „Alle aktualisieren“ öffnet die Übersichten nacheinander", async ({ page }) => {
     await openApp(page, "einstellungen/updates");
     await page.getByTestId("update-all").click();
     await expect(page.getByTestId("install-dialog")).toBeVisible();
-    await expect(page.getByRole("heading", { name: /Inkscape aktualisieren/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Krita aktualisieren/i })).toBeVisible();
   });
 
   test("Profile: Druckprofile und Social-Hilfslinien mit Quelle und Datum", async ({ page }) => {

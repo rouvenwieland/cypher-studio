@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const docsDir = path.resolve(here, "../../docs");
+const packsDir = path.resolve(here, "../../packs");
 const tokensFile = path.join(docsDir, "tokens.css");
 const host = process.env["TAURI_DEV_HOST"];
 
@@ -37,7 +38,8 @@ function tokensFonts(): Plugin {
 /**
  * Produktions-CSP für den CSP-Test (ARCHITEKTUR 6.2, Prüfung 8): wörtlich aus src-tauri/tauri.conf.json (nur gelesen),
  * damit der Test dieselbe Richtlinie prüft wie die App. Einzige Abweichung: Der Mock-Build lädt seine Beispielbilder
- * von `blob:`-Adressen, deshalb darf `connect-src` dort zusätzlich `blob:` (die App selbst nutzt cyfile:/cyasset:).
+ * von `blob:`-Adressen und die Mockup-Ebenen aus dem eigenen Bundle, deshalb darf `connect-src` dort zusätzlich `blob:` und
+ * `'self'` (die App selbst nutzt cyfile:/cyasset:).
  */
 function productionCsp(): Record<string, string> | undefined {
   if (process.env["CYPHER_CSP_TEST"] !== "1") return undefined;
@@ -45,7 +47,7 @@ function productionCsp(): Record<string, string> | undefined {
     app: { security: { csp: Record<string, string> } };
   };
   const csp = { ...conf.app.security.csp };
-  csp["connect-src"] = `${csp["connect-src"] ?? ""} blob:`.trim();
+  csp["connect-src"] = `${csp["connect-src"] ?? ""} blob: 'self'`.trim();
   return {
     "Content-Security-Policy": Object.entries(csp)
       .map(([k, v]) => `${k} ${v}`)
@@ -77,7 +79,7 @@ export default defineConfig(({ mode }) => ({
     strictPort: true,
     host: host || false,
     ...(host ? { hmr: { protocol: "ws", host, port: 1421 } } : {}),
-    fs: { allow: [here, docsDir] },
+    fs: { allow: [here, docsDir, packsDir] },
     watch: { ignored: ["**/src-tauri/**", "**/dist-mock/**", "**/test-results/**"] },
   },
   preview: { port: 4173, strictPort: true, ...(cspHeaders ? { headers: cspHeaders } : {}) },

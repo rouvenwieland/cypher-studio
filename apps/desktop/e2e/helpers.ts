@@ -9,24 +9,27 @@ export interface OpenOptions {
   /** Beispieldatei, die der Dateidialog liefert */
   pick?: string;
   reducedMotion?: boolean;
+  /** Künstliche Antwortzeit je Command in ms (für die Laden-Zustände) */
+  latency?: number;
 }
 
 /** Öffnet die App im Mock-Modus bei einer Adresse (Hash-Router). */
 export async function openApp(page: Page, hash: string, opts: OpenOptions = {}): Promise<void> {
-  const { scenario = "default", theme = "light", speed = 40, pick, reducedMotion = true } = opts;
+  const { scenario = "default", theme = "light", speed = 40, pick, reducedMotion = true, latency = 0 } = opts;
   await page.emulateMedia({ colorScheme: theme, reducedMotion: reducedMotion ? "reduce" : "no-preference" });
   await page.addInitScript(
-    ([sc, sp, pk]) => {
+    ([sc, sp, pk, lat]) => {
       window.__CYPHER_SCENARIO__ = sc;
       window.__CYPHER_MOCK_SPEED__ = Number(sp);
       if (pk) window.__CYPHER_PICK__ = pk;
+      if (Number(lat) > 0) window.__CYPHER_MOCK_LATENCY__ = Number(lat);
       try {
         localStorage.clear();
       } catch {
         /* ignorieren */
       }
     },
-    [scenario, String(speed), pick ?? ""] as const,
+    [scenario, String(speed), pick ?? "", String(latency)] as const,
   );
   await page.goto(`/#/${hash.replace(/^\//, "")}`);
   await page.waitForSelector('[data-testid^="screen-"], [data-testid="kennung"]', { timeout: 15_000 });

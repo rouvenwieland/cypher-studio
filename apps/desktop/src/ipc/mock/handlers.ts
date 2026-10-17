@@ -19,6 +19,7 @@ import type {
 } from "@contract";
 import { now, nowIso } from "../../lib/clock";
 import { motifUrl, overlayUrl, teeLayers, TEE_CANVAS, TEE_QUAD } from "./art";
+import { packMockupTemplates } from "./packs";
 import {
   CATALOG,
   GARMENTS,
@@ -764,6 +765,9 @@ export const handlers: Handlers = {
   /* brand / mockup / social */
   brand_get: () => brandFixture(),
   mockup_templates_list: async () => {
+    // Die echten Vorlagen aus packs/mockups; nur ohne Paket im Repository die gezeichnete Platzhalter-Vorlage
+    const fromPack = packMockupTemplates();
+    if (fromPack.length > 0) return fromPack;
     const layers = await teeLayers();
     const q = TEE_QUAD;
     return [
