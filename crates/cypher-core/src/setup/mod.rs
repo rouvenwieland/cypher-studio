@@ -23,7 +23,7 @@ use tokio_util::sync::CancellationToken;
 use crate::error::{SetupError, VerifyError};
 use crate::verify::{sha256_bytes, sha256_file, to_hex};
 
-pub use apply::{ApplyEnv, ApplySelection, history, record_of, recover, summary, undo};
+pub use apply::{ApplyEnv, ApplySelection, history, record_of, recover, summary, undo, undo_with_runner};
 pub use pack::{LoadedPacks, PackManifest, load_packs};
 pub use plan::{PlanInput, SetupPlanData, plan};
 pub use roots::{ResolvedScope, RootId, RootsEnv, SetupInstall, resolve_scopes};

@@ -333,6 +333,8 @@ fn apply_inner(
                             kind: "blenderExtensionInstall".into(),
                             sha256: item.sha256.clone(),
                             exit_code: code,
+                            exe: plan.scope.exe.as_ref().map(|e| e.to_string_lossy().into_owned()),
+                            package: extension_package_id(zip),
                         });
                     }
                     Err(message) => failures.push(FailureEntry { root: item.root, rel: item.rel.clone(), message }),
@@ -516,6 +518,35 @@ fn finish_write(
     Ok(())
 }
 
+/// Kennung einer Blender-Erweiterung: `id` aus `blender_manifest.toml` im ZIP.
+fn extension_package_id(zip: &Path) -> Option<String> {
+    use std::io::Read as _;
+    let mut archive = zip::ZipArchive::new(std::fs::File::open(zip).ok()?).ok()?;
+    let mut text = String::new();
+    archive.by_name("blender_manifest.toml").ok()?.read_to_string(&mut text).ok()?;
+    text.lines().find_map(|line| {
+        let (key, value) = line.split_once('=')?;
+        (key.trim() == "id").then(|| value.trim().trim_matches('"').to_owned())
+    })
+}
+
+/// Blender-Kommandozeile: Erweiterung entfernen (beim Zurücknehmen). Fehler bleiben im Protokoll: die Dateien der
+/// Einrichtung sind dann schon weg, und eine übrig gebliebene Erweiterung stört nicht.
+fn remove_blender_extensions(runner: &dyn CommandRunner, actions: &[ActionEntry]) {
+    for action in actions.iter().filter(|a| a.kind == "blenderExtensionInstall" && a.exit_code == Some(0)) {
+        let (Some(exe), Some(package)) = (&action.exe, &action.package) else { continue };
+        let args: Vec<OsString> =
+            ["--command", "extension", "remove", package.as_str()].iter().map(OsString::from).collect();
+        match runner.run(Path::new(exe), &args, BLENDER_CLI_TIMEOUT) {
+            Ok(out) if out.code == Some(0) => {}
+            Ok(out) => {
+                tracing::warn!("Blender hat die Erweiterung {package} nicht entfernt (Exit-Code {:?})", out.code)
+            }
+            Err(e) => tracing::warn!("Blender ließ sich zum Entfernen von {package} nicht starten: {e}"),
+        }
+    }
+}
+
 /// Blender-Kommandozeile: Erweiterung aus ZIP installieren und aktivieren.
 fn run_blender_extension(runner: &dyn CommandRunner, exe: Option<&Path>, zip: &Path) -> Result<Option<i32>, String> {
     let Some(exe) = exe else {
@@ -635,8 +666,28 @@ fn paths_needed_elsewhere(store: &SetupStore, current: &Manifest) -> BTreeSet<Pa
     out
 }
 
-/// Nimmt eine Einrichtung zurück. Nur die jüngste, nicht zurückgenommene Einrichtung eines Bereichs ist zurücknehmbar.
+/// Nimmt eine Einrichtung zurück: Dateien und Schriften. Nur die jüngste, nicht zurückgenommene Einrichtung eines
+/// Bereichs ist zurücknehmbar. Eine mit Blender installierte Erweiterung bleibt dabei stehen; [`undo_with_runner`] entfernt sie.
 pub fn undo(setup_id: &str, store: &SetupStore, fonts: &dyn FontInstaller) -> Result<UndoReport, SetupError> {
+    undo_inner(setup_id, store, fonts, None)
+}
+
+/// Wie [`undo`], entfernt aber auch die mit der Blender-Kommandozeile installierten Erweiterungen.
+pub fn undo_with_runner(
+    setup_id: &str,
+    store: &SetupStore,
+    fonts: &dyn FontInstaller,
+    runner: &dyn CommandRunner,
+) -> Result<UndoReport, SetupError> {
+    undo_inner(setup_id, store, fonts, Some(runner))
+}
+
+fn undo_inner(
+    setup_id: &str,
+    store: &SetupStore,
+    fonts: &dyn FontInstaller,
+    runner: Option<&dyn CommandRunner>,
+) -> Result<UndoReport, SetupError> {
     let mut manifest = store.load_manifest(setup_id)?.ok_or_else(|| SetupError::NotFound(setup_id.to_owned()))?;
     if manifest.status == ManifestStatus::Undone {
         return Err(SetupError::InvalidInput {
@@ -653,6 +704,9 @@ pub fn undo(setup_id: &str, store: &SetupStore, fonts: &dyn FontInstaller) -> Re
     }
     let keep = paths_needed_elsewhere(store, &manifest);
     let report = rollback(store, fonts, &manifest.roots, &manifest.entries, &manifest.fonts, &keep);
+    if let Some(runner) = runner {
+        remove_blender_extensions(runner, &manifest.actions);
+    }
     manifest.status = ManifestStatus::Undone;
     manifest.undone_at = Some(now_iso());
     store.save_manifest(&manifest)?;

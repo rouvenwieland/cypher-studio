@@ -68,6 +68,12 @@ pub struct ActionEntry {
     /// SHA-256 des installierten ZIPs.
     pub sha256: String,
     pub exit_code: Option<i32>,
+    /// Blender-Startdatei, mit der installiert wurde (zum Entfernen beim Zurücknehmen).
+    #[serde(default)]
+    pub exe: Option<String>,
+    /// Kennung der Erweiterung (`id` aus `blender_manifest.toml`).
+    #[serde(default)]
+    pub package: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

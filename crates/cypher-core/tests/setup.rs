@@ -668,10 +668,36 @@ fn a_failing_font_registration_makes_the_setup_partial() {
     assert!(fx.profile.join("fonts/A.ttf").exists(), "die Dateien liegen trotzdem da");
 }
 
+/// Eine Erweiterung wie `blender --command extension build` sie packt: `blender_manifest.toml` mit der Kennung im ZIP.
+fn extension_zip() -> Vec<u8> {
+    use std::io::Write as _;
+    let mut buf = std::io::Cursor::new(Vec::new());
+    {
+        let mut zip = zip::ZipWriter::new(&mut buf);
+        zip.start_file("blender_manifest.toml", zip::write::SimpleFileOptions::default()).unwrap();
+        zip.write_all(
+            b"schema_version = \"1.0.0\"
+id = \"cypher_export\"
+version = \"1.0.0\"
+",
+        )
+        .unwrap();
+        zip.start_file("__init__.py", zip::write::SimpleFileOptions::default()).unwrap();
+        zip.write_all(
+            b"pass
+",
+        )
+        .unwrap();
+        zip.finish().unwrap();
+    }
+    buf.into_inner()
+}
+
 fn blender_pack(fx: &Fixture) {
     let dir = fx.packs_root.join("demo");
     std::fs::create_dir_all(dir.join("dist")).unwrap();
-    std::fs::write(dir.join("dist/ext.zip"), b"zip-inhalt").unwrap();
+    let ext_zip = extension_zip();
+    std::fs::write(dir.join("dist/ext.zip"), &ext_zip).unwrap();
     std::fs::create_dir_all(dir.join("t")).unwrap();
     std::fs::write(dir.join("t/init.py"), b"print(1)").unwrap();
     let pack = json!({
@@ -688,7 +714,7 @@ fn blender_pack(fx: &Fixture) {
             { "type": "blenderExtensionInstall", "zip": "dist/ext.zip" },
             { "type": "writeConfig", "root": "kritaResources", "rel": "cfg/cypher_studio.json", "fields": { "assetLibraryPath": "{libraryRoot}/3D" } }
         ],
-        "sha256": { "t/init.py": sha(b"print(1)"), "dist/ext.zip": sha(b"zip-inhalt") }
+        "sha256": { "t/init.py": sha(b"print(1)"), "dist/ext.zip": sha(&ext_zip) }
     });
     std::fs::write(dir.join("pack.json"), serde_json::to_vec_pretty(&pack).unwrap()).unwrap();
 }
@@ -747,6 +773,50 @@ fn blender_extension_is_installed_through_the_cli_once_and_config_uses_the_libra
     .unwrap();
     assert_eq!(again.setup_id, record.setup_id);
     assert_eq!(runner.calls().len(), 1);
+
+    // Zurücknehmen mit Blender-Kommandozeile entfernt auch die Erweiterung (nach Kennung aus dem ZIP)
+    let runner = FakeRunner::new().ok("extension remove", "removed");
+    let report = cypher_core::setup::undo_with_runner(&record.setup_id, &fx.store, &fonts, &runner).unwrap();
+    assert!(report.removed >= 1);
+    let calls = runner.calls();
+    assert_eq!(calls.len(), 1, "{calls:?}");
+    assert_eq!(calls[0].exe, PathBuf::from("/usr/bin/krita"));
+    assert_eq!(calls[0].args, ["--command", "extension", "remove", "cypher_export"]);
+}
+
+#[test]
+fn undo_without_a_runner_leaves_the_extension_and_failed_installs_are_never_removed() {
+    let fx = Fixture::new();
+    blender_pack(&fx);
+    let (pack, scope) = (fx.pack(), fx.scope());
+    let mk_plan = || {
+        plan(&PlanInput {
+            pack: &pack,
+            scope: &scope,
+            store: &fx.store,
+            os: Os::Linux,
+            program_version: Some("5.3.4"),
+            library_root: None,
+            program_running: false,
+        })
+        .unwrap()
+    };
+    let fonts = RecordingFonts::default();
+    // Installation schlug fehl (Exit-Code 1): beim Zurücknehmen wird nichts entfernt
+    let failing = FakeRunner::new()
+        .on("install-file", Ok(CommandOutput { code: Some(1), stdout: vec![], stderr: b"Fehler".to_vec() }));
+    let env = ApplyEnv { store: &fx.store, runner: &failing, fonts: &fonts, job_id: "j" };
+    let record = cypher_core::setup::apply::apply(
+        mk_plan(),
+        &ApplySelection::default(),
+        &env,
+        &NoProgress,
+        &CancellationToken::new(),
+    )
+    .unwrap();
+    let remover = FakeRunner::new().ok("extension remove", "removed");
+    cypher_core::setup::undo_with_runner(&record.setup_id, &fx.store, &fonts, &remover).unwrap();
+    assert!(remover.calls().is_empty(), "{:?}", remover.calls());
 }
 
 #[test]

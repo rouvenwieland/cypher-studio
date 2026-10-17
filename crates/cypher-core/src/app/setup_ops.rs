@@ -150,7 +150,10 @@ impl App {
         let job = self.jobs.start(JobKind::SetupUndo, &manifest.pack_id, &key, false)?;
         let this = self.clone();
         let setup_id = req.setup_id.clone();
-        let outcome = Self::blocking(move || crate::setup::undo(&setup_id, &this.setup_store, &*this.fonts)).await?;
+        let outcome = Self::blocking(move || {
+            crate::setup::undo_with_runner(&setup_id, &this.setup_store, &*this.fonts, &*this.runner)
+        })
+        .await?;
         match outcome {
             Ok(report) => {
                 let _ = self.state.update(|s| {
