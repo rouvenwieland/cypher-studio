@@ -986,8 +986,8 @@
 
 .outbar__summary {
   flex: 1 1 0;
-  /* die Messzeile geht vor dem Grund des gesperrten Ausgangs: dessen Text kürzt sich zuerst */
-  min-width: min(45%, 380px);
+  /* Platz für Format und Maße; was der Grund des gesperrten Ausgangs darüber hinaus nicht braucht, bekommt die Messzeile */
+  min-width: min(40%, 300px);
   display: flex;
   align-items: baseline;
   gap: var(--s-4);

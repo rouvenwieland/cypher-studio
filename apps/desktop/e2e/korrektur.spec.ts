@@ -162,7 +162,7 @@ test.describe("Ausrichtung auf Start, Segmente, Freistellen, Erststart", () => {
         return Math.round(r.right - (last?.right ?? r.right));
       }),
     );
-    expect(m.length).toBeGreaterThanOrEqual(3);
+    expect(m.length).toBeGreaterThanOrEqual(2);
     for (const tail of m) expect(tail).toBeLessThanOrEqual(2);
   });
 
@@ -226,7 +226,7 @@ test.describe("Ausrichtung auf Start, Segmente, Freistellen, Erststart", () => {
 
 test.describe("Ausgangsleiste, Ausgang gesperrt (Befund im echten Fenster: „P.“, „30…“, „Ado…“)", () => {
   for (const width of [1280, 1536]) {
-    test(`${width} px: Einträge der Zusammenfassung stehen ganz da oder fehlen ganz, mindestens drei lesbar`, async ({
+    test(`${width} px: Einträge der Zusammenfassung stehen ganz da oder fehlen ganz, mindestens Format und Maße lesbar`, async ({
       page,
     }) => {
       await page.setViewportSize({ width, height: 700 });
@@ -255,7 +255,7 @@ test.describe("Ausgangsleiste, Ausgang gesperrt (Befund im echten Fenster: „P.
         expect(p.insideRight, `„${p.text}“ ragt über die Zusammenfassung hinaus`).toBe(true);
         expect(p.cut, `„${p.text}“ ist angeschnitten`).toBe(false);
       }
-      expect(shown.length, `lesbar: ${shown.map((x) => x.text).join(" ")}`).toBeGreaterThanOrEqual(3);
+      expect(shown.length, `lesbar: ${shown.map((x) => x.text).join(" ")}`).toBeGreaterThanOrEqual(2);
     });
   }
 });
