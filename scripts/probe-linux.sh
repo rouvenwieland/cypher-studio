@@ -81,20 +81,21 @@ fi
 # --- 3. Echte Installation ---------------------------------------------------------------------
 step "3. Installation (Download, SHA-256, Entpacken, Registrieren)"
 cy --data-dir "$DATA" install "$PROGRAM" --yes --keep-download
-INSTALLED="$(cy --data-dir "$DATA" detect --json | python3 -c '
+LAUNCHER="$(cy --data-dir "$DATA" detect --json | python3 -c '
 import json, os, sys
 view = json.load(sys.stdin)
 prog = next(p for p in view["programs"] if p["id"] == sys.argv[1])
 inst = next(i for i in prog["installations"] if i["managedByCypher"])
 print(os.path.expanduser(inst["location"]))' "$PROGRAM")"
-[[ -d "$INSTALLED" ]] || fail "Installationsordner fehlt: $INSTALLED"
-echo "-> installiert in $INSTALLED"
-case "$INSTALLED" in "$DATA"/*) ;; *) fail "Installation liegt außerhalb des Probe-Ordners: $INSTALLED" ;; esac
+[[ -f "$LAUNCHER" ]] || fail "Startdatei fehlt: $LAUNCHER"
+INSTALLED="$(dirname "$LAUNCHER")"
+echo "-> installiert in $INSTALLED (Start: $LAUNCHER)"
+case "$LAUNCHER" in "$DATA"/*) ;; *) fail "Installation liegt außerhalb des Probe-Ordners: $LAUNCHER" ;; esac
 
 # --- 4. Programm starten -----------------------------------------------------------------------
 if [[ "$SKIP_RUN" == 0 && "$PROGRAM" == "blender" ]]; then
   step "4. blender --version"
-  BIN="$INSTALLED/blender"
+  BIN="$LAUNCHER"
   [[ -x "$BIN" ]] || fail "Startdatei fehlt oder ist nicht ausführbar: $BIN"
   if ! OUT="$("$BIN" --version 2>&1)"; then
     echo "$OUT" | head -5
@@ -107,7 +108,8 @@ fi
 
 # --- 5. Negativtest: veränderte Datei ---------------------------------------------------------
 step "5. Negativtest mit veränderter Datei"
-CACHED="$(find "$DATA" -name "$FILE" -type f | head -1)"
+# Der Zwischenspeicher benennt geladene Dateien nach ihrer Prüfsumme
+CACHED="$(find "$DATA" -name "$SHA*" -type f | head -1)"
 [[ -f "$CACHED" ]] || fail "Die geladene Datei wurde nicht behalten (--keep-download)"
 echo "$SHA  $CACHED" | sha256sum -c - >/dev/null || fail "Die behaltene Datei hat nicht die Prüfsumme des Katalogs"
 mkdir -p "$WORK/serve"
