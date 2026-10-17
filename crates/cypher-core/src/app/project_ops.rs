@@ -9,6 +9,7 @@ use crate::api::{
     TemplateInfo, TemplateTarget,
 };
 use crate::error::CoreError;
+use crate::platform::fsx;
 use crate::projects::{self, NewFileContent, TemplateRecord};
 use crate::state::ProjectIndexEntry;
 use crate::util::now_iso;
@@ -71,8 +72,14 @@ impl App {
 
     pub fn project_create(&self, req: &ProjectCreateReq) -> Result<Project, CoreError> {
         let (root, in_library) = self.projects_root();
-        std::fs::create_dir_all(&root)
-            .map_err(|e| crate::error::IoError::new(crate::api::IoOp::CreateDir, &root, e))?;
+        match (in_library, self.settings.get().library_root.as_deref()) {
+            // `<Bibliothek>/Projekte` Glied für Glied anlegen: in der geteilten Bibliothek kann dort ein Link liegen
+            (true, Some(lib)) => {
+                fsx::create_dir_all_within(Path::new(lib), "Projekte")?;
+            }
+            _ => std::fs::create_dir_all(&root)
+                .map_err(|e| crate::error::IoError::new(crate::api::IoOp::CreateDir, &root, e))?,
+        }
         let author = self.settings.get().profile.display_name;
         let (project, dir) = projects::create(&root, in_library, &req.name, req.collection.as_deref(), &author)?;
         self.touch_index(&project, &dir, true);

@@ -74,6 +74,51 @@ pub fn extension_of(rel: &str) -> String {
     Path::new(rel).extension().map(|e| e.to_string_lossy().to_lowercase()).unwrap_or_default()
 }
 
+/// Endungen, die ein Austauschpaket in die Bibliothek bringen darf (Positivliste, klein geschrieben, ohne Punkt): Bilder,
+/// Vektoren, Arbeitsdateien der Programme (Krita, Blender, Kdenlive, Inkscape), 3D-Modelle samt Zubehör, Medien,
+/// Schriften, Paletten, Dokumente und Text. Alles andere (Programme, Skripte, Verknüpfungen, Dateien ohne Endung)
+/// lehnt der Import ab. Gegen Skripte in `.blend` hilft zusätzlich der Start mit `--disable-autoexec`.
+pub const PACK_ALLOWED_EXTENSIONS: &[&str] = &[
+    // Bilder
+    "png", "jpg", "jpeg", "webp", "tif", "tiff", "gif", "bmp", "avif", "heic", "heif", "jxl", "ico", "tga", "exr",
+    "hdr", "kra", "ora", "psd", "xcf", // Vektor
+    "svg", // 3D samt Zubehör (`.bin` und `.mtl` gehören zu glTF und OBJ)
+    "blend", "glb", "gltf", "bin", "obj", "mtl", "fbx", "stl", "usd", "usdz", // Video, Audio, Untertitel
+    "mp4", "mov", "mkv", "webm", "avi", "kdenlive", "mp3", "wav", "ogg", "flac", "m4a", "opus", "srt", "vtt",
+    // Schriften
+    "ttf", "otf", "ttc", "woff", "woff2", // Paletten
+    "kpl", "gpl", "aco", "ase", "soc", // Dokumente und Text
+    "pdf", "txt", "md", "json", "docx", "odt", "csv",
+];
+
+/// Darf ein Austauschpaket diese Datei mitbringen? Prüft die letzte Endung der letzten Pfadkomponente ohne Rücksicht auf
+/// Groß/Klein (`Logo.PNG` ja, `Logo.png.exe`, `setup.bat`, `readme` ohne Endung nein).
+pub fn is_pack_file_allowed(rel: &str) -> bool {
+    let name = rel.rsplit(['/', '\\']).next().unwrap_or(rel);
+    match name.rsplit_once('.') {
+        Some((stem, ext)) if !stem.is_empty() => {
+            let ext = ext.to_ascii_lowercase();
+            PACK_ALLOWED_EXTENSIONS.contains(&ext.as_str())
+        }
+        _ => false,
+    }
+}
+
+/// Liegt `rel` im Verwaltungsordner `.cypher` der Bibliothek? Auf Windows und macOS ist `.CYPHER` derselbe Ordner, Windows
+/// ignoriert abschließende Punkte und Leerzeichen und kennt den Kurznamen `CYPHER~1`; `\` gilt als Trenner. Die Prüfung ist
+/// absichtlich großzügig: lieber einen harmlosen Namen ablehnen als den Ordner der App öffnen.
+pub fn is_meta_path(rel: &str) -> bool {
+    use unicode_normalization::UnicodeNormalization as _;
+    let normalized: String = rel.nfc().collect();
+    let first = normalized.split(['/', '\\']).find(|c| !c.is_empty()).unwrap_or("");
+    let first = first.trim_end_matches([' ', '.']).to_ascii_lowercase();
+    if first == META_DIR {
+        return true;
+    }
+    // 8.3-Kurzname von `.cypher`: `CYPHER~1`, `CYPHER~2` …
+    first.strip_prefix("cypher~").is_some_and(|n| !n.is_empty() && n.bytes().all(|b| b.is_ascii_digit()))
+}
+
 /// Hat die Art ein Vorschaubild?
 pub fn has_thumbnail(ext: &str) -> bool {
     matches!(ext, "png" | "jpg" | "jpeg" | "webp" | "tif" | "tiff" | "gif" | "bmp" | "svg" | "kra" | "ora" | "blend")
@@ -314,6 +359,112 @@ pub fn detect_sync_tool(root: &Path) -> Option<SyncTool> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn pack_allow_list_accepts_work_files_and_rejects_programs_and_scripts() {
+        for ok in [
+            "Motive/Logo.png",
+            "Motive/LOGO.PNG",
+            "3D/modell.glb",
+            "3D/modell.GLTF",
+            "3D/modell.bin",
+            "Projekte/x/Film.kdenlive",
+            "Projekte/x/Malerei.kra",
+            "Szene.blend",
+            "Vektor.svg",
+            "Schriften/Demo.TTF",
+            "Doku/Anleitung.pdf",
+            "a/b.social.json",
+            "Notizen.txt",
+            "Motive\\Unterordner\\x.webp",
+        ] {
+            assert!(is_pack_file_allowed(ok), "{ok}");
+        }
+        for bad in [
+            "Motive/Logo.png.exe",
+            "Motive/Logo.png.EXE",
+            "setup.bat",
+            "x.cmd",
+            "x.lnk",
+            "x.url",
+            "x.js",
+            "x.jse",
+            "x.vbs",
+            "x.ps1",
+            "x.psm1",
+            "x.hta",
+            "x.scr",
+            "x.dll",
+            "x.msi",
+            "x.com",
+            "x.reg",
+            "x.sh",
+            "x.py",
+            "x.jar",
+            "x.desktop",
+            "x.appimage",
+            "x.app",
+            "x.html",
+            "x.xml",
+            "x.zip",
+            "Makefile",
+            "ohne-endung",
+            ".png",
+            "ordner.png/datei",
+            "Logo.png.",
+        ] {
+            assert!(!is_pack_file_allowed(bad), "{bad}");
+        }
+    }
+
+    #[test]
+    fn every_known_library_kind_is_allowed_in_packs() {
+        // Die Positivliste darf nichts auslassen, was die Bibliothek sonst als eigene Art kennt (außer „other“)
+        let known = [
+            "png", "jpg", "jpeg", "webp", "tif", "tiff", "gif", "bmp", "avif", "kra", "ora", "psd", "xcf", "svg",
+            "blend", "glb", "gltf", "obj", "fbx", "stl", "usd", "usdz", "mp4", "mov", "mkv", "webm", "avi", "kdenlive",
+            "mp3", "wav", "ogg", "flac", "m4a", "opus", "ttf", "otf", "woff", "woff2", "kpl", "gpl", "aco", "ase",
+            "soc", "pdf", "txt", "md", "json", "docx", "odt", "csv",
+        ];
+        for ext in known {
+            assert_ne!(classify(ext), LibraryKind::Other, "{ext}");
+            assert!(PACK_ALLOWED_EXTENSIONS.contains(&ext), "{ext} fehlt in der Positivliste");
+        }
+        assert!(PACK_ALLOWED_EXTENSIONS.iter().all(|e| *e == e.to_ascii_lowercase()));
+    }
+
+    #[test]
+    fn meta_folder_is_recognised_in_every_spelling() {
+        // Befund M2: `.CYPHER` ist unter Windows und macOS derselbe Ordner wie `.cypher`
+        for yes in [
+            ".cypher",
+            ".cypher/x.json",
+            ".CYPHER/x.json",
+            ".Cypher/trash/a",
+            ".cypher\\tmp\\x",
+            "/.cypher/x",
+            "\\.cypher\\x",
+            ".cypher./x",
+            ".cypher /x",
+            "CYPHER~1/x",
+            "cypher~2/x.txt",
+        ] {
+            assert!(is_meta_path(yes), "{yes}");
+        }
+        for no in [
+            "Motive/.cypher/x",
+            "Motive/x.png",
+            ".cypherx/a",
+            "cypher/a",
+            "cypher~/a",
+            "cypher~a/x",
+            "xcypher~1/a",
+            "",
+            "a/.cypher",
+        ] {
+            assert!(!is_meta_path(no), "{no}");
+        }
+    }
 
     #[test]
     fn kinds_and_mime() {

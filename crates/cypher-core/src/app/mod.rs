@@ -9,6 +9,7 @@ mod misc_ops;
 mod print_ops;
 mod programs_ops;
 mod project_ops;
+mod scrub;
 pub mod serve;
 mod setup_ops;
 mod shell_ops;

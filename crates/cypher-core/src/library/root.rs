@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use walkdir::WalkDir;
 
 use crate::api::{Collection, LibraryRootCandidate, LibraryRootInvalidReason, Os, RootProblem};
-use crate::error::{IoError, LibraryError};
+use crate::error::LibraryError;
 use crate::platform::{AppDirs, KnownDirs, display_path, fsx, is_system_dir};
 use crate::util::{new_id, now_iso};
 
@@ -149,11 +149,10 @@ pub fn library_file_path(root: &Path) -> PathBuf {
 
 /// Legt die Struktur an (ohne vorhandene Dateien anzufassen) und schreibt `.cypher/library.json`.
 pub fn init(root: &Path, display_name: &str, collections: &[Collection]) -> Result<LibraryFile, LibraryError> {
-    let meta = root.join(META_DIR);
-    std::fs::create_dir_all(meta.join("meta")).map_err(|e| IoError::new(crate::api::IoOp::CreateDir, &meta, e))?;
+    // Glied für Glied und ohne Links: ein geteilter Ordner kann Links mitbringen, durch die nichts nach außen laufen darf
+    fsx::create_dir_all_within(root, &format!("{META_DIR}/meta"))?;
     for folder in STANDARD_FOLDERS {
-        let p = root.join(folder);
-        std::fs::create_dir_all(&p).map_err(|e| IoError::new(crate::api::IoOp::CreateDir, &p, e))?;
+        fsx::create_dir_all_within(root, folder)?;
     }
     let readme = root.join("LIESMICH.txt");
     if !readme.exists() {

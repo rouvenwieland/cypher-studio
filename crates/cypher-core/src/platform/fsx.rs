@@ -14,10 +14,19 @@ use crate::error::{IoError, PathError};
 /// Komponenten länger als so viele Bytes werden abgelehnt.
 pub const MAX_COMPONENT_BYTES: usize = 240;
 
-const RESERVED: [&str; 22] = [
-    "CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2",
-    "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9",
+/// Von Windows reservierte Gerätenamen (auch mit Endung, zum Beispiel `CON.txt`). `COM0`/`LPT0` und die hochgestellten
+/// Ziffern (`COM¹`, `LPT²`) zählt Microsoft ebenfalls dazu; sie werden vor dem Vergleich per NFKC zu `COM1`.
+/// `CONIN$`, `CONOUT$` und `CLOCK$` sind Konsolen- und alte Systemgeräte.
+const RESERVED: [&str; 27] = [
+    "CON", "PRN", "AUX", "NUL", "CONIN$", "CONOUT$", "CLOCK$", "COM0", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6",
+    "COM7", "COM8", "COM9", "LPT0", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9",
 ];
+
+/// Ist der Name (ohne Endung; Groß/Klein und Kompatibilitätsformen egal) ein reservierter Windows-Gerätename?
+fn is_reserved_stem(stem: &str) -> bool {
+    let folded: String = stem.trim_end().nfkc().collect::<String>().to_uppercase();
+    RESERVED.contains(&folded.as_str())
+}
 
 /// Prüft eine einzelne Pfadkomponente nach 6.6 (ohne Trennzeichen).
 pub fn validate_component(comp: &str) -> Result<(), PathError> {
@@ -36,8 +45,7 @@ pub fn validate_component(comp: &str) -> Result<(), PathError> {
     if comp.ends_with('.') || comp.ends_with(' ') {
         return Err(PathError::TrailingDotOrSpace);
     }
-    let stem = comp.split('.').next().unwrap_or(comp).trim_end().to_ascii_uppercase();
-    if RESERVED.contains(&stem.as_str()) {
+    if is_reserved_stem(comp.split('.').next().unwrap_or(comp)) {
         return Err(PathError::ReservedName);
     }
     Ok(())
@@ -147,6 +155,98 @@ pub enum EnsureWithinError {
     Path(#[from] PathError),
     #[error(transparent)]
     Io(#[from] IoError),
+}
+
+/// Ist `path` selbst ein Symlink oder eine Junction (ohne ihn aufzulösen)? Unter Windows zählen alle Reparse-Punkte, die
+/// auf einen anderen Namen zeigen (Symlink, Junction/Mount-Point); Cloud-Platzhalter (OneDrive) sind keine Links.
+pub fn is_link(path: &Path) -> bool {
+    fs::symlink_metadata(path).is_ok_and(|m| m.file_type().is_symlink())
+}
+
+/// Prüft jedes **bestehende** Glied von `root` (ausschließlich) bis `path` (einschließlich): keines darf ein Symlink oder
+/// eine Junction sein. Ab dem ersten fehlenden Glied ist der Rest in Ordnung. `path` muss unter `root` liegen.
+///
+/// Schreibwege in geteilten Ordnern (Bibliothek, Projekte, Pakete) brauchen das: ein Sync-Werkzeug kann Links mitbringen,
+/// durch die ein Schreiben außerhalb der Wurzel landen würde. `safe_join` prüft nur den Text des Pfads.
+pub fn ensure_no_links_below(root: &Path, path: &Path) -> Result<(), EnsureWithinError> {
+    let rel = path.strip_prefix(root).map_err(|_| PathError::Escapes)?;
+    let mut current = root.to_path_buf();
+    for comp in rel.components() {
+        match comp {
+            Component::Normal(name) => current.push(name),
+            _ => return Err(PathError::Escapes.into()),
+        }
+        match fs::symlink_metadata(&current) {
+            Ok(meta) if meta.file_type().is_symlink() => return Err(PathError::LinkInPath.into()),
+            Ok(_) => {}
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(()),
+            Err(e) => return Err(IoError::new(IoOp::Metadata, &current, e).into()),
+        }
+    }
+    Ok(())
+}
+
+/// Legt den relativen Ordnerpfad `rel_dir` unterhalb von `root` an, **Komponente für Komponente**: bestehende Glieder
+/// dürfen keine Links sein, neu angelegte werden gleich nachgeprüft (Wettlauf mit einem Sync-Werkzeug), am Ende muss der
+/// aufgelöste Pfad unter der aufgelösten Wurzel liegen. Leerer `rel_dir` liefert `root`. Gibt den Ordner zurück.
+pub fn create_dir_all_within(root: &Path, rel_dir: &str) -> Result<PathBuf, EnsureWithinError> {
+    if rel_dir.is_empty() {
+        return Ok(root.to_path_buf());
+    }
+    let mut current = root.to_path_buf();
+    for comp in split_rel(rel_dir)? {
+        current.push(comp);
+        match fs::symlink_metadata(&current) {
+            Ok(meta) if meta.file_type().is_symlink() => return Err(PathError::LinkInPath.into()),
+            Ok(meta) if meta.is_dir() => {}
+            Ok(_) => {
+                let e = std::io::Error::new(std::io::ErrorKind::AlreadyExists, "an dieser Stelle liegt eine Datei");
+                return Err(IoError::new(IoOp::CreateDir, &current, e).into());
+            }
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+                match fs::create_dir(&current) {
+                    Ok(()) => {}
+                    Err(e) if e.kind() == std::io::ErrorKind::AlreadyExists => {}
+                    Err(e) => return Err(IoError::new(IoOp::CreateDir, &current, e).into()),
+                }
+                if is_link(&current) {
+                    return Err(PathError::LinkInPath.into());
+                }
+            }
+            Err(e) => return Err(IoError::new(IoOp::Metadata, &current, e).into()),
+        }
+    }
+    ensure_within(root, &current)?;
+    Ok(current)
+}
+
+/// Bereitet das Schreiben von `rel` unterhalb von `root` vor: prüft den Pfad (6.6), legt die Ordner sicher an
+/// ([`create_dir_all_within`]) und liefert den Zielpfad. Auch das Ziel selbst darf kein Link sein.
+pub fn prepare_write_target(root: &Path, rel: &str) -> Result<PathBuf, EnsureWithinError> {
+    let comps = split_rel(rel)?;
+    let Some((name, dirs)) = comps.split_last() else { return Err(PathError::Empty.into()) };
+    let parent = create_dir_all_within(root, &dirs.join("/"))?;
+    let target = parent.join(name);
+    ensure_no_links_below(root, &target)?;
+    Ok(target)
+}
+
+/// Letzte Prüfung unmittelbar vor dem Schreiben oder Umbenennen: kein Glied zwischen `root` und `target` ist inzwischen
+/// ein Link geworden, und der aufgelöste Elternordner liegt noch unter der Wurzel.
+pub fn verify_write_target(root: &Path, target: &Path) -> Result<(), EnsureWithinError> {
+    ensure_no_links_below(root, target)?;
+    if let Some(parent) = target.parent() {
+        ensure_within(root, parent)?;
+    }
+    Ok(())
+}
+
+/// Schreibt `bytes` atomar nach `root/rel` (Ordner sicher angelegt, keine Links im Weg).
+pub fn write_atomic_within(root: &Path, rel: &str, bytes: &[u8]) -> Result<PathBuf, EnsureWithinError> {
+    let target = prepare_write_target(root, rel)?;
+    verify_write_target(root, &target)?;
+    write_atomic(&target, bytes)?;
+    Ok(target)
 }
 
 /// Bereinigt Eingaben des Nutzers für einen einzelnen Datei- oder Ordnernamen.
@@ -363,8 +463,33 @@ pub fn has_parent_components(path: &Path) -> bool {
     path.components().any(|c| matches!(c, Component::ParentDir))
 }
 
+/// Hilfen für Tests mit Verknüpfungen (auch von den Tests anderer Module benutzt).
+#[cfg(test)]
+pub(crate) mod test_links {
+    use std::path::Path;
+
+    /// Legt `link` als Verknüpfung auf den Ordner `target` an: Symlink (Unix) oder Junction (Windows, braucht keine Rechte).
+    pub(crate) fn make_dir_link(target: &Path, link: &Path) {
+        #[cfg(unix)]
+        std::os::unix::fs::symlink(target, link).unwrap();
+        #[cfg(windows)]
+        {
+            let out = std::process::Command::new("cmd")
+                .arg("/C")
+                .arg("mklink")
+                .arg("/J")
+                .arg(link)
+                .arg(target)
+                .output()
+                .unwrap();
+            assert!(out.status.success(), "mklink: {}", String::from_utf8_lossy(&out.stdout));
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
+    use super::test_links::make_dir_link;
     use super::*;
     use proptest::prelude::*;
 
@@ -593,5 +718,140 @@ mod tests {
     fn free_space_works_for_missing_paths() {
         let dir = tempfile::tempdir().unwrap();
         assert!(free_space(&dir.path().join("noch/nicht/da")).unwrap() > 0);
+    }
+
+    #[test]
+    fn reserved_windows_names_are_complete() {
+        // Befund N8: COM0/LPT0, hochgestellte Ziffern, Konsolengeräte, mit und ohne Endung, Groß/Klein egal
+        for name in [
+            "COM0",
+            "LPT0",
+            "com0.txt",
+            "COM\u{b9}",
+            "LPT\u{b2}",
+            "COM\u{b3}.txt",
+            "lpt\u{b9}.tar.gz",
+            "CONIN$",
+            "CONOUT$",
+            "conout$.log",
+            "CLOCK$",
+            "Lpt9",
+            "con .txt",
+            "AUX.x",
+            "nul",
+        ] {
+            assert_eq!(validate_component(name), Err(PathError::ReservedName), "{name:?}");
+            assert_eq!(safe_join(Path::new("/b"), &format!("dir/{name}")).unwrap_err(), PathError::ReservedName);
+        }
+        for name in ["COM10", "COMX", "CONSOLE", "LPT", "Comfort.txt", "con-x", "CONIN", "Programm", "x.COM1"] {
+            assert_eq!(validate_component(name), Ok(()), "{name:?} ist ein erlaubter Name");
+        }
+        // abschließende Punkte und Leerzeichen bleiben abgelehnt
+        assert_eq!(validate_component("CON."), Err(PathError::TrailingDotOrSpace));
+        assert_eq!(validate_component("name "), Err(PathError::TrailingDotOrSpace));
+    }
+
+    fn base_and_outside() -> (tempfile::TempDir, PathBuf, PathBuf) {
+        let dir = tempfile::tempdir().unwrap();
+        let base = dir.path().join("base");
+        let outside = dir.path().join("outside");
+        fs::create_dir_all(&base).unwrap();
+        fs::create_dir_all(&outside).unwrap();
+        (dir, base, outside)
+    }
+
+    #[test]
+    fn is_link_sees_symlinks_and_junctions_but_not_plain_folders() {
+        let (_dir, base, outside) = base_and_outside();
+        make_dir_link(&outside, &base.join("verweis"));
+        fs::create_dir_all(base.join("echt")).unwrap();
+        assert!(is_link(&base.join("verweis")));
+        assert!(!is_link(&base.join("echt")));
+        assert!(!is_link(&base.join("fehlt")));
+    }
+
+    #[test]
+    fn create_dir_all_within_never_writes_through_a_link() {
+        // Befund M1: ein Ordner `Motive`, der auf ein Ziel außerhalb zeigt, darf keinen Schreibzugriff dorthin erlauben
+        let (_dir, base, outside) = base_and_outside();
+        make_dir_link(&outside, &base.join("Motive"));
+        let err = create_dir_all_within(&base, "Motive/Unter/Ordner").unwrap_err();
+        assert!(matches!(err, EnsureWithinError::Path(PathError::LinkInPath)), "{err:?}");
+        assert!(fs::read_dir(&outside).unwrap().next().is_none(), "außerhalb wurde nichts angelegt");
+
+        // ein Link tiefer in der Kette
+        fs::create_dir_all(base.join("a")).unwrap();
+        make_dir_link(&outside, &base.join("a/b"));
+        assert!(matches!(create_dir_all_within(&base, "a/b/c"), Err(EnsureWithinError::Path(PathError::LinkInPath))));
+        assert!(fs::read_dir(&outside).unwrap().next().is_none());
+
+        // normale Ordner entstehen, auch mehrfach; eine Datei im Weg ist ein Fehler, kein Überschreiben
+        let made = create_dir_all_within(&base, "x/y/z").unwrap();
+        assert!(made.is_dir() && made.ends_with("x/y/z"));
+        create_dir_all_within(&base, "x/y/z").unwrap();
+        fs::write(base.join("datei"), b"1").unwrap();
+        assert!(matches!(create_dir_all_within(&base, "datei/unter"), Err(EnsureWithinError::Io(_))));
+        // die Textregeln gelten weiter
+        assert!(matches!(
+            create_dir_all_within(&base, "../draussen"),
+            Err(EnsureWithinError::Path(PathError::ParentTraversal))
+        ));
+        assert_eq!(create_dir_all_within(&base, "").unwrap(), base);
+    }
+
+    #[test]
+    fn prepare_write_target_refuses_links_in_the_chain_and_at_the_end() {
+        let (_dir, base, outside) = base_and_outside();
+        make_dir_link(&outside, &base.join("Motive"));
+        assert!(matches!(
+            prepare_write_target(&base, "Motive/evil.txt"),
+            Err(EnsureWithinError::Path(PathError::LinkInPath))
+        ));
+        assert!(!outside.join("evil.txt").exists());
+
+        // das Ziel selbst ist ein Link (hier ein Ordner-Link an der Stelle der Datei)
+        make_dir_link(&outside, &base.join("datei.txt"));
+        assert!(matches!(
+            prepare_write_target(&base, "datei.txt"),
+            Err(EnsureWithinError::Path(PathError::LinkInPath))
+        ));
+
+        let ok = prepare_write_target(&base, "Neu/Unter/x.png").unwrap();
+        assert!(ok.parent().unwrap().is_dir() && !ok.exists());
+        assert!(matches!(
+            prepare_write_target(&base, "Neu/COM\u{b9}.txt"),
+            Err(EnsureWithinError::Path(PathError::ReservedName))
+        ));
+
+        // kurz vor dem Schreiben wird erneut geprüft: wurde der Ordner inzwischen durch einen Link ersetzt, scheitert es
+        fs::remove_dir_all(base.join("Neu")).unwrap();
+        make_dir_link(&outside, &base.join("Neu"));
+        assert!(matches!(verify_write_target(&base, &ok), Err(EnsureWithinError::Path(PathError::LinkInPath))));
+    }
+
+    #[test]
+    fn ensure_no_links_below_accepts_missing_tails_and_rejects_foreign_paths() {
+        let (dir, base, outside) = base_and_outside();
+        fs::create_dir_all(base.join("echt")).unwrap();
+        assert!(ensure_no_links_below(&base, &base.join("echt/noch/nicht/da.txt")).is_ok());
+        assert!(matches!(
+            ensure_no_links_below(&base, &outside.join("x")),
+            Err(EnsureWithinError::Path(PathError::Escapes))
+        ));
+        assert!(matches!(
+            ensure_no_links_below(&base, &dir.path().join("base/../outside")),
+            Err(EnsureWithinError::Path(PathError::Escapes))
+        ));
+    }
+
+    #[test]
+    fn write_atomic_within_writes_inside_and_refuses_links() {
+        let (_dir, base, outside) = base_and_outside();
+        let written = write_atomic_within(&base, ".cypher/meta/Motive/a.png.json", b"{}").unwrap();
+        assert_eq!(fs::read(written).unwrap(), b"{}");
+        fs::remove_dir_all(base.join(".cypher")).unwrap();
+        make_dir_link(&outside, &base.join(".cypher"));
+        assert!(write_atomic_within(&base, ".cypher/meta/x.json", b"{}").is_err());
+        assert!(fs::read_dir(&outside).unwrap().next().is_none());
     }
 }

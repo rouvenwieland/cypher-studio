@@ -115,13 +115,18 @@ pub fn build(
     mode: LaunchMode,
     platform: &PlatformInfo,
 ) -> Result<LaunchSpec, LaunchError> {
-    let template: Vec<OsString> = match mode {
+    let app_template: Vec<OsString> = match mode {
         LaunchMode::Normal => Vec::new(),
         LaunchMode::BlenderAppTemplate if program_id == "blender" => os_args(&["--app-template", BLENDER_APP_TEMPLATE]),
         LaunchMode::BlenderAppTemplate => {
             return Err(LaunchError::NotLaunchable("das App-Template gibt es nur für Blender".into()));
         }
     };
+    // Dateien aus Bibliothek, Projekten oder Austauschpaketen können fremd sein: Blender führt die Skripte darin
+    // (Treiber, registrierte Textblöcke) nur nach ausdrücklicher Erlaubnis aus. Betrifft nicht die eigenen Add-ons.
+    let safety: Vec<OsString> =
+        if program_id == "blender" && !files.is_empty() { os_args(&["--disable-autoexec"]) } else { Vec::new() };
+    let template: Vec<OsString> = safety.into_iter().chain(app_template).collect();
     let file_args = || files.iter().map(|f| f.as_os_str().to_owned());
     let base = |program: PathBuf, args: Vec<OsString>, cwd: Option<PathBuf>, env_set: Vec<(OsString, OsString)>| {
         LaunchSpec { program, args, env_remove: ENV_REMOVE.to_vec(), env_set, cwd }
@@ -280,11 +285,25 @@ mod tests {
         let spec =
             build(&l, "blender", &[PathBuf::from("/p/m.blend")], LaunchMode::BlenderAppTemplate, &plat(Os::Linux))
                 .unwrap();
-        assert_eq!(strings(&spec), ["--app-template", "cypher_ps2", "/p/m.blend"]);
+        assert_eq!(strings(&spec), ["--disable-autoexec", "--app-template", "cypher_ps2", "/p/m.blend"]);
         assert!(
             build(&l, "krita", &[], LaunchMode::BlenderAppTemplate, &plat(Os::Linux)).is_err(),
             "Template nur für Blender"
         );
+    }
+
+    #[test]
+    fn blender_runs_no_scripts_from_foreign_files_but_other_programs_get_no_extra_flag() {
+        let blender = Launcher::Exe { path: PathBuf::from("/b/blender") };
+        let files = [PathBuf::from("/lib/fremd.blend")];
+        let normal = build(&blender, "blender", &files, LaunchMode::Normal, &plat(Os::Linux)).unwrap();
+        assert_eq!(strings(&normal), ["--disable-autoexec", "/lib/fremd.blend"]);
+        let empty = build(&blender, "blender", &[], LaunchMode::Normal, &plat(Os::Linux)).unwrap();
+        assert!(strings(&empty).is_empty(), "ohne Datei nichts Besonderes");
+        let krita = Launcher::Exe { path: PathBuf::from("/k/krita") };
+        let spec =
+            build(&krita, "krita", &[PathBuf::from("/lib/a.kra")], LaunchMode::Normal, &plat(Os::Linux)).unwrap();
+        assert_eq!(strings(&spec), ["/lib/a.kra"]);
     }
 
     #[test]
@@ -302,6 +321,7 @@ mod tests {
                 "/Users/a/Applications/Cypher Studio/Blender.app",
                 "/p/m.blend",
                 "--args",
+                "--disable-autoexec",
                 "--app-template",
                 "cypher_ps2"
             ]

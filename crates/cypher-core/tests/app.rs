@@ -506,6 +506,70 @@ async fn export_save_image_validates_content_and_stamps_the_resolution() {
     assert!(target.is_file());
 }
 
+/// Legt `link` als Verknüpfung auf den Ordner `target` an (Symlink oder Junction).
+fn make_dir_link(target: &std::path::Path, link: &std::path::Path) {
+    #[cfg(unix)]
+    std::os::unix::fs::symlink(target, link).unwrap();
+    #[cfg(windows)]
+    {
+        let out =
+            std::process::Command::new("cmd").arg("/C").arg("mklink").arg("/J").arg(link).arg(target).output().unwrap();
+        assert!(out.status.success(), "mklink: {}", String::from_utf8_lossy(&out.stdout));
+    }
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn image_export_never_writes_into_the_meta_folder_or_through_links() {
+    // Befunde M1 und M2: Export in die Bibliothek und in Projekte
+    let fx = Fx::new().await;
+    let root = fx.tmp.path().join("Bibliothek");
+    std::fs::create_dir_all(&root).unwrap();
+    let candidate = fx.app.library_choose_root(&root).await.unwrap();
+    fx.app
+        .library_use_root(&LibraryUseRootReq { candidate_id: candidate.candidate_id, initialize: true })
+        .await
+        .unwrap();
+    let outside = fx.tmp.path().join("ausserhalb");
+    std::fs::create_dir_all(&outside).unwrap();
+    let bytes = png(8, 8, [9, 9, 9, 255]);
+    let to_library = |sub: &str| ExportImageMeta {
+        file_name: "bild.png".into(),
+        format: ExportImageFormat::Png,
+        destination: ExportDestination::Library { subfolder: sub.into() },
+        dpi: None,
+    };
+    for sub in [".cypher", ".CYPHER", ".Cypher/tmp", ".cypher@@tmp", "CYPHER~1/x", "/.cypher/"] {
+        let sub = sub.replace("@@", "\\");
+        assert!(fx.app.export_save_image(&to_library(&sub), &bytes, None).is_err(), "{sub}");
+    }
+    assert!(!root.join(".cypher/bild.png").exists() && !root.join(".cypher/tmp").exists());
+
+    // ein Link als Zielordner und in der Kette
+    std::fs::remove_dir_all(root.join("Motive")).unwrap();
+    make_dir_link(&outside, &root.join("Motive"));
+    for sub in ["Motive", "Motive/Neu"] {
+        assert!(fx.app.export_save_image(&to_library(sub), &bytes, None).is_err(), "{sub}");
+    }
+    assert!(std::fs::read_dir(&outside).unwrap().next().is_none(), "außerhalb wurde geschrieben");
+    let ok = fx.app.export_save_image(&to_library("Export/Neu"), &bytes, None).unwrap();
+    assert!(ok.display_path.contains("Neu"));
+
+    // Projekt: `Export` ist ein Link nach draußen
+    let project = fx.app.project_create(&ProjectCreateReq { name: "Linktest".into(), collection: None }).unwrap();
+    let project_dir = root.join("Projekte/Linktest");
+    assert!(project_dir.join("Export/Social").is_dir());
+    std::fs::remove_dir_all(project_dir.join("Export")).unwrap();
+    make_dir_link(&outside, &project_dir.join("Export"));
+    let meta = ExportImageMeta {
+        file_name: "bild.png".into(),
+        format: ExportImageFormat::Png,
+        destination: ExportDestination::Project { project_id: project.id, folder: ProjectFolder::ExportSocial },
+        dpi: None,
+    };
+    assert!(fx.app.export_save_image(&meta, &bytes, None).is_err());
+    assert!(std::fs::read_dir(&outside).unwrap().next().is_none(), "außerhalb wurde geschrieben");
+}
+
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
 async fn diagnostics_zip_has_the_expected_files_and_no_home_path() {
     let fx = Fx::new().await;
@@ -527,11 +591,22 @@ async fn diagnostics_zip_has_the_expected_files_and_no_home_path() {
     ] {
         assert!(names.iter().any(|n| n == expected), "{expected} fehlt: {names:?}");
     }
+    // Der Heimatordner darf in keiner Schreibweise vorkommen: roh, in JSON verdoppelt (Windows: `C:\Users\Name`),
+    // mit Schrägstrichen, kleingeschrieben (Befund M3)
     let home = fx.tmp.path().join("root/home").to_string_lossy().into_owned();
+    let spellings = [
+        home.clone(),
+        home.replace('\\', "\\\\"),
+        home.replace('\\', "/"),
+        home.to_lowercase(),
+        home.replace('\\', "/").to_lowercase(),
+    ];
     for i in 0..zip.len() {
         let mut text = String::new();
         std::io::Read::read_to_string(&mut zip.by_index(i).unwrap(), &mut text).unwrap();
-        assert!(!text.contains(&home), "Heimatordner im Bericht");
+        for spelling in &spellings {
+            assert!(!text.contains(spelling), "Heimatordner `{spelling}` im Bericht");
+        }
     }
 }
 

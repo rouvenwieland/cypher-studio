@@ -65,8 +65,14 @@ pub fn read_sidecar(root: &Path, rel: &str) -> Option<SidecarFile> {
     }
 }
 
-pub fn write_sidecar(root: &Path, rel: &str, file: &SidecarFile) -> Result<(), IoError> {
-    fsx::write_json_atomic(&sidecar_path(root, rel), file)
+/// Schreibt die Begleitdatei unter `.cypher/meta/<rel>.json`; die Ordner entstehen Glied für Glied ohne Links
+/// (`fsx::write_atomic_within`).
+pub fn write_sidecar(root: &Path, rel: &str, file: &SidecarFile) -> Result<(), LibraryError> {
+    let mut json = serde_json::to_vec_pretty(file)
+        .map_err(|e| IoError::other(crate::api::IoOp::Write, None, format!("Begleitdatei: {e}")))?;
+    json.push(10);
+    fsx::write_atomic_within(root, &format!("{META_DIR}/meta/{rel}.json"), &json)?;
+    Ok(())
 }
 
 fn image_size(path: &Path) -> (Option<u32>, Option<u32>) {

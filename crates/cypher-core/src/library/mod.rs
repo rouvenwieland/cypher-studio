@@ -541,12 +541,12 @@ impl Library {
                 Some(s) if !s.trim().is_empty() => s.trim().trim_matches('/').to_owned(),
                 _ => Self::default_folder(kind).to_owned(),
             };
-            // `.cypher` ist tabu
-            if folder.replace('\\', "/").split('/').next() == Some(model::META_DIR) {
+            // `.cypher` ist tabu, in jeder Schreibweise (`.CYPHER`, `.cypher\x`, Kurzname `CYPHER~1`)
+            if model::is_meta_path(&folder) {
                 return Err(invalid("subfolder", "In den Ordner .cypher kann nicht importiert werden"));
             }
-            let dir = fsx::safe_join(&self.root, &folder)?;
-            std::fs::create_dir_all(&dir).map_err(|e| IoError::new(crate::api::IoOp::CreateDir, &dir, e))?;
+            // Glied für Glied anlegen; ein Link im Weg (Sync-Werkzeug) lässt den Import scheitern statt nach außen zu schreiben
+            fsx::create_dir_all_within(&self.root, &folder)?;
             let (stem, dot_ext) = match name.rfind('.') {
                 Some(i) if i > 0 => (name[..i].to_owned(), name[i..].to_owned()),
                 _ => (name.clone(), String::new()),
@@ -556,6 +556,7 @@ impl Library {
                 let candidate = if n == 1 { format!("{stem}{dot_ext}") } else { format!("{stem}-{n}{dot_ext}") };
                 let rel = format!("{folder}/{candidate}");
                 let target = fsx::safe_join(&self.root, &rel)?;
+                fsx::verify_write_target(&self.root, &target)?;
                 match copy_new(src, &target) {
                     Ok(sha) => break (rel, target, sha),
                     Err(CopyError::Exists) => {

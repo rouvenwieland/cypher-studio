@@ -197,7 +197,10 @@ impl App {
             }
             ExportDestination::Project { project_id, folder } => {
                 let (_, dir) = self.find_project_dir(project_id)?;
-                unique_in(&fsx::safe_join(&dir, folder.dir_name())?, &file_name)?
+                let target_dir = fsx::create_dir_all_within(&dir, folder.dir_name())?;
+                let target = unique_in(&target_dir, &file_name)?;
+                fsx::verify_write_target(&dir, &target)?;
+                target
             }
             ExportDestination::Library { subfolder } => {
                 let root = self
@@ -205,15 +208,18 @@ impl App {
                     .get()
                     .library_root
                     .ok_or(CoreError::Library(crate::error::LibraryError::NotConfigured))?;
-                let rel = subfolder.trim_matches('/');
-                if rel.split('/').next() == Some(crate::library::model::META_DIR) {
+                let rel = subfolder.trim_matches(['/', '\\']);
+                if crate::library::model::is_meta_path(rel) {
                     return Err(CoreError::invalid_input(
                         "destination",
                         "In den Ordner .cypher kann nicht gespeichert werden",
                     ));
                 }
-                let dir = if rel.is_empty() { PathBuf::from(&root) } else { fsx::safe_join(Path::new(&root), rel)? };
-                unique_in(&dir, &file_name)?
+                let lib_root = Path::new(&root);
+                let dir = fsx::create_dir_all_within(lib_root, rel)?;
+                let target = unique_in(&dir, &file_name)?;
+                fsx::verify_write_target(lib_root, &target)?;
+                target
             }
         };
         fsx::write_atomic(&target, &data)?;
@@ -270,8 +276,10 @@ impl App {
     /// Schreibt eine ZIP-Datei mit Protokollen und Einstellungen, damit die Nutzerin sie selbst weitergeben kann. Enthält keine
     /// Dateiinhalte; der Heimatordner ist durch `~` ersetzt.
     pub fn diagnostics_export(&self, dest: &Path) -> Result<FileHandleInfo, CoreError> {
+        // Heimatordner in allen Schreibweisen (roh, JSON-verdoppelt, mit Schrägstrichen, Kurzname) und Kontonamen
         let home = self.dirs.home.to_string_lossy().into_owned();
-        let scrub = |text: String| if home.is_empty() { text } else { text.replace(&home, "~") };
+        let users = super::scrub::user_names_from_env();
+        let scrub = |text: String| super::scrub::scrub_text(&text, &home, &users);
         let tmp = tempfile::Builder::new()
             .prefix(".cypher-diag-")
             .tempfile_in(dest.parent().filter(|p| !p.as_os_str().is_empty()).unwrap_or_else(|| Path::new(".")))
@@ -400,9 +408,8 @@ impl App {
     }
 }
 
-/// Freier Name im Ordner (`name.png`, `name (2).png`, …); legt den Ordner an.
+/// Freier Name im (bereits sicher angelegten) Ordner: `name.png`, `name (2).png` …
 fn unique_in(dir: &Path, file_name: &str) -> Result<PathBuf, CoreError> {
-    std::fs::create_dir_all(dir).map_err(|e| IoError::new(crate::api::IoOp::CreateDir, dir, e))?;
     let first = dir.join(file_name);
     if !first.exists() {
         return Ok(first);

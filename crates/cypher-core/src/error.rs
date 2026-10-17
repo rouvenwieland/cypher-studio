@@ -64,6 +64,8 @@ pub enum PathError {
     TooLong,
     #[error("Pfad verlässt den erlaubten Ordner")]
     Escapes,
+    #[error("Verknüpfung (Symlink oder Junction) im Pfad: Cypher Studio schreibt nicht durch Verknüpfungen")]
+    LinkInPath,
 }
 
 impl PathError {
@@ -71,7 +73,9 @@ impl PathError {
     pub fn unsafe_reason(&self) -> UnsafeEntryReason {
         match self {
             PathError::Absolute | PathError::DriveOrUnc => UnsafeEntryReason::AbsolutePath,
-            PathError::ParentTraversal | PathError::Escapes => UnsafeEntryReason::ParentTraversal,
+            PathError::ParentTraversal | PathError::Escapes | PathError::LinkInPath => {
+                UnsafeEntryReason::ParentTraversal
+            }
             PathError::ReservedName => UnsafeEntryReason::ReservedName,
             PathError::Empty
             | PathError::CurrentDirOrEmpty
@@ -341,6 +345,34 @@ pub enum CoreError {
     PlanExpired(String),
     #[error("{0}")]
     Internal(String),
+}
+
+/// Ergebnis von `fsx::ensure_within` und den Schreibhelfern (Pfad- oder E/A-Fehler) in die Modulfehler übernehmen.
+impl From<crate::platform::fsx::EnsureWithinError> for LibraryError {
+    fn from(e: crate::platform::fsx::EnsureWithinError) -> Self {
+        match e {
+            crate::platform::fsx::EnsureWithinError::Path(p) => LibraryError::Path(p),
+            crate::platform::fsx::EnsureWithinError::Io(io) => LibraryError::Io(io),
+        }
+    }
+}
+
+impl From<crate::platform::fsx::EnsureWithinError> for ProjectError {
+    fn from(e: crate::platform::fsx::EnsureWithinError) -> Self {
+        match e {
+            crate::platform::fsx::EnsureWithinError::Path(p) => ProjectError::Path(p),
+            crate::platform::fsx::EnsureWithinError::Io(io) => ProjectError::Io(io),
+        }
+    }
+}
+
+impl From<crate::platform::fsx::EnsureWithinError> for CoreError {
+    fn from(e: crate::platform::fsx::EnsureWithinError) -> Self {
+        match e {
+            crate::platform::fsx::EnsureWithinError::Path(p) => CoreError::Path(p),
+            crate::platform::fsx::EnsureWithinError::Io(io) => CoreError::Io(io),
+        }
+    }
 }
 
 impl CoreError {

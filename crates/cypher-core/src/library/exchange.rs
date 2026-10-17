@@ -2,7 +2,9 @@
 //! `meta/<relPath>.json`.
 //!
 //! Importregeln: Das Manifest muss jede Datei mit Größe und SHA-256 nennen (keine unbekannten Einträge im ZIP), höchstens
-//! 5000 Einträge und 4 GB, Pfade nach 6.6 geprüft, Ziel nur unterhalb der Bibliothekswurzel, nie in `.cypher`.
+//! 5000 Einträge und 4 GB, Pfade nach 6.6 geprüft, nur Dateitypen der Positivliste (`model::PACK_ALLOWED_EXTENSIONS`),
+//! Ziel nur unterhalb der Bibliothekswurzel, nie in `.cypher` (in jeder Schreibweise) und nie durch einen Symlink oder
+//! eine Junction.
 
 use std::collections::BTreeSet;
 use std::fs::File;
@@ -21,7 +23,7 @@ use crate::platform::fsx;
 use crate::progress::ProgressSink;
 use crate::util::{new_id, now_iso};
 
-use super::model::{META_DIR, SidecarFile, classify, extension_of};
+use super::model::{META_DIR, SidecarFile, classify, extension_of, is_meta_path, is_pack_file_allowed};
 use super::scan::{read_sidecar, sidecar_path, write_sidecar};
 
 pub const PACK_FORMAT_VERSION: u32 = 1;
@@ -139,7 +141,15 @@ pub fn export(
     sink.emit(PackProgress { done: 0, total });
     for (i, rel) in rel_paths.iter().enumerate() {
         check_cancel(cancel)?;
+        if is_meta_path(rel) {
+            return Err(LibraryError::InvalidInput {
+                field: "entryIds".into(),
+                reason: "Aus dem Ordner .cypher wird nichts exportiert".into(),
+            });
+        }
         let source = fsx::safe_join(root, rel)?;
+        // Ein Link in der Bibliothek darf keine Datei von außerhalb ins Paket ziehen
+        fsx::ensure_no_links_below(root, &source)?;
         let mut file = File::open(&source).map_err(|e| IoError::read(&source, e))?;
         let size = file.metadata().map_err(|e| IoError::read(&source, e))?.len();
         total_bytes += size;
@@ -235,8 +245,14 @@ fn open_pack(src: &Path) -> Result<OpenPack, LibraryError> {
     let mut total = 0u64;
     for e in &manifest.entries {
         fsx::split_rel(&e.rel_path).map_err(|err| invalid(format!("Pfad `{}` ist unsicher: {err}", e.rel_path)))?;
-        if e.rel_path.replace('\\', "/").split('/').next() == Some(META_DIR) {
+        if is_meta_path(&e.rel_path) {
             return Err(invalid("Das Paket darf nichts in den Ordner .cypher schreiben"));
+        }
+        if !is_pack_file_allowed(&e.rel_path) {
+            return Err(invalid(format!(
+                "Der Dateityp von `{}` ist in Austauschpaketen nicht erlaubt (Programme, Skripte und Verknüpfungen werden abgelehnt)",
+                e.rel_path
+            )));
         }
         if !seen.insert(fsx::duplicate_key(&e.rel_path)) {
             return Err(invalid(format!("Pfad `{}` kommt doppelt vor", e.rel_path)));
@@ -413,8 +429,8 @@ pub fn import(
     let entries = pack.manifest.entries.clone();
     let total = entries.len() as u32;
     let mut report = PackImportReport { imported: 0, skipped: 0, renamed: 0, overwritten: 0 };
-    let tmp_dir = root.join(META_DIR).join("tmp");
-    let trash = root.join(META_DIR).join("trash").join(now_iso().replace(':', "-"));
+    let tmp_rel = format!("{META_DIR}/tmp");
+    let trash_rel = format!("{META_DIR}/trash/{}", now_iso().replace(':', "-"));
     sink.emit(PackProgress { done: 0, total });
     for (i, entry) in entries.iter().enumerate() {
         check_cancel(cancel)?;
@@ -444,18 +460,14 @@ pub fn import(
                 }
             }
             Some(kind) => {
-                let target = fsx::safe_join(root, &final_rel)?;
+                // Ordner Glied für Glied anlegen: ein Link in der Bibliothek darf das Schreiben nicht nach außen leiten
+                let target = fsx::prepare_write_target(root, &final_rel)?;
+                let tmp_dir = fsx::create_dir_all_within(root, &tmp_rel)?;
                 let tmp = extract_verified(&mut pack, entry, &tmp_dir, cancel)?;
-                if let Some(parent) = target.parent() {
-                    std::fs::create_dir_all(parent)
-                        .map_err(|e| IoError::new(crate::api::IoOp::CreateDir, parent, e))?;
-                }
                 if kind == PackEntryState::Conflict {
                     // Vorversion in den Papierkorb der Bibliothek legen, nicht löschen
-                    let kept = fsx::safe_join(&trash, &entry.rel_path)?;
-                    if let Some(p) = kept.parent() {
-                        std::fs::create_dir_all(p).map_err(|e| IoError::new(crate::api::IoOp::CreateDir, p, e))?;
-                    }
+                    let kept = fsx::prepare_write_target(root, &format!("{trash_rel}/{}", entry.rel_path))?;
+                    fsx::verify_write_target(root, &target)?;
                     std::fs::rename(&target, &kept).map_err(|e| IoError::new(crate::api::IoOp::Rename, &target, e))?;
                     report.overwritten += 1;
                 } else if final_rel != entry.rel_path {
@@ -464,6 +476,8 @@ pub fn import(
                     report.imported += 1;
                 }
                 crate::platform::fsx::set_shareable_mode(tmp.as_file());
+                // Letzte Prüfung unmittelbar vor dem Platzieren (Wettlauf mit einem Sync-Werkzeug)
+                fsx::verify_write_target(root, &target)?;
                 crate::platform::fsx::persist_with_retry(tmp, &target)
                     .map_err(|e| IoError::new(crate::api::IoOp::Rename, &target, e))?;
                 if let Some(mut s) = rel_sidecar {
@@ -477,7 +491,7 @@ pub fn import(
         }
         sink.emit(PackProgress { done: i as u32 + 1, total });
     }
-    let _ = std::fs::remove_dir(&tmp_dir);
+    let _ = std::fs::remove_dir(root.join(&tmp_rel));
     Ok(report)
 }
 
@@ -720,6 +734,162 @@ mod tests {
         let junk = tmp.path().join("junk.cypherpack");
         std::fs::write(&junk, b"das ist kein zip").unwrap();
         assert!(matches!(inspect(&junk, dst.path()), Err(LibraryError::PackInvalid(_))));
+    }
+
+    /// Schreibt ein Paket mit genau diesen Dateien (Manifest passend dazu).
+    fn pack_of(dir: &Path, files: &[(&str, &[u8])]) -> PathBuf {
+        let pack = dir.join("fremd.cypherpack");
+        let mut entries: Vec<(String, Vec<u8>)> = vec![("cypherpack.json".into(), manifest(files))];
+        entries.extend(files.iter().map(|(rel, b)| (format!("files/{rel}"), b.to_vec())));
+        let refs: Vec<(&str, &[u8])> = entries.iter().map(|(n, b)| (n.as_str(), b.as_slice())).collect();
+        write_zip(&pack, &refs);
+        pack
+    }
+
+    fn all_files(root: &Path) -> Vec<PathBuf> {
+        walkdir::WalkDir::new(root)
+            .into_iter()
+            .filter_map(Result::ok)
+            .filter(|e| e.file_type().is_file())
+            .map(walkdir::DirEntry::into_path)
+            .collect()
+    }
+
+    #[test]
+    fn import_never_writes_through_a_link_in_the_library() {
+        // Befund M1: `Motive` ist ein Link nach draußen (Sync-Werkzeug); das Paket bringt `Motive/evil.txt`
+        let tmp = tempfile::tempdir().unwrap();
+        let outside = tmp.path().join("ausserhalb");
+        std::fs::create_dir_all(&outside).unwrap();
+        for rel in ["Motive/evil.txt", "Motive/Neu/tief.txt"] {
+            let pack = pack_of(tmp.path(), &[(rel, b"boese")]);
+            for policy in [PackConflictPolicy::Skip, PackConflictPolicy::KeepBoth, PackConflictPolicy::Overwrite] {
+                let dst = lib(&[]);
+                fsx::test_links::make_dir_link(&outside, &dst.path().join("Motive"));
+                let r = import(dst.path(), &pack, policy, &NoProgress, &CancellationToken::new());
+                assert!(
+                    matches!(r, Err(LibraryError::Path(crate::error::PathError::LinkInPath))),
+                    "{rel} {policy:?}: {r:?}"
+                );
+                assert!(all_files(&outside).is_empty(), "{rel} {policy:?}: außerhalb liegt {:?}", all_files(&outside));
+            }
+        }
+    }
+
+    #[test]
+    fn import_refuses_a_linked_meta_folder_and_does_not_move_files_out() {
+        // Das Überschreiben legt die Vorversion nach `.cypher/trash`; ist `.cypher` ein Link, darf nichts verschoben werden
+        let tmp = tempfile::tempdir().unwrap();
+        let outside = tmp.path().join("ausserhalb");
+        std::fs::create_dir_all(&outside).unwrap();
+        let pack = pack_of(tmp.path(), &[("Motive/a.png", b"neu")]);
+        let dst = lib(&[("Motive/a.png", b"alt")]);
+        fsx::test_links::make_dir_link(&outside, &dst.path().join(META_DIR));
+        let r = import(dst.path(), &pack, PackConflictPolicy::Overwrite, &NoProgress, &CancellationToken::new());
+        assert!(r.is_err(), "{r:?}");
+        assert!(all_files(&outside).is_empty());
+        assert_eq!(std::fs::read(dst.path().join("Motive/a.png")).unwrap(), b"alt", "die Datei bleibt unverändert");
+    }
+
+    #[test]
+    fn meta_folder_is_blocked_in_every_spelling_on_import_and_export() {
+        // Befund M2: nur die exakte Schreibweise `.cypher/` war gesperrt
+        let tmp = tempfile::tempdir().unwrap();
+        for rel in [
+            ".CYPHER/x.txt",
+            ".Cypher/library.json",
+            ".cypher/x.txt",
+            ".cypher\\x.txt",
+            ".CYPHER\\tmp\\x.txt",
+            "CYPHER~1/x.txt",
+        ] {
+            let pack = pack_of(tmp.path(), &[(rel, b"x")]);
+            let dst = lib(&[]);
+            let r = import(dst.path(), &pack, PackConflictPolicy::Overwrite, &NoProgress, &CancellationToken::new());
+            assert!(matches!(r, Err(LibraryError::PackInvalid(_))), "{rel}: {r:?}");
+            assert!(inspect(&pack, dst.path()).is_err(), "{rel}");
+            assert!(all_files(dst.path()).is_empty(), "{rel}: es wurde geschrieben");
+        }
+        let src = lib(&[(".cypher/geheim.txt", b"x")]);
+        let out = tmp.path().join("raus.cypherpack");
+        for rel in [".cypher/geheim.txt", ".CYPHER/geheim.txt"] {
+            let r = export(
+                src.path(),
+                &[rel.to_owned()],
+                &out,
+                "T",
+                "x",
+                false,
+                "0.1.0",
+                &NoProgress,
+                &CancellationToken::new(),
+            );
+            assert!(r.is_err(), "{rel}");
+        }
+    }
+
+    #[test]
+    fn packs_may_only_bring_allowed_file_types() {
+        // Befund M2: `Logo.png.exe`, `.bat`, `.lnk`, `.js`, `.ps1` kamen ohne Prüfung in die Bibliothek
+        let tmp = tempfile::tempdir().unwrap();
+        for rel in [
+            "Motive/Logo.png.exe",
+            "Motive/Logo.PNG.EXE",
+            "Motive/start.bat",
+            "Motive/start.CMD",
+            "Motive/Verknuepfung.lnk",
+            "Motive/skript.js",
+            "Motive/skript.ps1",
+            "Motive/skript.vbs",
+            "Motive/skript.sh",
+            "Motive/Installer.msi",
+            "Motive/ohne-endung",
+        ] {
+            let pack = pack_of(tmp.path(), &[("Motive/gut.png", b"png"), (rel, b"x")]);
+            let dst = lib(&[]);
+            let r = import(dst.path(), &pack, PackConflictPolicy::Skip, &NoProgress, &CancellationToken::new());
+            assert!(matches!(r, Err(LibraryError::PackInvalid(ref m)) if m.contains("Dateityp")), "{rel}: {r:?}");
+            assert!(matches!(inspect(&pack, dst.path()), Err(LibraryError::PackInvalid(_))), "{rel}");
+            assert!(all_files(dst.path()).is_empty(), "{rel}: auch die gute Datei darf nicht importiert sein");
+        }
+        // Erlaubtes geht durch, auch in Großschreibung
+        let pack = pack_of(
+            tmp.path(),
+            &[
+                ("Motive/A.PNG", b"1"),
+                ("3D/b.GLB", b"2"),
+                ("Projekte/c.KRA", b"3"),
+                ("Doku/d.Pdf", b"4"),
+                ("e.json", b"5"),
+            ],
+        );
+        let dst = lib(&[]);
+        let r = import(dst.path(), &pack, PackConflictPolicy::Skip, &NoProgress, &CancellationToken::new()).unwrap();
+        assert_eq!(r.imported, 5);
+    }
+
+    #[test]
+    fn export_does_not_pull_files_from_outside_through_a_link() {
+        let tmp = tempfile::tempdir().unwrap();
+        let outside = tmp.path().join("ausserhalb");
+        std::fs::create_dir_all(&outside).unwrap();
+        std::fs::write(outside.join("geheim.txt"), b"nicht weitergeben").unwrap();
+        let src = lib(&[]);
+        fsx::test_links::make_dir_link(&outside, &src.path().join("Motive"));
+        let out = tmp.path().join("raus.cypherpack");
+        let r = export(
+            src.path(),
+            &["Motive/geheim.txt".to_owned()],
+            &out,
+            "T",
+            "x",
+            false,
+            "0.1.0",
+            &NoProgress,
+            &CancellationToken::new(),
+        );
+        assert!(matches!(r, Err(LibraryError::Path(crate::error::PathError::LinkInPath))), "{r:?}");
+        assert!(!out.exists());
     }
 
     #[test]

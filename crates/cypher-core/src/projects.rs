@@ -170,7 +170,10 @@ pub fn list(root: &Path, in_library: bool, index: &[ProjectIndexEntry]) -> Vec<(
     if let Ok(read) = std::fs::read_dir(root) {
         for e in read.filter_map(Result::ok) {
             let path = e.path();
+            // In der geteilten Bibliothek zählt ein Link nicht als Projekt: er könnte nach außen zeigen
+            let is_link = e.file_type().is_ok_and(|t| t.is_symlink());
             if path.is_dir()
+                && !(in_library && is_link)
                 && !e.file_name().to_string_lossy().starts_with('.')
                 && let Ok(p) = read_project(&path, in_library)
             {
@@ -210,14 +213,14 @@ pub fn create(
     let base = fsx::sanitize_file_name(trimmed);
     let mut dir = root.join(&base);
     let mut n = 2;
-    while dir.exists() {
+    // `symlink_metadata`: auch ein hängender Link zählt als belegt
+    while std::fs::symlink_metadata(&dir).is_ok() {
         dir = root.join(format!("{base} ({n})"));
         n += 1;
     }
     std::fs::create_dir_all(&dir).map_err(|e| IoError::new(crate::api::IoOp::CreateDir, &dir, e))?;
     for folder in ProjectFolder::ALL {
-        let sub = fsx::safe_join(&dir, folder.dir_name())?;
-        std::fs::create_dir_all(&sub).map_err(|e| IoError::new(crate::api::IoOp::CreateDir, &sub, e))?;
+        fsx::create_dir_all_within(&dir, folder.dir_name())?;
     }
     let data = ProjectFileData {
         format_version: PROJECT_FORMAT_VERSION,
@@ -419,19 +422,21 @@ pub fn new_file(
         return Err(invalid("fileName", "Der Dateiname darf nicht leer sein"));
     }
     let rel = format!("{}/{stem}.{ext}", folder.dir_name());
-    let target = fsx::safe_join(project_dir, &rel)?;
-    if target.exists() {
+    // Ordner Glied für Glied anlegen und keinem Link folgen (Projekte liegen oft im geteilten Bibliotheksordner)
+    let target = fsx::prepare_write_target(project_dir, &rel)?;
+    if std::fs::symlink_metadata(&target).is_ok() {
         return Err(invalid("fileName", format!("Die Datei {stem}.{ext} gibt es in diesem Projekt schon")));
-    }
-    if let Some(parent) = target.parent() {
-        std::fs::create_dir_all(parent).map_err(|e| IoError::new(crate::api::IoOp::CreateDir, parent, e))?;
     }
     match content {
         NewFileContent::CopyFrom(src) => {
             let bytes = std::fs::read(src).map_err(|e| IoError::read(src, e))?;
+            fsx::verify_write_target(project_dir, &target)?;
             write_new(&target, &bytes)?;
         }
-        NewFileContent::Bytes(bytes) => write_new(&target, bytes)?,
+        NewFileContent::Bytes(bytes) => {
+            fsx::verify_write_target(project_dir, &target)?;
+            write_new(&target, bytes)?;
+        }
     }
     let modified = std::fs::metadata(&target).and_then(|m| m.modified()).unwrap_or_else(|_| SystemTime::now());
     Ok((file_ref(&rel, modified), target))
@@ -528,6 +533,8 @@ fn document_module(doc: &ProjectDocument) -> ModuleKind {
 pub fn read_document(dir: &Path, rel: &str) -> Result<Option<ProjectDocument>, ProjectError> {
     let module = check_document_path(rel)?;
     let path = fsx::safe_join(dir, rel)?;
+    // Ein Link darf keine fremde Datei als Dokument einschleusen
+    fsx::ensure_no_links_below(dir, &path)?;
     let meta = match std::fs::metadata(&path) {
         Ok(m) => m,
         Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(None),
@@ -561,7 +568,8 @@ pub fn write_document(dir: &Path, rel: &str, doc: &ProjectDocument) -> Result<Pr
     if bytes.len() as u64 > DOCUMENT_MAX_BYTES {
         return Err(invalid("document", "Das Dokument ist größer als 1 MB"));
     }
-    let path = fsx::safe_join(dir, rel)?;
+    let path = fsx::prepare_write_target(dir, rel)?;
+    fsx::verify_write_target(dir, &path)?;
     fsx::write_atomic(&path, &bytes)?;
     let modified = std::fs::metadata(&path).and_then(|m| m.modified()).unwrap_or_else(|_| SystemTime::now());
     Ok(file_ref(rel, modified))
@@ -578,14 +586,14 @@ pub fn add_asset(dir: &Path, src: &Path, folder: ProjectFolder) -> Result<(Proje
         Some(i) if i > 0 => (name[..i].to_owned(), name[i..].to_owned()),
         _ => (name.clone(), String::new()),
     };
-    let sub = fsx::safe_join(dir, folder.dir_name())?;
-    std::fs::create_dir_all(&sub).map_err(|e| IoError::new(crate::api::IoOp::CreateDir, &sub, e))?;
+    fsx::create_dir_all_within(dir, folder.dir_name())?;
     let bytes = std::fs::read(src).map_err(|e| IoError::read(src, e))?;
     let mut n = 1;
     loop {
         let candidate = if n == 1 { format!("{stem}{ext}") } else { format!("{stem}-{n}{ext}") };
         let rel = format!("{}/{candidate}", folder.dir_name());
         let target = fsx::safe_join(dir, &rel)?;
+        fsx::verify_write_target(dir, &target)?;
         match write_new(&target, &bytes) {
             Ok(()) => {
                 return Ok((
