@@ -1,4 +1,5 @@
 import type { Installation, JobInfo, ProgramOverview } from "@contract";
+import { t } from "../../i18n/de";
 
 /**
  * Zustand eines Programms für Tafel und Startseite: reine Ableitung aus Katalog, Installationen und laufenden Aufträgen.
@@ -24,6 +25,8 @@ export interface ProgramRowState {
   installedVersion: string | null;
   /** „5.3.1“, „1.4.3 → 1.5.0“, „—“ */
   versionLabel: string;
+  /** Katalogversion, die für dieses System bereitsteht, solange nichts installiert ist („5.2.2 verfügbar“), sonst null */
+  availableVersion: string | null;
   /** 0..1 solange etwas läuft, sonst null */
   progress: number | null;
   action: ProgramAction;
@@ -41,7 +44,7 @@ export function deriveProgramState(p: ProgramOverview, jobs: readonly JobInfo[])
   const job = installJobOf(p, jobs);
   const installation = p.installations.find((i) => i.id === p.preferredInstallationId) ?? p.installations[0] ?? null;
   const installedVersion = installation?.version ?? null;
-  const base = { installedVersion, installation, job };
+  const base = { installedVersion, installation, job, availableVersion: null };
 
   if (job) {
     const phase = job.phase;
@@ -54,7 +57,16 @@ export function deriveProgramState(p: ProgramOverview, jobs: readonly JobInfo[])
     return { ...base, status, kind: "plain", versionLabel: "", progress: job.progress, action: "cancel" };
   }
   if (!installation) {
-    return { ...base, status: "notInstalled", kind: "open", versionLabel: "—", progress: null, action: "install" };
+    const availableVersion = p.latest?.availableForThisPlatform ? p.latest.version : null;
+    return {
+      ...base,
+      status: "notInstalled",
+      kind: "open",
+      versionLabel: "—",
+      availableVersion,
+      progress: null,
+      action: "install",
+    };
   }
   const version = installation.version ?? "—";
   if (installation.problems.some((x) => x.kind === "executableMissing")) {
@@ -88,4 +100,12 @@ export function deriveProgramState(p: ProgramOverview, jobs: readonly JobInfo[])
 /** Sortierung der Tafel bleibt fest (Reihenfolge des Katalogs), damit sich nichts verschiebt. */
 export function isBusyStatus(s: ProgramStatusId): boolean {
   return s === "downloading" || s === "verifying" || s === "installing";
+}
+
+/** Versionsspalte: installierte Version, „alt → neu“ oder bei nicht Installiertem die Katalogversion („5.2.2 verfügbar“). */
+export function versionText(state: ProgramRowState): string {
+  if (state.progress !== null) return "";
+  if (state.status === "notInstalled" && state.availableVersion !== null)
+    return t.programs.availableVersion(state.availableVersion);
+  return state.versionLabel;
 }

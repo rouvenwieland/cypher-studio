@@ -26,6 +26,8 @@ declare global {
     __CYPHER_MOCK_SPEED__?: number;
     __CYPHER_PICK__?: string;
     __CYPHER_MOCK_LATENCY__?: number;
+    /** Antwortzeit einzelner Commands in ms (auch der „sofortigen“): macht Wettläufe mit dem echten, langsameren IPC sichtbar */
+    __CYPHER_MOCK_DELAY__?: Record<string, number>;
   }
 }
 
@@ -127,6 +129,8 @@ export function installMock(): void {
       // Künstliche Antwortzeit (nur für Fotos der Laden-Zustände): `window.__CYPHER_MOCK_LATENCY__` in ms
       const latency = window.__CYPHER_MOCK_LATENCY__ ?? 0;
       if (latency > 0 && !INSTANT.has(cmd)) await new Promise((r) => setTimeout(r, latency));
+      const delay = window.__CYPHER_MOCK_DELAY__?.[cmd] ?? 0;
+      if (delay > 0) await new Promise((r) => setTimeout(r, delay));
       try {
         return await handler(payload ?? {});
       } catch (error) {

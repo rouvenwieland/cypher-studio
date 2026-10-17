@@ -359,7 +359,7 @@ export function networkFixture(): NetworkInfo {
       {
         purpose: "appUpdate",
         host: "github.com",
-        urlPattern: "https://github.com/cypher-kollektiv/cypher-studio/releases/latest/download/latest.json",
+        urlPattern: "https://github.com/rouvenwieland/cypher-studio/releases/latest/download/latest.json",
         when: "onDemand",
         enabled: true,
       },

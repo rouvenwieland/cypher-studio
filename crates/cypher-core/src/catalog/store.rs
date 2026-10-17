@@ -30,9 +30,9 @@ pub use embedded::{EMBEDDED_CATALOG_JSON, EMBEDDED_CATALOG_SIG, EMBEDDED_KEYS};
 
 /// Quellen des Katalogs, in dieser Reihenfolge (alle signiert, alle gleich vertrauenswürdig).
 pub const CATALOG_URLS: &[&str] = &[
-    "https://studio.cypherxcypher.de/catalog/v1/catalog.json",
+    crate::sites::CATALOG_SITE_URL,
     // aktiv erst bei öffentlichem Repository (A-07); bis dahin antwortet der Host mit 404
-    "https://raw.githubusercontent.com/cypher-kollektiv/cypher-studio/main/catalog/catalog.json",
+    crate::sites::CATALOG_REPOSITORY_URL,
 ];
 
 /// Größtes erlaubtes `catalog.json`.

@@ -10,10 +10,7 @@ use crate::projects;
 
 use super::App;
 
-/// Die Seite der Anwendung (Downloader-Seite, Hilfe).
-const SITE: &str = "https://studio.cypherxcypher.de";
-/// Das Quellcode-Repository (aus `Cargo.toml`).
-const REPOSITORY: &str = env!("CARGO_PKG_REPOSITORY");
+use crate::sites::{REPOSITORY_URL, SITE_HELP_URL, SITE_RELEASES_URL, SITE_URL};
 
 fn not_found(entity: EntityKind, id: &str) -> CoreError {
     CoreError::NotFound { entity, id: id.to_owned() }
@@ -58,15 +55,15 @@ impl App {
                     .links
                     .iter()
                     .find(|l| &l.id == link_id)
-                    .ok_or_else(|| CoreError::invalid_input("linkId", format!("Verweis `{link_id}` unbekannt")))?;
+                    .ok_or_else(|| not_found(EntityKind::CatalogLink, link_id))?;
                 checked(&link.url)
             }
             ExternalTarget::AppPage { page } => checked(&match page {
-                AppPage::Help => format!("{SITE}/anleitung/"),
-                AppPage::SourceCode => REPOSITORY.to_owned(),
-                AppPage::ThirdParty => format!("{REPOSITORY}/tree/main/docs/third-party"),
-                AppPage::ReleaseNotes => format!("{SITE}/releases/"),
-                AppPage::Downloads => format!("{SITE}/"),
+                AppPage::Help => SITE_HELP_URL.to_owned(),
+                AppPage::SourceCode => REPOSITORY_URL.to_owned(),
+                AppPage::ThirdParty => format!("{REPOSITORY_URL}/tree/main/docs/third-party"),
+                AppPage::ReleaseNotes => SITE_RELEASES_URL.to_owned(),
+                AppPage::Downloads => format!("{SITE_URL}/"),
             }),
         }
     }
@@ -108,7 +105,7 @@ impl App {
             }
             RevealTarget::SetupBackups { pack_id } => {
                 if !self.current_packs().packs.iter().any(|p| &p.id == pack_id) {
-                    return Err(not_found(EntityKind::SetupScope, pack_id));
+                    return Err(not_found(EntityKind::SetupPack, pack_id));
                 }
                 ensure_dir(self.setup_store.root().join("backups"))
             }

@@ -2,7 +2,7 @@ import { useEffect, useState, type KeyboardEvent } from "react";
 import { Route, Routes, useNavigate } from "react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { call } from "../../ipc/commands";
-import { ellipsizePath } from "../../i18n/format";
+import { ellipsizePath, fmtDate } from "../../i18n/format";
 import { t } from "../../i18n/de";
 import { useMainAction } from "../../app/stores";
 import { Notice } from "../../ui/Bits";
@@ -17,6 +17,7 @@ import {
   RowActionButton,
   StatusCell,
   roleOf,
+  versionText,
   useProgramActions,
   useProgramRows,
 } from "./parts";
@@ -68,7 +69,7 @@ function Board() {
     return () => set(null);
   }, [rows, roving.active, run]);
 
-  const lastError = query.data?.catalog.lastError ?? null;
+  const catalog = query.data?.catalog ?? null;
 
   return (
     <PlainPage
@@ -81,18 +82,18 @@ function Board() {
       }
     >
       <div className="board">
-        {lastError ? (
+        {catalog?.expired ? (
           <Notice
             kind="warn"
-            title={s.manifestError.title}
+            title={s.catalogExpired.title}
             actions={
               <Button onClick={check} disabled={checking}>
-                {s.manifestError.retry}
+                {s.catalogExpired.retry}
               </Button>
             }
-            testId="manifest-error"
+            testId="catalog-expired"
           >
-            {s.manifestError.text}
+            {s.catalogExpired.text}
           </Notice>
         ) : null}
         <ul
@@ -119,7 +120,7 @@ function Board() {
                     <span className="t-label">{roleOf(row.program)}</span>
                   </div>
                   <span className="t-data trow__version" role="gridcell">
-                    {row.state.progress !== null ? "" : row.state.versionLabel}
+                    {versionText(row.state)}
                   </span>
                   <div className="trow__status" role="gridcell">
                     <StatusCell row={row} />
@@ -143,7 +144,15 @@ function Board() {
           {s.list.selectHint}
         </p>
         <div className="board__foot">
-          <p className="t-meta">{s.footnote}</p>
+          <p className="t-meta">
+            {s.footnote}
+            {catalog && !catalog.expired ? (
+              <>
+                {" "}
+                <span data-testid="catalog-line">{s.catalogLine(fmtDate(catalog.generatedAt), catalog.source)}</span>
+              </>
+            ) : null}
+          </p>
           <Button variant="text" small onClick={() => setMarks(true)}>
             {s.trademarks}
           </Button>

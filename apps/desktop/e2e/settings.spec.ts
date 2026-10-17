@@ -63,9 +63,9 @@ test.describe("Einstellungen und Updates (CONCEPT.md 6.9)", () => {
 
   test("Updates: verfügbar zeigt Neuigkeiten und Aktualisieren, Fortschritt kommt", async ({ page }) => {
     await openApp(page, "einstellungen/updates", { scenario: "updateAvailable", speed: 10 });
-    await expect(page.getByTestId("app-version-line")).toContainText("Version 0.5.0 ist verfügbar");
+    await expect(page.getByTestId("app-version-line")).toContainText("Version 0.2.0 ist verfügbar");
     await expect(page.getByTestId("update-available")).toContainText("Kontaktbogen");
-    await expect(page.getByTestId("rail-update")).toContainText("Update 0.5.0 bereit");
+    await expect(page.getByTestId("rail-update")).toContainText("Update 0.2.0 bereit");
     await page.getByTestId("update-install").click();
     await expect.poll(async () => (await mockCalls(page)).includes("app_update_install")).toBe(true);
   });
@@ -94,7 +94,7 @@ test.describe("Einstellungen und Updates (CONCEPT.md 6.9)", () => {
 
   test("Über: Version, Lizenzen, OFL-Texte der Schriften", async ({ page }) => {
     await openApp(page, "einstellungen/ueber");
-    await expect(page.getByText("0.4.0 (dev)")).toBeVisible();
+    await expect(page.getByText("0.1.0 (dev)")).toBeVisible();
     await page.getByRole("button", { name: "Lizenztext" }).first().click();
     await expect(page.getByRole("dialog")).toContainText("SIL Open Font License");
   });

@@ -1057,6 +1057,12 @@ async fn external_urls_and_reveal_targets_are_resolved_in_rust() {
     for page in [AppPage::Help, AppPage::SourceCode, AppPage::ThirdParty, AppPage::ReleaseNotes, AppPage::Downloads] {
         assert!(fx.app.external_url(&ExternalTarget::AppPage { page }).unwrap().starts_with("https://"));
     }
+    // Festlegung: das Repository ist github.com/rouvenwieland/cypher-studio, die App-Seiten liegen auf studio.cypherxcypher.de
+    let url = |page| fx.app.external_url(&ExternalTarget::AppPage { page }).unwrap();
+    assert_eq!(url(AppPage::SourceCode), "https://github.com/rouvenwieland/cypher-studio");
+    assert_eq!(url(AppPage::ThirdParty), "https://github.com/rouvenwieland/cypher-studio/tree/main/docs/third-party");
+    assert_eq!(url(AppPage::Help), "https://studio.cypherxcypher.de/anleitung/");
+    assert_eq!(url(AppPage::ReleaseNotes), "https://studio.cypherxcypher.de/releases/");
     let link = fx.app.programs_view().links.first().cloned().expect("der Katalog hat Verweise");
     assert!(fx.app.external_url(&ExternalTarget::CatalogLink { link_id: link.id }).unwrap().starts_with("https://"));
     assert!(fx.app.external_url(&ExternalTarget::CatalogLink { link_id: "gibtsnicht".into() }).is_err());

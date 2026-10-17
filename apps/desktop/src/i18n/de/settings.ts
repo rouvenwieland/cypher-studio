@@ -55,8 +55,8 @@ export const settings = {
     dir: "Installationsordner",
     dirHelp: "Hier landen neu installierte Programme. Bereits installierte bleiben, wo sie sind.",
     change: "Ändern",
-    manifest: "Manifest-Quelle",
-    manifestRows: {
+    catalog: "Programm-Katalog",
+    catalogRows: {
       source: "Quelle",
       sequence: "Fassung",
       origin: "Herkunft",
@@ -64,8 +64,13 @@ export const settings = {
       expires: "Gültig bis",
     },
     origin: { remote: "online", cache: "Zwischenspeicher", embedded: "in der App eingebaut" },
-    refresh: "Manifest jetzt prüfen",
-    refreshed: "Manifest aktuell.",
+    /** Ruhiger Hinweis: Die Online-Prüfung ging nicht durch, der vorhandene gültige Katalog bleibt in Gebrauch. */
+    checkFailed: (reason: string) =>
+      `Die letzte Online-Prüfung ging nicht durch (${reason}). Der vorhandene Katalog gilt weiter.`,
+    expiredTitle: "Der Programm-Katalog ist abgelaufen",
+    expiredText: "Neuere Versionen kennen wir erst, wenn eine Online-Prüfung gelungen ist.",
+    refresh: "Programm-Katalog jetzt prüfen",
+    refreshed: "Programm-Katalog ist aktuell.",
     rescan: "Außerhalb von Studio installierte Programme suchen",
     rescanBusy: "Suche läuft …",
     rescanned: "Suche beendet.",

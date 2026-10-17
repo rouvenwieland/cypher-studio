@@ -115,18 +115,21 @@ export default function Onboarding() {
     setStep(st.onboarding.status === "inProgress" && st.onboarding.step > 0 ? Math.min(3, st.onboarding.step) : 0);
   }, [settings.data]);
 
+  /** Speichert den Stand; die Antwort legt die neuen Einstellungen in den Zwischenspeicher (auch bei Fehlern kommt ein Ende). */
   const save = useCallback(
-    (patch: NonNullable<SettingsPatch["onboarding"]>) => {
-      void call("settings_update", { req: { onboarding: patch } }).then((next: Settings) =>
-        qc.setQueryData(["settings_get"], next),
-      );
-    },
+    (patch: NonNullable<SettingsPatch["onboarding"]>): Promise<void> =>
+      call("settings_update", { req: { onboarding: patch } }).then(
+        (next: Settings) => {
+          qc.setQueryData(["settings_get"], next);
+        },
+        () => undefined,
+      ),
     [qc],
   );
   const go = useCallback(
     (next: number) => {
       setStep(next);
-      save({ status: "inProgress", step: next, selectedPrograms: selected, applySetup });
+      void save({ status: "inProgress", step: next, selectedPrograms: selected, applySetup });
     },
     [save, selected, applySetup],
   );
@@ -161,19 +164,25 @@ export default function Onboarding() {
   );
   const sampleSum = summarize(sampleChecks);
 
+  // Erst weiterleiten, wenn der neue Stand gespeichert ist: Die Weiterleitung der Hülle schickt sonst bei „nicht begonnen“
+  // sofort zurück in den Erststart (im echten IPC dauert das Speichern einen Moment).
   const finish = useCallback(
     (to: string) => {
-      save({ status: "done", step: 6, selectedPrograms: selected, applySetup });
-      void qc.invalidateQueries({ queryKey: ["settings_get"] });
-      void navigate(to, { replace: true });
+      void save({ status: "done", step: 6, selectedPrograms: selected, applySetup }).then(() => {
+        void qc.invalidateQueries({ queryKey: ["settings_get"] });
+        void navigate(to, { replace: true });
+      });
     },
     [navigate, qc, save, selected, applySetup],
   );
 
   const later = () => {
-    save({ status: "inProgress", step: Math.min(step ?? 0, 6), selectedPrograms: selected, applySetup });
-    void qc.invalidateQueries({ queryKey: ["settings_get"] });
-    void navigate("/start", { replace: true });
+    void save({ status: "inProgress", step: Math.min(step ?? 0, 6), selectedPrograms: selected, applySetup }).then(
+      () => {
+        void qc.invalidateQueries({ queryKey: ["settings_get"] });
+        void navigate("/start", { replace: true });
+      },
+    );
   };
 
   // Fortschritt und Zeit
@@ -195,6 +204,9 @@ export default function Onboarding() {
   const needle = base + frac;
   const remaining = Math.max(1, Math.round(5 + downloadMin + 8 - needle));
 
+  // Die Version kommt aus der App, nicht aus dem Quelltext
+  const appInfo = useCmd("app_info", undefined, { staleTime: Number.POSITIVE_INFINITY });
+
   // Strg+Enter / Enter je Schritt
   const primary = useRef<(() => void) | null>(null);
   useEffect(() => {
@@ -205,7 +217,7 @@ export default function Onboarding() {
   if (step === null || !settings.data) return <div className="ob" aria-busy="true" />;
   if (step === 0) {
     primary.current = () => go(1);
-    return <Kennung version={"0.4.0"} onStart={() => go(1)} onLater={later} />;
+    return <Kennung version={appInfo.data?.appVersion ?? null} onStart={() => go(1)} onLater={later} />;
   }
   if (step >= 7) {
     primary.current = () => finish("/start");
@@ -491,7 +503,7 @@ export default function Onboarding() {
                     <Button
                       small
                       onClick={() => {
-                        save({ status: "inProgress", step: 5 });
+                        void save({ status: "inProgress", step: 5 });
                         void navigate(`/programme/${it.programId}?tab=einrichtung`);
                       }}
                     >

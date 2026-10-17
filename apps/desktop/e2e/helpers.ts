@@ -11,15 +11,18 @@ export interface OpenOptions {
   reducedMotion?: boolean;
   /** Künstliche Antwortzeit je Command in ms (für die Laden-Zustände) */
   latency?: number;
+  /** Antwortzeit einzelner Commands in ms, auch der sofortigen (z. B. `{ settings_update: 400 }` wie im echten IPC) */
+  delay?: Record<string, number>;
 }
 
 /** Öffnet die App im Mock-Modus bei einer Adresse (Hash-Router). */
 export async function openApp(page: Page, hash: string, opts: OpenOptions = {}): Promise<void> {
-  const { scenario = "default", theme = "light", speed = 40, pick, reducedMotion = true, latency = 0 } = opts;
+  const { scenario = "default", theme = "light", speed = 40, pick, reducedMotion = true, latency = 0, delay } = opts;
   await page.emulateMedia({ colorScheme: theme, reducedMotion: reducedMotion ? "reduce" : "no-preference" });
   await page.addInitScript(
-    ([sc, sp, pk, lat]) => {
+    ([sc, sp, pk, lat, dl]) => {
       window.__CYPHER_SCENARIO__ = sc;
+      if (dl) window.__CYPHER_MOCK_DELAY__ = JSON.parse(dl) as Record<string, number>;
       window.__CYPHER_MOCK_SPEED__ = Number(sp);
       if (pk) window.__CYPHER_PICK__ = pk;
       if (Number(lat) > 0) window.__CYPHER_MOCK_LATENCY__ = Number(lat);
@@ -29,7 +32,7 @@ export async function openApp(page: Page, hash: string, opts: OpenOptions = {}):
         /* ignorieren */
       }
     },
-    [scenario, String(speed), pick ?? "", String(latency)] as const,
+    [scenario, String(speed), pick ?? "", String(latency), delay ? JSON.stringify(delay) : ""] as const,
   );
   await page.goto(`/#/${hash.replace(/^\//, "")}`);
   await page.waitForSelector('[data-testid^="screen-"], [data-testid="kennung"]', { timeout: 15_000 });

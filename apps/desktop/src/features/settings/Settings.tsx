@@ -261,25 +261,30 @@ function ProgramsSection({ settings }: { settings: Settings }) {
           </Button>
         </div>
       </Row>
-      <Row label={p.manifest}>
+      <Row label={p.catalog}>
         {c ? (
           <Facts
             rows={[
-              { label: p.manifestRows.source, value: <span className="t-data selectable">{c.sourceUrl ?? "—"}</span> },
-              { label: p.manifestRows.sequence, value: <span className="t-data">{c.sequence}</span> },
-              { label: p.manifestRows.origin, value: p.origin[c.source] },
+              { label: p.catalogRows.source, value: <span className="t-data selectable">{c.sourceUrl ?? "—"}</span> },
+              { label: p.catalogRows.sequence, value: <span className="t-data">{c.sequence}</span> },
+              { label: p.catalogRows.origin, value: p.origin[c.source] },
               {
-                label: p.manifestRows.checked,
+                label: p.catalogRows.checked,
                 value: <span className="t-data">{c.lastCheckAt ? fmtDateTime(c.lastCheckAt) : "—"}</span>,
               },
-              { label: p.manifestRows.expires, value: <span className="t-data">{fmtDate(c.expiresAt)}</span> },
+              { label: p.catalogRows.expires, value: <span className="t-data">{fmtDate(c.expiresAt)}</span> },
             ]}
           />
         ) : null}
-        {c?.lastError ? (
-          <Notice kind="warn" title={errorText(c.lastError).title}>
-            {errorText(c.lastError).text}
+        {c?.expired ? (
+          <Notice kind="warn" title={p.expiredTitle}>
+            {p.expiredText}
           </Notice>
+        ) : null}
+        {c?.lastError ? (
+          <p className="t-meta" data-testid="catalog-check-failed">
+            {p.checkFailed(errorText(c.lastError).title)}
+          </p>
         ) : null}
         <div className="cluster">
           <Button
@@ -516,7 +521,7 @@ function UpdatesSection({ settings }: { settings: Settings }) {
   const [progress, setProgress] = useState<number | null>(null);
   const [failed, setFailed] = useState<"signature" | "replace" | null>(null);
   const info = useCmd("app_info", undefined, { staleTime: 60_000 });
-  const version = info.data?.appVersion ?? "0.4.0";
+  const version = info.data?.appVersion ?? "—";
 
   const check = useCallback(() => {
     setChecking(true);

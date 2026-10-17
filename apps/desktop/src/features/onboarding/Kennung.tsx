@@ -18,7 +18,15 @@ function takt(): number {
  * Kennung (Hero-Moment, lauter Moment 1): Testbild in Fenstergröße. Der Suchlauf schneidet Kanal 1 (Orange) → 2 (Gelb) →
  * 3 (Cyan) im 800-ms-Takt und rastet auf STUDIO ein. Jede Taste oder jeder Klick springt zum Ende; reduziert: sofort das Standbild.
  */
-export function Kennung({ version, onStart, onLater }: { version: string; onStart: () => void; onLater: () => void }) {
+export function Kennung({
+  version,
+  onStart,
+  onLater,
+}: {
+  version: string | null;
+  onStart: () => void;
+  onLater: () => void;
+}) {
   useDocumentTitle(t.onboarding.title);
   const [channel, setChannel] = useState<0 | 1 | 2>(() => (takt() === 0 ? 2 : 0));
   const [done, setDone] = useState(() => takt() === 0);

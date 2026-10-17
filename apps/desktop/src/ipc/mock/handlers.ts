@@ -64,7 +64,7 @@ function offlineGuard(): void {
     err({
       kind: "network",
       host: "studio.cypherxcypher.de",
-      message: "Keine Verbindung zum Cypher-Manifest",
+      message: "Keine Verbindung zum Programm-Katalog",
       retryable: true,
     });
 }
@@ -167,8 +167,8 @@ function openResult(programId: string | null) {
 export const handlers: Handlers = {
   /* app / settings */
   app_info: () => ({
-    appVersion: "0.4.0",
-    contractVersion: "0.2.0",
+    appVersion: "0.1.0",
+    contractVersion: "0.3.0",
     os: "windows",
     arch: "x86_64",
     osVersion: "Windows 11 Pro 24H2",
@@ -359,6 +359,7 @@ export const handlers: Handlers = {
           removed: Math.max(0, rec.filesWritten - rec.backupsTaken),
           keptModified: [],
           fontsRemoved: rec.components.includes("fonts") ? 3 : 0,
+          extensionsRemoved: 0,
         };
         return report;
       }
@@ -644,7 +645,7 @@ export const handlers: Handlers = {
     title: "Herbst-Drop Motive",
     createdBy: "Jonas",
     createdAt: iso(-60 * 24),
-    appVersion: "0.4.0",
+    appVersion: "0.1.0",
     entries: [],
     totalBytes: 12 * MIB,
   }),

@@ -19,6 +19,7 @@ import {
   useProgramRows,
   ProgressText,
   roleOf,
+  versionText,
 } from "../programs/parts";
 import { NewProjectDialog } from "./NewProjectDialog";
 import { ProjectsPanel } from "./ProjectsPanel";
@@ -80,7 +81,7 @@ function ProgramsPanel() {
                 <span className="t-label">{roleOf(row.program)}</span>
               </div>
               <div className="pl__state" role="gridcell">
-                <span className="t-data t-trunc">{row.state.progress !== null ? "" : row.state.versionLabel}</span>
+                <span className="t-data t-trunc">{versionText(row.state)}</span>
                 <StatusCell row={row} />
                 {row.state.progress !== null ? <ProgressText row={row} /> : null}
               </div>

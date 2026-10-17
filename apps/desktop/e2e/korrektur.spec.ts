@@ -40,7 +40,7 @@ test.describe("Prüfsumme und Installation bei 1024 × 680", () => {
     await expect(err).toBeVisible({ timeout: 30_000 });
     await expect(err.getByText(/^Prüfsumme stimmt nicht/)).toBeVisible();
     await expect(err.getByText("Dein Rechner ist nicht betroffen")).toBeVisible();
-    await expect(err.getByText(/Erwartet \(aus dem Manifest\)/i)).toBeVisible();
+    await expect(err.getByText(/Erwartet \(aus dem Programm-Katalog\)/i)).toBeVisible();
     await expect(err.getByText(/Berechnet \(aus deiner Datei\)/i)).toBeVisible();
     await expect(err.getByTestId("checksum-diff")).toContainText(/von 16 Blöcken weich/);
     const gap = await page.evaluate(() => {

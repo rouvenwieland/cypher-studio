@@ -60,11 +60,17 @@ export const programs = {
     label: "Programme",
     selectHint: "Pfeiltasten wählen, Enter öffnet, Strg+Enter führt die Aktion aus.",
   },
-  manifestError: {
-    title: "Keine Verbindung zum Cypher-Manifest",
-    text: "Installierte Programme laufen weiter. Installieren und Aktualisieren gehen erst wieder online.",
-    retry: "Erneut prüfen",
+  /** Warnung nur bei abgelaufenem Katalog; ein eingebauter oder gespeicherter, gültiger Katalog reicht zum Installieren. */
+  catalogExpired: {
+    title: "Der Programm-Katalog ist abgelaufen",
+    text: "Installierte Programme laufen weiter. Neuere Versionen kennen wir erst, wenn eine Online-Prüfung gelungen ist.",
+    retry: "Online prüfen",
   },
+  /** Ruhige Zeile unter der Tafel: woher die Versionen stammen. */
+  catalogLine: (date: string, source: "remote" | "cache" | "embedded") =>
+    `Programm-Katalog vom ${date} (${{ remote: "online geladen", cache: "zuletzt online geladen", embedded: "eingebaut" }[source]})`,
+  /** Version, die der Katalog für ein noch nicht installiertes Programm bereithält. */
+  availableVersion: (version: string) => `${version} verfügbar`,
   detail: {
     tabs: { overview: "Übersicht", setup: "Einrichtung", history: "Verlauf" },
     tabsLabel: "Bereiche des Programms",
@@ -153,8 +159,8 @@ export const install = {
   whyThisSource: "Warum diese Quelle?",
   whyThisSourceText: (name: string, mirrors: boolean) =>
     mirrors
-      ? `Steht im Cypher-Manifest als offizielle Quelle von ${name}. Weiterleitungen gehen nur zu Servern derselben Liste; was ankommt, muss zur Prüfsumme passen.`
-      : `Steht im Cypher-Manifest als offizielle Quelle von ${name}. Es gibt keine Weiterleitung auf andere Server.`,
+      ? `Steht im Programm-Katalog als offizielle Quelle von ${name}. Weiterleitungen gehen nur zu Servern derselben Liste; was ankommt, muss zur Prüfsumme passen.`
+      : `Steht im Programm-Katalog als offizielle Quelle von ${name}. Es gibt keine Weiterleitung auf andere Server.`,
   versionLine: (version: string, channel: string, released: string | null) =>
     `${version} · ${channel}${released ? ` · erschienen ${released}` : ""}`,
   channel: { stable: "stabil", lts: "Langzeitversion", preview: "Vorschau" },
@@ -165,9 +171,9 @@ export const install = {
   checksumHash: "SHA-256",
   checksumOrigin: {
     upstream:
-      "aus dem signierten Cypher-Manifest · stimmt mit der Prüfsummendatei des Herstellers überein · wird nach dem Laden verglichen",
+      "aus dem signierten Programm-Katalog · stimmt mit der Prüfsummendatei des Herstellers überein · wird nach dem Laden verglichen",
     cypherPinned:
-      "aus dem signierten Cypher-Manifest · vom Kollektiv festgeschrieben, weil der Hersteller keine eigene Prüfsumme veröffentlicht · wird nach dem Laden verglichen",
+      "aus dem signierten Programm-Katalog · vom Kollektiv festgeschrieben, weil der Hersteller keine eigene Prüfsumme veröffentlicht · wird nach dem Laden verglichen",
   },
   showAllGroups: "Alle 64 Zeichen zeigen",
   hideAllGroups: "Kurz zeigen",
@@ -200,7 +206,7 @@ export const install = {
         case "largeDownload":
           return "Großer Download. Er läuft im Hintergrund weiter, wenn du den Dialog schließt.";
         case "catalogExpired":
-          return "Das Manifest ist abgelaufen. Die Werte stimmen vermutlich noch, prüfe online nach.";
+          return "Der Programm-Katalog ist abgelaufen. Die Werte stimmen vermutlich noch, prüfe online nach.";
         case "resumeAvailable":
           return "Ein früherer Download wird fortgesetzt.";
       }
@@ -252,7 +258,7 @@ export const install = {
       copy: "Details kopieren",
       copied: "Details kopiert",
       expected: "Erwartet",
-      expectedFrom: "aus dem Manifest",
+      expectedFrom: "aus dem Programm-Katalog",
       actual: "Berechnet",
       actualFrom: "aus deiner Datei",
       differs: (n: number, total: number) =>

@@ -61,6 +61,7 @@ export type ScenarioName =
   | "setupLocked"
   | "library5000"
   | "offline"
+  | "catalogExpired"
   | "updateAvailable"
   | "folderLost"
   | "libraryEmpty"
@@ -77,6 +78,7 @@ export const SCENARIOS: readonly ScenarioName[] = [
   "setupLocked",
   "library5000",
   "offline",
+  "catalogExpired",
   "updateAvailable",
   "folderLost",
   "libraryEmpty",
@@ -488,14 +490,16 @@ export function createDb(scenarioText: string): MockDb {
   const lastError: AppError | null = offline
     ? { kind: "network", host: "studio.cypherxcypher.de", message: "Keine Verbindung", retryable: true }
     : null;
+  const expired = scenario === "catalogExpired";
+  // Wie die echte App ohne veröffentlichte Katalogquelle: der eingebaute, signierte Katalog (Folge 1), Online-Prüfung ohne Treffer
   const catalog: CatalogStatus = {
-    sourceUrl: "https://studio.cypherxcypher.de/catalog/v1/catalog.json",
+    sourceUrl: null,
     schemaVersion: 1,
-    sequence: 42,
+    sequence: 1,
     generatedAt: iso(-60 * 24 * 3),
-    expiresAt: iso(60 * 24 * 40),
-    expired: false,
-    source: offline ? "cache" : "remote",
+    expiresAt: expired ? iso(-60 * 24) : iso(60 * 24 * 180),
+    expired,
+    source: "embedded",
     lastCheckAt: iso(-90),
     lastError,
   };
@@ -503,14 +507,14 @@ export function createDb(scenarioText: string): MockDb {
     scenario === "updateAvailable"
       ? {
           available: true,
-          currentVersion: "0.4.0",
-          version: "0.5.0",
+          currentVersion: "0.1.0",
+          version: "0.2.0",
           date: iso(-60 * 5),
           notes:
             "Mockups: Kontaktbogen für alle Textilfarben.\nSocial: neue Vorlage „Termin“.\nDruckprüfer: dünne Linien werden jetzt gemessen.",
           checkedAt: iso(-3),
         }
-      : { available: false, currentVersion: "0.4.0", version: null, date: null, notes: null, checkedAt: iso(-90) };
+      : { available: false, currentVersion: "0.1.0", version: null, date: null, notes: null, checkedAt: iso(-90) };
   const db: MockDb = {
     scenario,
     flags,

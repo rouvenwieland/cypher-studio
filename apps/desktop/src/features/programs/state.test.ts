@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Installation, JobInfo, ProgramOverview } from "@contract";
-import { deriveProgramState } from "./state";
+import { deriveProgramState, versionText } from "./state";
 import { lampOf } from "../../app/stores";
 
 function install(kind: Installation["kind"], version: string, extra: Partial<Installation> = {}): Installation {
@@ -62,6 +62,31 @@ describe("Programmstatus (CONCEPT.md 6.2)", () => {
     expect(s.status).toBe("notInstalled");
     expect(s.action).toBe("install");
     expect(s.versionLabel).toBe("—");
+  });
+  it("nicht installiert zeigt die Katalogversion: „5.3.1 verfügbar“ statt eines Strichs", () => {
+    const s = deriveProgramState(program(), []);
+    expect(s.availableVersion).toBe("5.3.1");
+    expect(versionText(s)).toBe("5.3.1 verfügbar");
+  });
+  it("ohne Fassung für dieses System bleibt der Strich ehrlich", () => {
+    const none = program({
+      latest: {
+        version: "5.3.1",
+        channel: "stable",
+        releasedAt: null,
+        downloadSize: 0,
+        availableForThisPlatform: false,
+      },
+    });
+    expect(versionText(deriveProgramState(none, []))).toBe("—");
+    expect(versionText(deriveProgramState(program({ latest: null }), []))).toBe("—");
+  });
+  it("Installiertes zeigt seine Version, laufende Aufträge nichts", () => {
+    const i = install("cypher", "5.3.1");
+    const installed = deriveProgramState(program({ installations: [i], preferredInstallationId: i.id }), []);
+    expect(installed.availableVersion).toBeNull();
+    expect(versionText(installed)).toBe("5.3.1");
+    expect(versionText(deriveProgramState(program(), [job("download", 0.3)]))).toBe("");
   });
   it("laufender Auftrag bestimmt Status und Aktion Abbrechen", () => {
     expect(deriveProgramState(program(), [job("download", 0.3)]).status).toBe("downloading");

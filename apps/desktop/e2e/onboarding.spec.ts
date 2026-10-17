@@ -94,6 +94,18 @@ test.describe("Erststart „In 30 Minuten startklar“ (CONCEPT.md 6.10)", () =>
     await expect(page.getByTestId("resume-banner")).toContainText("Einrichtung zu");
   });
 
+  test("Später weitermachen gleich in der Kennung: Start erscheint auch, wenn das Speichern etwas dauert", async ({
+    page,
+  }) => {
+    // Im echten IPC braucht das Speichern der Einstellungen einen Moment; die Weiterleitung in den Erststart darf nicht schneller sein
+    await openApp(page, "erststart", { scenario: "fresh", delay: { settings_update: 400 } });
+    await page.getByTestId("kennung-later").click();
+    await expect(page.getByTestId("screen-start")).toBeVisible();
+    await page.waitForTimeout(800);
+    await expect(page.getByTestId("screen-start")).toBeVisible();
+    await expect(page.getByTestId("kennung")).toHaveCount(0);
+  });
+
   test("Ein Programm scheitert: Rest geht weiter, Hinweis nennt den Nachholweg", async ({ page }) => {
     await openApp(page, "erststart", { scenario: "fresh+installNetworkFail", speed: 80 });
     await page.getByTestId("kennung-start").click();

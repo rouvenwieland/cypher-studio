@@ -7,7 +7,7 @@ export const onboarding = {
   skip: "Überspringen",
   kennung: {
     channels: ["NEWS", "SHOP", "STUDIO"],
-    line: (version: string) => `KANAL 3 · CYPHER STUDIO ${version} · BERLIN`,
+    line: (version: string | null) => `KANAL 3 · CYPHER STUDIO${version ? ` ${version}` : ""} · BERLIN`,
     channelWord: (n: number) => `KANAL ${n}`,
     start: "Los geht’s",
     skipHint: "Eine Taste überspringt den Suchlauf.",

@@ -119,10 +119,29 @@ test.describe("Programme (CONCEPT.md 6.2)", () => {
     await expect.poll(async () => (await mockCalls(page)).includes("program_launch")).toBe(true);
   });
 
-  test("Manifest nicht erreichbar: Hinweis, installierte Programme laufen weiter", async ({ page }) => {
+  test("Katalog eingebaut, Online-Prüfung ohne Treffer: keine Warnung, nur eine ruhige Zeile", async ({ page }) => {
     await openApp(page, "programme", { scenario: "offline" });
-    await expect(page.getByTestId("manifest-error")).toContainText("Keine Verbindung zum Cypher-Manifest");
+    await expect(page.getByTestId("catalog-expired")).toHaveCount(0);
+    await expect(page.getByTestId("catalog-line")).toContainText(
+      /Programm-Katalog vom \d{2}\.\d{2}\.\d{4} \(eingebaut\)/,
+    );
     await expect(page.getByTestId("program-inkscape")).toContainText("eingerichtet");
+    await expect(page.locator("body")).not.toContainText("Manifest");
+  });
+
+  test("Katalog abgelaufen: Warnung mit Online-Prüfung, installierte Programme laufen weiter", async ({ page }) => {
+    await openApp(page, "programme", { scenario: "catalogExpired" });
+    await expect(page.getByTestId("catalog-expired")).toContainText("Der Programm-Katalog ist abgelaufen");
+    await expect(page.getByTestId("catalog-line")).toHaveCount(0);
+    await expect(page.getByTestId("program-inkscape")).toContainText("eingerichtet");
+  });
+
+  test("Nicht installierte Programme zeigen die Katalogversion statt eines Strichs", async ({ page }) => {
+    await openApp(page, "programme");
+    await expect(page.getByTestId("program-blender")).toContainText("nicht installiert");
+    await expect(page.getByTestId("program-blender")).toContainText(/\d+\.\d+(\.\d+)* verfügbar/);
+    await expect(page.getByTestId("program-blender")).not.toContainText("—");
+    await expect(page.getByTestId("program-kdenlive")).toContainText(/\d+\.\d+(\.\d+)* verfügbar/);
   });
 
   test("Deinstallieren nennt, was gelöscht wird und was bleibt", async ({ page }) => {

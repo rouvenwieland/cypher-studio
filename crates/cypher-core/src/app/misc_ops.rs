@@ -53,7 +53,7 @@ impl App {
             NetworkEndpoint {
                 purpose: NetworkPurpose::AppUpdate,
                 host: catalog_host,
-                url_pattern: "https://studio.cypherxcypher.de/releases/latest.json".to_owned(),
+                url_pattern: crate::sites::UPDATE_SITE_URL.to_owned(),
                 when: if settings.updates.frequency == UpdateFrequency::Never {
                     NetworkWhen::OnDemand
                 } else {

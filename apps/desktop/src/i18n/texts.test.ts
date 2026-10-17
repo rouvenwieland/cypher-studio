@@ -12,7 +12,7 @@ const all = strings(de);
 
 describe("Texte (Review-Befunde: kein Entwicklertext, kein Jargon, keine Doppelsätze)", () => {
   it("enthält keinen Entwicklertext und keinen Jargon für Einsteiger", () => {
-    const banned = /Alt-Text|Prüfungsanzeige|Spiegel/;
+    const banned = /Alt-Text|Prüfungsanzeige|Spiegel|Manifest/;
     const hits = all.filter((s) => banned.test(s.text)).map((s) => `${s.path}: ${s.text}`);
     expect(hits).toEqual([]);
   });

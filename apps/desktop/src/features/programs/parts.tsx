@@ -12,7 +12,13 @@ import { FitText } from "../../ui/FitText";
 import { Status } from "../../ui/Status";
 import { Bar } from "../../ui/Bits";
 import { Button } from "../../ui/Button";
-import { deriveProgramState, type ProgramAction, type ProgramRowState, type ProgramStatusId } from "./state";
+import {
+  deriveProgramState,
+  versionText,
+  type ProgramAction,
+  type ProgramRowState,
+  type ProgramStatusId,
+} from "./state";
 
 export interface ProgramRow {
   program: ProgramOverview;
@@ -29,6 +35,8 @@ export function useProgramRows() {
   );
   return { query, rows };
 }
+
+export { versionText };
 
 export function roleOf(p: ProgramOverview): string {
   return t.programs.roles[p.id] ?? t.programs.categoryRole[p.category];
