@@ -69,7 +69,7 @@ Nichts davon kann eine Datei im Repository erledigen:
 
 Alle Actions stehen auf Commit-SHA, die Version steht im Kommentar. Dependabot aktualisiert beides. Wer eine Action von Hand ändert, holt die SHA mit `git ls-remote --tags https://github.com/<owner>/<repo>.git` und prüft sie gegen die Release-Seite.
 
-Die Workflows wurden mit `actionlint` 1.7.12 geprüft und laufen seit dem 17.10.2026 auf GitHub (öffentliches Repository, `ubuntu-22.04` und `windows-latest`). Die ersten Läufe deckten Fehler auf, die lokal nie auftraten (Schriften-Rückstand unter Ubuntu 22.04, Kurzpfade unter Windows, Wettläufe in zwei Browsertests, neue RustSec-Meldungen); Befund, Ursache und Behebung stehen in `docs/reports/integration.md`, Abschnitt 6. `release.yml` wurde noch nie ausgeführt (es gibt noch keinen Tag); `packs.yml` läuft als Teil von `ci` mit.
+Die Workflows wurden mit `actionlint` 1.7.12 geprüft und laufen seit dem 17.10.2026 auf GitHub (öffentliches Repository, `ubuntu-22.04` und `windows-latest`). Die ersten Läufe deckten Fehler auf, die lokal nie auftraten (Schriften-Rückstand unter Ubuntu 22.04, Kurzpfade unter Windows, Wettläufe in zwei Browsertests, neue RustSec-Meldungen); Befund, Ursache und Behebung stehen in `docs/reports/integration.md`, Abschnitt 6. Der Lauf 39060668866 auf `main` ist grün (alle Jobs). `release.yml` wurde noch nie ausgeführt (es gibt noch keinen Tag); `packs.yml` läuft als Teil von `ci` mit.
 
 ### Vor jeder Veröffentlichung
 
