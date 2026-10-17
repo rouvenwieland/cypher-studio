@@ -20,3 +20,5 @@ playwright-report/
 .wrangler/
 apps/desktop/src-tauri/gen/schemas/
 dist-builds/
+# ts-rs ohne gesetzten Zielordner (z. B. Testläufe unter Windows)
+crates/cypher-core/bindings/
