@@ -51,6 +51,16 @@ cpSync(join(root, 'public'), out, {
   },
 });
 
+// ── 1b. Signierter Programm-Katalog für die App (ARCHITEKTUR 5.8): /catalog/v1/catalog.json(+.minisig) ──
+{
+  const catDir = resolve(root, '..', 'catalog');
+  for (const f of ['catalog.json', 'catalog.json.minisig']) {
+    const src = join(catDir, f);
+    if (!existsSync(src)) throw new Error(`Katalog fehlt: ${src}`);
+    write(`catalog/v1/${f}`, readFileSync(src));
+  }
+}
+
 // ── 2. Inhaltsgehashte Assets ──────────────────────────────────────────────────────────────
 const assets = {};
 for (const f of readdirSync(join(root, 'public/fonts'))) {
