@@ -2,6 +2,7 @@ import js from "@eslint/js";
 import tseslint from "typescript-eslint";
 import reactHooks from "eslint-plugin-react-hooks";
 import globals from "globals";
+import { securityRestrictions, securityRules } from "./eslint.security.js";
 
 const JSX_TEXT = "JSXText[value=/[A-Za-zÄÖÜäöüß]{2,}/]";
 const TEXT_ATTRS =
@@ -27,16 +28,19 @@ export default tseslint.config(
       "@typescript-eslint/no-floating-promises": ["error", { ignoreVoid: true }],
       "@typescript-eslint/no-misused-promises": ["error", { checksVoidReturn: { attributes: false } }],
       "@typescript-eslint/consistent-type-imports": "error",
+      ...securityRules,
       "no-restricted-syntax": [
         "error",
         { selector: JSX_TEXT, message: "UI-Texte gehören nach src/i18n (BAU-REGELN, ARCHITEKTUR 1.3 Nr. 5)." },
         { selector: TEXT_ATTRS, message: "UI-Texte gehören nach src/i18n (BAU-REGELN, ARCHITEKTUR 1.3 Nr. 5)." },
+        ...securityRestrictions,
       ],
     },
   },
   {
+    // Texte und Tests dürfen Text enthalten; die Sicherheitsregeln gelten auch dort
     files: ["src/i18n/**", "src/**/*.test.{ts,tsx}", "e2e/**", "e2e-real/**", "src/ipc/mock/**", "src/test-setup.ts"],
-    rules: { "no-restricted-syntax": "off" },
+    rules: { "no-restricted-syntax": ["error", ...securityRestrictions] },
   },
   {
     files: ["e2e/**", "e2e-real/**", "src/**/*.test.{ts,tsx}"],

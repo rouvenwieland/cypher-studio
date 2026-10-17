@@ -96,6 +96,21 @@ describe("Programmstatus (CONCEPT.md 6.2)", () => {
     expect(s.action).toBe("cancel");
     expect(s.progress).toBe(0.3);
   });
+  it("Deinstallation läuft → „wird deinstalliert …“, solange die Kennung gesetzt ist, danach der echte Zustand", () => {
+    const i = install("cypher", "5.3.1");
+    const installed = program({ installations: [i], preferredInstallationId: i.id });
+    const running = deriveProgramState(installed, [], ["krita"]);
+    expect(running.status).toBe("removing");
+    expect(running.kind).toBe("plain");
+    expect(running.versionLabel).toBe("5.3.1");
+    expect(running.progress).toBeNull();
+    // andere Programme bleiben unberührt, und ohne Kennung gilt der normale Zustand
+    expect(deriveProgramState(installed, [], ["blender"]).status).toBe("installed");
+    expect(deriveProgramState(installed, []).status).toBe("installed");
+    // nach der Neuladung ohne Installation bleibt der Zwischenzustand bis zum Ende, dann „nicht installiert“
+    expect(deriveProgramState(program(), [], ["krita"]).status).toBe("removing");
+    expect(deriveProgramState(program(), [], []).status).toBe("notInstalled");
+  });
   it("außerhalb von Studio installiert → gefunden, kein Aktualisieren", () => {
     const i = install("system", "4.5.0");
     const s = deriveProgramState(

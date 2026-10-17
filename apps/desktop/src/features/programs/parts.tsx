@@ -7,6 +7,7 @@ import { errorText } from "../../i18n/errors";
 import { fmtMegabytes, fmtBytes } from "../../i18n/format";
 import { t } from "../../i18n/de";
 import { useJobs, useToasts } from "../../app/stores";
+import { useRemovals } from "./removal";
 import { useInstallUi } from "../install/store";
 import { FitText } from "../../ui/FitText";
 import { Status } from "../../ui/Status";
@@ -29,9 +30,11 @@ export interface ProgramRow {
 export function useProgramRows() {
   const query = useCmd("programs_list", undefined);
   const jobs = useJobs((s) => s.active);
+  const removing = useRemovals((s) => s.programIds);
   const rows = useMemo<ProgramRow[]>(
-    () => (query.data?.programs ?? []).map((program) => ({ program, state: deriveProgramState(program, jobs) })),
-    [query.data, jobs],
+    () =>
+      (query.data?.programs ?? []).map((program) => ({ program, state: deriveProgramState(program, jobs, removing) })),
+    [query.data, jobs, removing],
   );
   return { query, rows };
 }
@@ -66,6 +69,7 @@ export function useProgramActions() {
   return useCallback(
     (row: ProgramRow) => {
       const { program, state } = row;
+      if (state.status === "removing") return;
       switch (state.action) {
         case "install":
           openInstall({ programId: program.id });
@@ -121,7 +125,12 @@ export function ProgressText({ row }: { row: ProgramRow }) {
 
 export function StatusCell({ row }: { row: ProgramRow }) {
   const { state } = row;
-  if (state.status === "downloading" || state.status === "verifying" || state.status === "installing") {
+  if (
+    state.status === "downloading" ||
+    state.status === "verifying" ||
+    state.status === "installing" ||
+    state.status === "removing"
+  ) {
     return (
       <span className="status status--fg">
         <span className="phase__run" aria-hidden="true" />
@@ -156,6 +165,7 @@ export function RowActionButton({
       }}
       aria-label={`${label}: ${row.program.name}`}
       data-testid={`row-action-${row.program.id}`}
+      disabled={row.state.status === "removing"}
     >
       {label}
     </Button>

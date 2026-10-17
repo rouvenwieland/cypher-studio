@@ -85,6 +85,43 @@ test.describe("Produktions-CSP (ARCHITEKTUR 6.2)", () => {
     expect(await violations(page, found)).toEqual([]);
   });
 
+  test("Menüs, Popover und Dialoge öffnen und schließen ohne Verletzung (kein <style> von Radix)", async ({ page }) => {
+    // Befund aus der echten Installationsprobe: das „…“-Menü schrieb über react-remove-scroll ein <style>-Element
+    const found = await watchCsp(page);
+    await openApp(page, "programme/krita");
+
+    // Aktionsmenü im Programmdetail, Deinstallieren-Dialog (nativer <dialog>) und Abbrechen
+    await page.getByRole("button", { name: "Weitere Aktionen" }).click();
+    await expect(page.getByRole("menu")).toBeVisible();
+    await page.getByRole("menuitem", { name: /Deinstallieren/ }).click();
+    await expect(page.getByRole("dialog")).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+
+    // Menü noch einmal öffnen und mit Escape schließen
+    await page.getByRole("button", { name: "Weitere Aktionen" }).click();
+    await expect(page.getByRole("menu")).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(page.getByRole("menu")).toHaveCount(0);
+
+    // Aufträge-Popover in der Leiste und Befehlspalette
+    await page.getByTestId("nav-jobs").click();
+    await expect(page.getByTestId("jobs-popover")).toBeVisible();
+    await page.keyboard.press("Escape");
+    await page.keyboard.press("Control+k");
+    await expect(page.locator("[cmdk-input]")).toBeFocused();
+    await page.keyboard.press("Escape");
+
+    // Bibliothek: Menü eines Eintrags
+    await page.getByTestId("nav-library").click();
+    await expect(page.getByTestId("screen-library")).toBeVisible();
+
+    // das Seitenelement der Scroll-Sperre darf nie angelegt worden sein
+    expect(await page.locator("style").count()).toBe(0);
+    expect(await page.locator("body[data-scroll-locked]").count()).toBe(0);
+    expect(await violations(page, found)).toEqual([]);
+  });
+
   test("Gegenprobe: ein eingefügtes Inline-Skript wird blockiert und gemeldet", async ({ page }) => {
     const found = await watchCsp(page);
     await openApp(page, "start");

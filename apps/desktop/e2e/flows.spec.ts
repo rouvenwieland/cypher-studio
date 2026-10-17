@@ -154,6 +154,44 @@ test.describe("Programme (CONCEPT.md 6.2)", () => {
   });
 });
 
+test.describe("Deinstallation mit Zwischenzustand", () => {
+  test("Die Zeile zeigt „wird deinstalliert …“, danach „nicht installiert“, ohne die Seite zu wechseln", async ({
+    page,
+  }) => {
+    // das Löschen eines großen Ordners dauert einige Sekunden: die Antwort kommt hier erst nach 1,5 s
+    await openApp(page, "programme/krita", { delay: { installation_remove: 1500 } });
+    await expect(page.getByTestId("detail-action")).toBeEnabled();
+    await page.getByRole("button", { name: "Weitere Aktionen" }).click();
+    await page.getByRole("menuitem", { name: /Deinstallieren/ }).click();
+    await page.getByTestId("remove-confirm").click();
+
+    const detail = page.getByTestId("screen-program-detail");
+    await expect(detail).toContainText("wird deinstalliert …");
+    await expect(page.getByTestId("detail-action")).toBeDisabled();
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+
+    // danach sofort „nicht installiert“, ohne Navigieren
+    await expect(detail).toContainText("nicht installiert", { timeout: 10_000 });
+    await expect(detail).not.toContainText("wird deinstalliert");
+    await expect(page.getByTestId("detail-action")).toBeEnabled();
+
+    // dieselbe Wahrheit in der Tafel der Programme
+    await page.getByRole("button", { name: "Zurück zu den Programmen" }).click();
+    await expect(page.getByTestId("program-krita")).toContainText("nicht installiert");
+  });
+
+  test("In der Tafel steht der Zwischenzustand, während die Deinstallation aus dem Detail läuft", async ({ page }) => {
+    await openApp(page, "programme/krita", { delay: { installation_remove: 2000 } });
+    await page.getByRole("button", { name: "Weitere Aktionen" }).click();
+    await page.getByRole("menuitem", { name: /Deinstallieren/ }).click();
+    await page.getByTestId("remove-confirm").click();
+    await page.getByRole("button", { name: "Zurück zu den Programmen" }).click();
+    await expect(page.getByTestId("program-krita")).toContainText("wird deinstalliert …");
+    await expect(page.getByTestId("row-action-krita")).toBeDisabled();
+    await expect(page.getByTestId("program-krita")).toContainText("nicht installiert", { timeout: 10_000 });
+  });
+});
+
 test.describe("Einrichtung (CONCEPT.md 6.3)", () => {
   test("Teilweise: vier Bausteine mit Status, Konflikt braucht Wahl, Anwenden, Rückgängig", async ({ page }) => {
     await openApp(page, "programme/krita?tab=einrichtung", { scenario: "setupConflicts" });

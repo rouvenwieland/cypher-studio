@@ -19,6 +19,7 @@ import { IconBack } from "../../ui/icons";
 import { ActionMenu, Tabs, type MenuEntry } from "../../ui/Overlays";
 import { useInstallUi } from "../install/store";
 import { deriveProgramState } from "./state";
+import { useRemovals } from "./removal";
 import { roleOf, StatusCell } from "./parts";
 import { useSetupTab } from "./setupTab";
 
@@ -159,16 +160,17 @@ export function ProgramDetail() {
   const push = useToasts((st) => st.push);
   const openInstall = useInstallUi((st) => st.open);
   const jobs = useJobs((st) => st.active);
+  const removals = useRemovals((st) => st.programIds);
   const query = useCmd("programs_list", undefined);
   const program = query.data?.programs.find((p) => p.id === id);
   const tab = params.get("tab") === "einrichtung" ? "setup" : params.get("tab") === "verlauf" ? "history" : "overview";
   const setup = useSetupTab(program, tab === "setup");
   const [removing, setRemoving] = useState(false);
-  const state = program ? deriveProgramState(program, jobs) : null;
+  const state = program ? deriveProgramState(program, jobs, removals) : null;
   const inst = state?.installation ?? null;
 
   const launch = () => {
-    if (!program) return;
+    if (!program || state?.status === "removing") return;
     if (state?.action === "install" || state?.action === "update") {
       openInstall({
         programId: program.id,
@@ -291,7 +293,13 @@ export function ProgramDetail() {
       output={tab === "setup" ? setup.output : undefined}
       tools={
         <>
-          <Button variant="action" combo="mod+enter" onClick={launch} data-testid="detail-action">
+          <Button
+            variant="action"
+            combo="mod+enter"
+            onClick={launch}
+            disabled={state.status === "removing"}
+            data-testid="detail-action"
+          >
             {actionText}
           </Button>
           <ActionMenu entries={menu} />
@@ -340,15 +348,22 @@ export function ProgramDetail() {
               variant="danger"
               onClick={() => {
                 if (!inst) return;
+                // Der Dialog schließt sofort; die Zeile zeigt „wird deinstalliert …“, bis die Liste neu geladen ist
+                const programId = program.id;
+                useRemovals.getState().begin(programId);
+                setRemoving(false);
                 void call("installation_remove", {
                   req: { installationId: inst.id, mode: inst.managedByCypher ? "deleteFiles" : "forget" },
                 })
                   .then(() => {
-                    setRemoving(false);
                     push({ kind: "info", text: t.programs.remove.done(program.name) });
-                    void qc.invalidateQueries({ queryKey: ["programs_list"] });
                   })
-                  .catch((e: unknown) => push({ kind: "error", text: errorText(toAppError(e)).text }));
+                  .catch((e: unknown) => push({ kind: "error", text: errorText(toAppError(e)).text }))
+                  .finally(() => {
+                    void qc
+                      .invalidateQueries({ queryKey: ["programs_list"] })
+                      .finally(() => useRemovals.getState().end(programId));
+                  });
               }}
               data-testid="remove-confirm"
             >

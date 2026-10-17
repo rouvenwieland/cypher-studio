@@ -54,7 +54,9 @@ export interface MenuEntry {
 
 export function ActionMenu({ entries, label = t.common.more }: { entries: MenuEntry[]; label?: string }) {
   return (
-    <Dropdown.Root>
+    // `modal={false}`: Das modale Menü sperrt das Scrollen mit `react-remove-scroll`, das ein <style>-Element in den Kopf der
+    // Seite schreibt. Die Produktions-CSP (`style-src 'self'`) blockiert das. Ein Menü braucht keine Scroll-Sperre.
+    <Dropdown.Root modal={false}>
       <Dropdown.Trigger asChild>
         <IconButton icon={IconMore} label={label} />
       </Dropdown.Trigger>

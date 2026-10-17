@@ -11,6 +11,7 @@ export type ProgramStatusId =
   | "downloading"
   | "verifying"
   | "installing"
+  | "removing"
   | "installed"
   | "setUp"
   | "updateAvailable"
@@ -40,11 +41,27 @@ export function installJobOf(program: Pick<ProgramOverview, "name">, jobs: reado
   return jobs.find((j) => j.kind === "install" && j.subject === program.name) ?? null;
 }
 
-export function deriveProgramState(p: ProgramOverview, jobs: readonly JobInfo[]): ProgramRowState {
+export function deriveProgramState(
+  p: ProgramOverview,
+  jobs: readonly JobInfo[],
+  removing: readonly string[] = [],
+): ProgramRowState {
   const job = installJobOf(p, jobs);
   const installation = p.installations.find((i) => i.id === p.preferredInstallationId) ?? p.installations[0] ?? null;
   const installedVersion = installation?.version ?? null;
   const base = { installedVersion, installation, job, availableVersion: null };
+
+  // Deinstallation läuft: Zwischenzustand, bis die Liste neu geladen ist; die Aktion ist gesperrt
+  if (removing.includes(p.id)) {
+    return {
+      ...base,
+      status: "removing",
+      kind: "plain",
+      versionLabel: installation?.version ?? "—",
+      progress: null,
+      action: "launch",
+    };
+  }
 
   if (job) {
     const phase = job.phase;
@@ -99,7 +116,7 @@ export function deriveProgramState(p: ProgramOverview, jobs: readonly JobInfo[])
 
 /** Sortierung der Tafel bleibt fest (Reihenfolge des Katalogs), damit sich nichts verschiebt. */
 export function isBusyStatus(s: ProgramStatusId): boolean {
-  return s === "downloading" || s === "verifying" || s === "installing";
+  return s === "downloading" || s === "verifying" || s === "installing" || s === "removing";
 }
 
 /** Versionsspalte: installierte Version, „alt → neu“ oder bei nicht Installiertem die Katalogversion („5.2.2 verfügbar“). */

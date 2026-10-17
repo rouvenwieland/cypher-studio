@@ -108,6 +108,27 @@ test.describe.serial("Programme (echte Erkennung, eingebauter Katalog)", () => {
     await expect(page.locator("body")).not.toContainText("Manifest");
   });
 
+  test("Menü „Weitere Aktionen“ und Dialog öffnen ohne CSP-Verstoß (Radix schreibt kein <style>)", async () => {
+    // Befund aus der Installationsprobe: das Menü löste `style-src-elem` aus. Es wird nur geöffnet und abgebrochen.
+    const { page } = app();
+    await goto(page, "programme/blender");
+    await expect(page.getByTestId("screen-program-detail")).toBeVisible();
+    await page.getByRole("button", { name: "Weitere Aktionen" }).click();
+    await expect(page.getByRole("menu")).toBeVisible();
+    // Ist Blender hier von Cypher installiert, gibt es „Deinstallieren …“: Dialog öffnen und abbrechen (nichts wird gelöscht)
+    const remove = page.getByRole("menuitem", { name: /Deinstallieren|Aus der Liste entfernen/ });
+    if ((await remove.count()) > 0) {
+      await remove.click();
+      await expect(page.getByRole("dialog")).toBeVisible();
+      await page.keyboard.press("Escape");
+      await expect(page.getByRole("dialog")).toHaveCount(0);
+    } else {
+      await page.keyboard.press("Escape");
+    }
+    expect(await page.locator("style").count(), "Radix darf kein <style> anlegen").toBe(0);
+    await goto(page, "programme");
+  });
+
   test("keine Konsolenfehler, keine CSP-Verstöße, keine abgelehnten IPC-Aufrufe", async () => {
     await expectClean(app());
   });

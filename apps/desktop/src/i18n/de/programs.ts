@@ -30,6 +30,7 @@ export const programs = {
     downloading: "wird geladen",
     verifying: "wird geprüft",
     installing: "wird installiert",
+    removing: "wird deinstalliert …",
     installed: "installiert",
     checksumOk: "stimmte beim Laden",
     setUp: "eingerichtet",
@@ -107,7 +108,7 @@ export const programs = {
     },
     problems: {
       executableMissing: "Das Programm fehlt am angegebenen Ort.",
-      fuseMissing: "FUSE fehlt: Das Programm wird entpackt und von dort gestartet.",
+      fuseMissing: "FUSE fehlt: Das Programm entpackt sich bei jedem Start kurz selbst.",
       notNotarized: "macOS prüft dieses Programm nicht vorab. Der erste Start braucht deine Bestätigung.",
       versionUnknown: "Die Version ließ sich nicht lesen.",
       setupNotSupported: "Einrichten geht für diese Installation nicht.",
@@ -200,7 +201,7 @@ export const install = {
         case "intelMacOldRelease":
           return `Für Intel-Macs gilt die ältere Version ${n.version}.`;
         case "linuxFuseMissing":
-          return "FUSE fehlt: Das Programm wird entpackt und von dort gestartet.";
+          return "FUSE fehlt: Das Programm entpackt sich bei jedem Start kurz selbst.";
         case "windowsSmartScreenNotExpected":
           return "Windows sollte keine Warnung zeigen.";
         case "largeDownload":
