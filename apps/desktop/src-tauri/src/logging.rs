@@ -17,7 +17,8 @@ pub fn init(logs_dir: &Path) -> Option<WorkerGuard> {
         .build(logs_dir)
         .ok()?;
     let (writer, guard) = tracing_appender::non_blocking(appender);
-    let level = if cfg!(debug_assertions) { tracing::Level::DEBUG } else { tracing::Level::INFO };
+    // INFO auch im Entwicklungsbuild: DEBUG füllt die Datei mit Zeilen der HTTP-Bibliothek (h2) und drängt die eigenen heraus
+    let level = tracing::Level::INFO;
     let subscriber = tracing_subscriber::fmt().with_writer(writer).with_ansi(false).with_max_level(level).finish();
     tracing::subscriber::set_global_default(subscriber).ok()?;
     // Abstürze landen im Protokoll statt nur auf einer Konsole, die es unter Windows nicht gibt
