@@ -322,7 +322,8 @@ pub fn remove_dir_managed(dir: &Path, managed_root: &Path) -> Result<(), IoError
             return Err(IoError::other(IoOp::Remove, Some(dir), format!("außerhalb des verwalteten Ordners: {p}")));
         }
     };
-    let root = fs::canonicalize(managed_root).map_err(|e| IoError::new(IoOp::Metadata, managed_root, e))?;
+    let root =
+        simplify_path(fs::canonicalize(managed_root).map_err(|e| IoError::new(IoOp::Metadata, managed_root, e))?);
     if resolved == root {
         return Err(IoError::other(IoOp::Remove, Some(dir), "der verwaltete Ordner selbst wird nie gelöscht"));
     }

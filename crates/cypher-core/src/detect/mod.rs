@@ -125,10 +125,18 @@ pub fn detect_all(env: &DetectEnv, catalog: &Catalog, managed: &[StoredInstallat
     let mut out: Vec<Installation> = Vec::new();
     for program in &catalog.programs {
         let mut found = strategies::detect_program(env, program);
+        // Ein Pfad aus der Registrierung (`C:\Programme\X`) und einer aus bekannten Ordnern (`C:\Programme` + `X/bin`)
+        // sind dieselbe Datei; erst nach einheitlichen Trennzeichen lassen sie sich vergleichen
+        for f in found.iter_mut().filter(|f| f.is_path) {
+            f.location = Path::new(&f.location).components().collect::<PathBuf>().to_string_lossy().into_owned();
+        }
         found.retain(|f| !(f.is_path && managed_roots.iter().any(|r| Path::new(&f.location).starts_with(r))));
-        // gleiche Datei nur einmal (z. B. PATH und .desktop-Datei)
+        // gleiche Datei nur einmal (z. B. PATH und .desktop-Datei; Windows unterscheidet Groß und Klein nicht)
         let mut seen = std::collections::BTreeSet::new();
-        found.retain(|f| seen.insert((f.kind as u8, f.location.clone())));
+        found.retain(|f| {
+            let key = if cfg!(windows) && f.is_path { f.location.to_lowercase() } else { f.location.clone() };
+            seen.insert((f.kind as u8, key))
+        });
         found.sort_by(|a, b| (a.kind as u8, &a.location).cmp(&(b.kind as u8, &b.location)));
         out.extend(found.iter().map(installation_from));
     }

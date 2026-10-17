@@ -84,8 +84,16 @@ const COMMANDS: &[&str] = &[
 
 /// Windows: Die Testprogramme (`cargo test`) brauchen wie die App das Manifest mit Common Controls v6. Ohne es startet die
 /// Testdatei nicht (`STATUS_ENTRYPOINT_NOT_FOUND`), weil die Dialogbibliothek `TaskDialogIndirect` aus Version 6 verlangt.
-/// `tauri-build` bettet das Manifest nur in die App selbst ein.
-fn embed_test_manifest() {
+/// `tauri-build` bettet das Manifest nur in die App selbst ein. Wer die Tests für Windows baut (zum Beispiel mit
+/// `cargo xwin test`), setzt `CYPHER_EMBED_TEST_MANIFEST=1`: dann liefert der Linker das Manifest für alle Dateien, und
+/// `tauri-build` legt keins zusätzlich an (sonst gäbe es zwei). Ohne die Variable bleibt alles, wie `tauri-build` es baut.
+fn test_manifest_requested() -> bool {
+    println!("cargo:rerun-if-env-changed=CYPHER_EMBED_TEST_MANIFEST");
+    let windows_msvc = std::env::var("CARGO_CFG_TARGET_OS").is_ok_and(|os| os == "windows")
+        && std::env::var("CARGO_CFG_TARGET_ENV").is_ok_and(|env| env == "msvc");
+    if !windows_msvc || std::env::var_os("CYPHER_EMBED_TEST_MANIFEST").is_none() {
+        return false;
+    }
     const MANIFEST: &str = r#"<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
   <dependency>
     <dependentAssembly>
@@ -94,14 +102,14 @@ fn embed_test_manifest() {
   </dependency>
 </assembly>
 "#;
-    let windows_msvc = std::env::var("CARGO_CFG_TARGET_OS").is_ok_and(|os| os == "windows")
-        && std::env::var("CARGO_CFG_TARGET_ENV").is_ok_and(|env| env == "msvc");
-    let Some(out_dir) = std::env::var_os("OUT_DIR").filter(|_| windows_msvc) else { return };
+    let Some(out_dir) = std::env::var_os("OUT_DIR") else { return false };
     let file = Path::new(&out_dir).join("test.manifest");
-    if std::fs::write(&file, MANIFEST).is_ok() {
-        println!("cargo:rustc-link-arg-tests=/MANIFEST:EMBED");
-        println!("cargo:rustc-link-arg-tests=/MANIFESTINPUT:{}", file.display());
+    if std::fs::write(&file, MANIFEST).is_err() {
+        return false;
     }
+    println!("cargo:rustc-link-arg=/MANIFEST:EMBED");
+    println!("cargo:rustc-link-arg=/MANIFESTINPUT:{}", file.display());
+    true
 }
 
 fn main() {
@@ -123,10 +131,16 @@ fn main() {
         let _ = std::fs::create_dir_all(packs_dist);
     }
     println!("cargo:rerun-if-changed=build.rs");
-    embed_test_manifest();
+    let own_manifest = test_manifest_requested();
 
     let app = tauri_build::AppManifest::new().commands(COMMANDS);
-    if let Err(e) = tauri_build::try_build(tauri_build::Attributes::new().app_manifest(app)) {
+    let windows = if own_manifest {
+        tauri_build::WindowsAttributes::new_without_app_manifest()
+    } else {
+        tauri_build::WindowsAttributes::new()
+    };
+    if let Err(e) = tauri_build::try_build(tauri_build::Attributes::new().app_manifest(app).windows_attributes(windows))
+    {
         eprintln!("tauri-build fehlgeschlagen: {e:#}");
         std::process::exit(1);
     }

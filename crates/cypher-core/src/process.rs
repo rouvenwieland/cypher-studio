@@ -139,13 +139,14 @@ impl Default for FakeRunner {
 impl CommandRunner for FakeRunner {
     fn run(&self, exe: &Path, args: &[OsString], _timeout: Duration) -> io::Result<CommandOutput> {
         let args: Vec<String> = args.iter().map(|a| a.to_string_lossy().into_owned()).collect();
+        // Auf Windows setzt `Path::join` ein Rückwärtsschrägstrich; Muster und Aufruf werden ohne Trennzeichen-Unterschied verglichen
         let line = format!("{} {}", exe.display(), args.join(" "));
         if let Ok(mut calls) = self.calls.lock() {
             calls.push(RecordedCall { exe: exe.to_path_buf(), args });
         }
         let script = self.script.lock().map_err(|_| io::Error::other("Skript gesperrt"))?;
         for (pattern, output) in script.iter() {
-            if line.contains(pattern.as_str()) {
+            if line.replace('\\', "/").contains(pattern.replace('\\', "/").as_str()) {
                 return match output {
                     Ok(o) => Ok(o.clone()),
                     Err(e) => Err(io::Error::new(e.kind(), e.to_string())),
