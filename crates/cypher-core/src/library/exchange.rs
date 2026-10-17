@@ -197,6 +197,7 @@ pub fn export(
         .map_err(|e| IoError::write(dest, e))?;
     zip.finish().map_err(|e| invalid(e.to_string()))?;
     tmp.as_file().sync_all().map_err(|e| IoError::write(dest, e))?;
+    crate::platform::fsx::set_shareable_mode(tmp.as_file());
     tmp.persist(dest).map_err(|e| IoError::write(dest, e.error))?;
     Ok(entries.len())
 }
@@ -462,6 +463,7 @@ pub fn import(
                 } else {
                     report.imported += 1;
                 }
+                crate::platform::fsx::set_shareable_mode(tmp.as_file());
                 tmp.persist(&target).map_err(|e| IoError::new(crate::api::IoOp::Rename, &target, e.error))?;
                 if let Some(mut s) = rel_sidecar {
                     if final_rel != entry.rel_path || read_sidecar(root, &final_rel).is_some() {

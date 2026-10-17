@@ -20,6 +20,9 @@ pub trait FontInstaller: Send + Sync {
     fn register(&self, file: &Path, display_name: &str) -> io::Result<Option<String>>;
     /// Nimmt die Anmeldung zurück (die Datei löscht der Aufrufer).
     fn unregister(&self, file: &Path, registry_name: Option<&str>) -> io::Result<()>;
+    /// Schließt einen Stapel von `register`/`unregister` ab. Teure Schritte (Schriftcache, Meldung an alle Fenster)
+    /// laufen hier einmal statt für jede Datei.
+    fn flush(&self) {}
 }
 
 /// Tut nichts außer Erfolg zu melden (macOS, Tests ohne Betriebssystemzugriff).
@@ -40,27 +43,42 @@ pub struct FcCacheFonts {
     pub runner: std::sync::Arc<dyn CommandRunner>,
     /// Pfad zu `fc-cache`, falls vorhanden.
     pub fc_cache: Option<std::path::PathBuf>,
+    /// Ordner, deren Cache beim nächsten [`flush`](FontInstaller::flush) aufgefrischt wird.
+    pub pending: std::sync::Mutex<std::collections::BTreeSet<std::path::PathBuf>>,
 }
 
 impl FcCacheFonts {
-    fn refresh(&self, file: &Path) -> io::Result<()> {
-        let (Some(tool), Some(dir)) = (&self.fc_cache, file.parent()) else { return Ok(()) };
-        let args: Vec<OsString> = vec!["-f".into(), dir.as_os_str().to_owned()];
-        // Ein fehlgeschlagener Cache-Lauf ist kein Fehler der Einrichtung: Programme finden die Schrift beim nächsten Start
-        let _ = self.runner.run(tool, &args, Duration::from_secs(60));
-        Ok(())
+    pub fn new(runner: std::sync::Arc<dyn CommandRunner>, fc_cache: Option<std::path::PathBuf>) -> Self {
+        FcCacheFonts { runner, fc_cache, pending: Default::default() }
+    }
+
+    fn note(&self, file: &Path) {
+        if let (Some(dir), Ok(mut pending)) = (file.parent(), self.pending.lock()) {
+            pending.insert(dir.to_path_buf());
+        }
     }
 }
 
 impl FontInstaller for FcCacheFonts {
     fn register(&self, file: &Path, _display_name: &str) -> io::Result<Option<String>> {
-        self.refresh(file)?;
+        self.note(file);
         Ok(None)
     }
 
     fn unregister(&self, file: &Path, _registry_name: Option<&str>) -> io::Result<()> {
         // Die Datei ist beim Aufruf schon (oder gleich) weg; der Cache wird danach aufgefrischt
-        self.refresh(file)
+        self.note(file);
+        Ok(())
+    }
+
+    fn flush(&self) {
+        let dirs = self.pending.lock().map(|mut p| std::mem::take(&mut *p)).unwrap_or_default();
+        let Some(tool) = &self.fc_cache else { return };
+        for dir in dirs {
+            let args: Vec<OsString> = vec!["-f".into(), dir.into_os_string()];
+            // Ein fehlgeschlagener Cache-Lauf ist kein Fehler der Einrichtung: Programme finden die Schrift beim nächsten Start
+            let _ = self.runner.run(tool, &args, Duration::from_secs(60));
+        }
     }
 }
 
@@ -69,7 +87,7 @@ pub fn system_installer(runner: std::sync::Arc<dyn CommandRunner>) -> std::sync:
     #[cfg(windows)]
     {
         let _ = runner;
-        std::sync::Arc::new(win::WindowsFonts)
+        std::sync::Arc::new(win::WindowsFonts::default())
     }
     #[cfg(target_os = "macos")]
     {
@@ -79,7 +97,7 @@ pub fn system_installer(runner: std::sync::Arc<dyn CommandRunner>) -> std::sync:
     #[cfg(not(any(windows, target_os = "macos")))]
     {
         let fc_cache = which::which("fc-cache").ok();
-        std::sync::Arc::new(FcCacheFonts { runner, fc_cache })
+        std::sync::Arc::new(FcCacheFonts::new(runner, fc_cache))
     }
 }
 
@@ -103,7 +121,11 @@ pub mod win {
 
     const FONTS_KEY: &str = "Software\\Microsoft\\Windows NT\\CurrentVersion\\Fonts";
 
-    pub struct WindowsFonts;
+    #[derive(Default)]
+    pub struct WindowsFonts {
+        /// Seit dem letzten `flush` wurde etwas an- oder abgemeldet.
+        changed: std::sync::atomic::AtomicBool,
+    }
 
     fn wide(path: &Path) -> Vec<u16> {
         path.as_os_str().encode_wide().chain(std::iter::once(0)).collect()
@@ -128,7 +150,7 @@ pub mod win {
                 // Die Registry-Anmeldung gilt ab der nächsten Anmeldung trotzdem; kein harter Fehler
                 tracing::warn!("AddFontResourceW meldet 0 Schriften für {}", file.display());
             }
-            broadcast_font_change();
+            self.changed.store(true, std::sync::atomic::Ordering::SeqCst);
             Ok(Some(display_name.to_owned()))
         }
 
@@ -147,8 +169,15 @@ pub mod win {
                     Err(e) => return Err(e),
                 }
             }
-            broadcast_font_change();
+            self.changed.store(true, std::sync::atomic::Ordering::SeqCst);
             Ok(())
+        }
+
+        fn flush(&self) {
+            // Eine Meldung für den ganzen Stapel: sie wartet auf jedes Fenster, je Datei wäre das spürbar langsam
+            if self.changed.swap(false, std::sync::atomic::Ordering::SeqCst) {
+                broadcast_font_change();
+            }
         }
     }
 }
@@ -189,12 +218,20 @@ mod tests {
     fn fc_cache_runs_for_the_font_folder_and_ignores_failures() {
         let runner = FakeRunner::new().fail("fc-cache", 1, "kaputt");
         let runner = std::sync::Arc::new(runner);
-        let fonts = FcCacheFonts { runner: runner.clone(), fc_cache: Some("/usr/bin/fc-cache".into()) };
-        assert_eq!(fonts.register(Path::new("/home/a/.local/share/fonts/cypher/A.ttf"), "A").unwrap(), None);
+        let fonts = FcCacheFonts::new(runner.clone(), Some("/usr/bin/fc-cache".into()));
+        for name in ["A.ttf", "B.ttf", "C.ttf"] {
+            let file = format!("/home/a/.local/share/fonts/cypher/{name}");
+            assert_eq!(fonts.register(Path::new(&file), name).unwrap(), None);
+        }
+        assert!(runner.calls().is_empty(), "während des Stapels läuft nichts");
+        fonts.flush();
         let calls = runner.calls();
-        assert_eq!(calls.len(), 1);
+        assert_eq!(calls.len(), 1, "ein Lauf für den ganzen Ordner, nicht je Datei");
         assert_eq!(calls[0].args, ["-f", "/home/a/.local/share/fonts/cypher"]);
+        fonts.flush();
+        assert_eq!(runner.calls().len(), 1, "ohne neue Schriften läuft nichts");
         fonts.unregister(Path::new("/home/a/.local/share/fonts/cypher/A.ttf"), None).unwrap();
+        fonts.flush();
         assert_eq!(runner.calls().len(), 2);
     }
 
@@ -202,8 +239,9 @@ mod tests {
     fn without_fc_cache_nothing_is_run() {
         let runner = FakeRunner::new();
         let runner = std::sync::Arc::new(runner);
-        let fonts = FcCacheFonts { runner: runner.clone(), fc_cache: None };
+        let fonts = FcCacheFonts::new(runner.clone(), None);
         fonts.register(Path::new("/x/A.ttf"), "A").unwrap();
+        fonts.flush();
         assert!(runner.calls().is_empty());
     }
 

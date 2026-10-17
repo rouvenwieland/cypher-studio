@@ -681,6 +681,7 @@ fn copy_new(src: &Path, target: &Path) -> Result<String, CopyError> {
         tmp.write_all(&buf[..n]).map_err(|e| CopyError::Io(IoError::write(target, e)))?;
     }
     tmp.as_file().sync_all().map_err(|e| CopyError::Io(IoError::write(target, e)))?;
+    crate::platform::fsx::set_shareable_mode(tmp.as_file());
     // `persist_noclobber` überschreibt nie, auch nicht bei einem Wettlauf mit einem Sync-Werkzeug
     match tmp.persist_noclobber(target) {
         Ok(_) => Ok(hasher.finalize().iter().fold(String::new(), |mut s, b| {

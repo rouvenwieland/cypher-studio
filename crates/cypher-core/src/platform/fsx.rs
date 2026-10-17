@@ -149,6 +149,20 @@ pub fn sanitize_file_name(name: &str) -> String {
     out
 }
 
+/// Temp-Dateien entstehen mit den Rechten `0600`. Was die Nutzerin weitergibt oder wovon andere Programme lesen
+/// (Exporte, Pakete, Diagnose, Einstellungen), soll die üblichen Rechte `0644` haben. Unter Windows ohne Wirkung.
+pub fn set_shareable_mode(file: &std::fs::File) {
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        let _ = file.set_permissions(std::fs::Permissions::from_mode(0o644));
+    }
+    #[cfg(not(unix))]
+    {
+        let _ = file;
+    }
+}
+
 /// Schreibt atomar: Temp-Datei im Zielordner, `fsync`, dann umbenennen. Das Ziel ist nie halb geschrieben.
 pub fn write_atomic(path: &Path, bytes: &[u8]) -> Result<(), IoError> {
     let parent = path.parent().filter(|p| !p.as_os_str().is_empty()).unwrap_or_else(|| Path::new("."));
@@ -159,6 +173,7 @@ pub fn write_atomic(path: &Path, bytes: &[u8]) -> Result<(), IoError> {
         .map_err(|e| IoError::new(IoOp::Write, parent, e))?;
     tmp.write_all(bytes).map_err(|e| IoError::write(path, e))?;
     tmp.as_file().sync_all().map_err(|e| IoError::write(path, e))?;
+    set_shareable_mode(tmp.as_file());
     tmp.persist(path).map_err(|e| IoError::new(IoOp::Rename, path, e.error))?;
     Ok(())
 }
@@ -360,6 +375,16 @@ mod tests {
         assert_eq!(fs::read(&file).unwrap(), b"zwei");
         let names: Vec<_> = fs::read_dir(file.parent().unwrap()).unwrap().map(|e| e.unwrap().file_name()).collect();
         assert_eq!(names.len(), 1, "{names:?}");
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn written_files_have_the_usual_permissions_not_the_temp_file_ones() {
+        use std::os::unix::fs::PermissionsExt;
+        let dir = tempfile::tempdir().unwrap();
+        let file = dir.path().join("export.png");
+        write_atomic(&file, b"bild").unwrap();
+        assert_eq!(fs::metadata(&file).unwrap().permissions().mode() & 0o777, 0o644);
     }
 
     #[test]

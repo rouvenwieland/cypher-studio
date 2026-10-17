@@ -2,7 +2,12 @@
 //!
 //! Die CLI ruft nur die öffentliche API von `cypher-core` auf; sie enthält keine Fachlogik.
 
+mod app_cmd;
 mod catalog_cmd;
+mod detect_cmd;
+mod install_cmd;
+mod printcheck_cmd;
+mod setup_cmd;
 
 use std::process::ExitCode;
 
@@ -44,11 +49,19 @@ impl From<cypher_core::api::AppError> for CliError {
     }
 }
 
+impl From<cypher_core::error::CoreError> for CliError {
+    fn from(e: cypher_core::error::CoreError) -> Self {
+        CliError::from(cypher_core::api::AppError::from(e))
+    }
+}
+
 pub type CliResult<T = ()> = Result<T, CliError>;
 
 #[derive(Parser)]
 #[command(name = "cypher", version, about = "Cypher Studio Kommandozeile (CI, Linux-Probe, Katalogpflege)")]
 struct Cli {
+    #[command(flatten)]
+    global: app_cmd::Global,
     #[command(subcommand)]
     command: Command,
 }
@@ -60,13 +73,30 @@ enum Command {
         #[command(subcommand)]
         command: catalog_cmd::CatalogCommand,
     },
+    /// Programme und gefundene Installationen zeigen (nur lesend)
+    Detect(detect_cmd::DetectArgs),
+    /// Ein Programm aus dem Katalog installieren (Plan, Prüfsumme, Entpacken); ohne --yes nur der Plan
+    Install(install_cmd::InstallArgs),
+    /// Ein Motiv gegen ein Druckprofil prüfen und auf Wunsch druckfertig exportieren
+    Printcheck(printcheck_cmd::PrintcheckArgs),
+    /// Einrichtungspakete anwenden und zurücknehmen
+    Setup {
+        #[command(subcommand)]
+        command: setup_cmd::SetupCommand,
+    },
 }
 
 #[tokio::main]
 async fn main() -> ExitCode {
     let cli = Cli::parse();
+    tracing_subscriber::fmt().with_writer(std::io::stderr).with_ansi(false).with_max_level(tracing::Level::WARN).init();
+    let global = cli.global;
     let result = match cli.command {
         Command::Catalog { command } => catalog_cmd::run(command).await,
+        Command::Detect(args) => detect_cmd::run(&global, args).await,
+        Command::Install(args) => install_cmd::run(&global, args).await,
+        Command::Printcheck(args) => printcheck_cmd::run(&global, args).await,
+        Command::Setup { command } => setup_cmd::run(&global, command).await,
     };
     match result {
         Ok(()) => ExitCode::SUCCESS,

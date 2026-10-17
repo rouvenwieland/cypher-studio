@@ -15,7 +15,7 @@ workspace = true
 default = ["dev-tools"]
 # Entwicklungswerkzeuge: Testschlüssel erzeugen und den Katalog damit signieren. Die echten Schlüssel erzeugt und
 # verwahrt die verantwortliche Person offline (minisign -G / -S).
-dev-tools = ["dep:minisign"]
+dev-tools = ["dep:minisign", "cypher-core/test-util"]
 
 [[bin]]
 name = "cypher"
@@ -30,7 +30,14 @@ serde_json.workspace = true
 semver = "1"
 hex = "0.4"
 url = "2"
+tracing = "0.1"
+# Warnungen des Kerns (z. B. ein ungültiger Katalog im Zwischenspeicher) auf die Fehlerausgabe
+tracing-subscriber = { version = "0.3", default-features = false, features = ["fmt", "std"] }
 minisign = { version = "0.9", optional = true }
 
 [dev-dependencies]
 tempfile = "3"
+sha2 = "0.11"
+zip = { version = "9", default-features = false, features = ["deflate"] }
+image = { version = "0.25", default-features = false, features = ["png"] }
+png = "0.18"

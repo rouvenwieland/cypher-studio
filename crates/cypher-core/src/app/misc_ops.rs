@@ -316,6 +316,7 @@ impl App {
             zip.finish().map_err(|e| CoreError::internal(e.to_string()))?;
         }
         tmp.as_file().sync_all().map_err(|e| IoError::write(dest, e))?;
+        fsx::set_shareable_mode(tmp.as_file());
         tmp.persist(dest).map_err(|e| IoError::write(dest, e.error))?;
         Ok(self.handles.register(dest, HandleSource::Export)?)
     }

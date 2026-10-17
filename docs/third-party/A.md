@@ -37,6 +37,10 @@ Jede direkte Abhängigkeit mit Version (aufgelöst in `Cargo.lock`), Lizenz und 
 | `fast_image_resize` | 5.5 | MIT OR Apache-2.0 | Skalieren (Lanczos3, vormultipliziertes Alpha) |
 | `moxcms` | 0.9 | BSD-3-Clause OR Apache-2.0 | Farbprofile (sRGB, Adobe RGB, Display P3 erzeugen und umrechnen) |
 | `winreg` (nur Windows) | 0.55 | MIT | Registrierung lesen (Erkennung installierter Programme) |
+| `windows-sys` (nur Windows) | 0.61 | MIT OR Apache-2.0 | `AddFontResourceW`, `SendMessageTimeoutW`: Schriften des Benutzerprofils anmelden (einziger `unsafe`-Ort, zwei Aufrufe) |
+| `pgp` (rPGP) | 0.21 | MIT OR Apache-2.0 | OpenPGP-Signatur der Krita- und Inkscape-AppImage prüfen (nur Prüfen, ohne `bzip2`) |
+| `notify` | 8.2 | CC0-1.0 | Ordnerüberwachung der Bibliothek (entprellt); `inotify` (ISC) und `notify-types` kommen mit |
+| `resvg` (mit `usvg`, `tiny-skia`, `fontdb`) | 0.48 / 0.12 / 0.24 | Apache-2.0 OR MIT / BSD-3-Clause / MIT | SVG-Vorschaubilder der Bibliothek, nur gerastert; Markenschriften werden aus den Paketen geladen, keine System-Schriften |
 
 ## Ausgeliefert: cypher-cli
 
@@ -44,6 +48,7 @@ Jede direkte Abhängigkeit mit Version (aufgelöst in `Cargo.lock`), Lizenz und 
 |---|---|---|---|
 | `clap` | 4.6 | MIT OR Apache-2.0 | Kommandozeile |
 | `minisign` | 0.9 | MIT | Katalog signieren (`catalog sign`, nur mit Entwicklungsschlüssel) |
+| `tracing-subscriber` | 0.3 | MIT | Warnungen des Kerns auf die Fehlerausgabe |
 
 ## Ausgeliefert: src-tauri
 
@@ -56,6 +61,8 @@ Jede direkte Abhängigkeit mit Version (aufgelöst in `Cargo.lock`), Lizenz und 
 | `tauri-plugin-process` | 2.4 | Apache-2.0 OR MIT | Neustart nach Update |
 | `tauri-plugin-single-instance` | 2.5 | Apache-2.0 OR MIT | nur eine Instanz |
 | `tauri-plugin-window-state` | 2.5 | Apache-2.0 OR MIT | Fenstergröße merken |
+| `tracing`, `tracing-subscriber`, `tracing-appender` | 0.1 / 0.3 / 0.2 | MIT | Protokoll in Dateien (`<data>/logs`, täglich, 7 Tage); kein Netz, keine Telemetrie |
+| `time` | 0.3 | MIT OR Apache-2.0 | Fälligkeit der Update-Prüfung |
 
 ## Nur Entwicklung und Tests
 
@@ -67,6 +74,8 @@ Jede direkte Abhängigkeit mit Version (aufgelöst in `Cargo.lock`), Lizenz und 
 | `minisign` | 0.9 | MIT | Testschlüssel, Testsignaturen |
 | `jsonschema` | 0.33 | MIT | Katalog gegen das JSON-Schema prüfen |
 | `sevenz-rust2` (mit `compress`) | 0.24 | Apache-2.0 | 7z-Testarchive erzeugen |
+| `rand`, `rand_chacha` | 0.8 / 0.3 | MIT OR Apache-2.0 | Testschlüssel für die PGP-Prüfung (dieselbe `rand_core`-Version wie rPGP) |
+| `tempfile`, `sha2`, `zip`, `image`, `png` (in `cypher-cli`, `src-tauri`) | wie oben | wie oben | Testdaten der Kommandozeilen- und Tauri-Tests (keine Auslieferung) |
 
 Schriften, Bilder und Profile: keine Fremddateien im Repository. Die ICC-Profile (sRGB, Adobe RGB 1998, Display P3) werden zur Laufzeit
 von `moxcms` erzeugt; der Name „Adobe RGB (1998)“ bezeichnet nur den Farbraum, den Shirtigo für den Upload empfiehlt.

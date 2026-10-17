@@ -142,6 +142,19 @@ pub fn apply(
     sink: &dyn ProgressSink<SetupEvent>,
     cancel: &CancellationToken,
 ) -> Result<SetupRecord, SetupError> {
+    let result = apply_inner(plan, sel, env, sink, cancel);
+    // Schriftenanmeldung einmal für den ganzen Stapel abschließen (nicht je Datei), auch bei Abbruch und Fehler
+    env.fonts.flush();
+    result
+}
+
+fn apply_inner(
+    plan: SetupPlanData,
+    sel: &ApplySelection,
+    env: &ApplyEnv<'_>,
+    sink: &dyn ProgressSink<SetupEvent>,
+    cancel: &CancellationToken,
+) -> Result<SetupRecord, SetupError> {
     let pack = &plan.pack;
     let in_plan: BTreeSet<&str> = plan.dto.components.iter().map(|c| c.id.as_str()).collect();
 
@@ -553,6 +566,7 @@ fn rollback(
             report.fonts_removed += 1;
         }
     }
+    fonts.flush();
     for e in entries.iter().rev() {
         let Some(target) = target_of(roots, e.root, &e.rel) else { continue };
         if keep.contains(&target) {
