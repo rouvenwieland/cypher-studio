@@ -83,6 +83,6 @@ proptest = "1"
 # dieselben Versionen wie rPGP (rand_core 0.6), damit die erzeugten Testschlüssel passen
 rand = "0.8"
 rand_chacha = "0.3"
-jsonschema = "0.33"
+jsonschema = "0.58"
 # Aktiviert die Testhilfen (http gegen 127.0.0.1) auch für die Tests des eigenen Crates
 cypher-core = { path = ".", features = ["test-util"] }
