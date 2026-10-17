@@ -27,12 +27,13 @@ export function MessZeile({
       {items.map((item, i) => (
         <Fragment key={`${item.label}-${i}`}>
           {i > 0 && item.newLine ? <span className="mz__break" aria-hidden="true" /> : null}
-          {i > 0 && !item.newLine ? (
-            <span className="mz__sep" aria-hidden="true">
-              ·
-            </span>
-          ) : null}
           <span className="mz__item">
+            {/* Das „·“ gehört zum folgenden Eintrag: bricht der um, nimmt er es mit */}
+            {i > 0 && !item.newLine ? (
+              <span className="mz__sep" aria-hidden="true">
+                ·
+              </span>
+            ) : null}
             <span className="mz__label">{item.label}</span>
             <span className="mz__value">{item.value}</span>
           </span>

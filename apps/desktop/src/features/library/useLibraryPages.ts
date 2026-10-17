@@ -24,7 +24,7 @@ export interface LibraryData {
  * Wahlfreier Zugriff auf das Bibliotheksraster: Es werden nur die Seiten (je 200 Einträge) geladen, die sichtbar sind
  * (virtualisiert, ARCHITEKTUR 3.2 `library_query`: Standard 200, höchstens 1000).
  */
-export function useLibraryPages(filters: LibraryFilters, visiblePages: number[]): LibraryData {
+export function useLibraryPages(filters: LibraryFilters, visiblePages: number[], enabled = true): LibraryData {
   const pages = useMemo(() => [...new Set([0, ...visiblePages])].sort((a, b) => a - b), [visiblePages]);
   const results = useQueries({
     queries: pages.map((pg) => ({
@@ -32,6 +32,8 @@ export function useLibraryPages(filters: LibraryFilters, visiblePages: number[])
       queryFn: () => call("library_query", { req: { ...filters, offset: pg * PAGE_SIZE, limit: PAGE_SIZE } }),
       staleTime: 10_000,
       retry: false,
+      // ohne eingerichteten Bibliotheksordner antwortet Rust mit libraryNotConfigured: gar nicht erst fragen
+      enabled,
       ...(pg === 0 ? { placeholderData: keepPreviousData } : {}),
     })),
   });

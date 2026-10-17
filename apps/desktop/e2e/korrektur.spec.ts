@@ -223,3 +223,39 @@ test.describe("Ausrichtung auf Start, Segmente, Freistellen, Erststart", () => {
     }
   });
 });
+
+test.describe("Ausgangsleiste, Ausgang gesperrt (Befund im echten Fenster: „P.“, „30…“, „Ado…“)", () => {
+  for (const width of [1280, 1536]) {
+    test(`${width} px: Einträge der Zusammenfassung stehen ganz da oder fehlen ganz, mindestens drei lesbar`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width, height: 700 });
+      await openApp(page, "druck", { pick: "kleines_motiv.png" });
+      await page.getByTestId("print-pick").click();
+      const out = page.getByTestId("print-output");
+      await expect(out).toHaveAttribute("data-state", "blocked");
+      await expect(out).toContainText("px"); // die Messzeile ist da, sobald der Bericht geladen ist
+      const parts = await out.locator(".outbar__summary .mz__item").evaluateAll((items) => {
+        const box = items[0]?.closest(".mz")?.getBoundingClientRect();
+        if (!box) return [];
+        return items.map((el) => {
+          const r = el.getBoundingClientRect();
+          const value = el.querySelector(".mz__value");
+          return {
+            text: (el.textContent ?? "").trim(),
+            shown: r.bottom <= box.bottom + 1,
+            insideRight: r.right <= box.right + 1,
+            cut: value ? value.scrollWidth > value.clientWidth + 1 : false,
+          };
+        });
+      });
+      expect(parts.length).toBeGreaterThan(3);
+      const shown = parts.filter((x) => x.shown);
+      for (const p of shown) {
+        expect(p.insideRight, `„${p.text}“ ragt über die Zusammenfassung hinaus`).toBe(true);
+        expect(p.cut, `„${p.text}“ ist angeschnitten`).toBe(false);
+      }
+      expect(shown.length, `lesbar: ${shown.map((x) => x.text).join(" ")}`).toBeGreaterThanOrEqual(3);
+    });
+  }
+});

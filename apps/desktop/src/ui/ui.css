@@ -986,7 +986,8 @@
 
 .outbar__summary {
   flex: 1 1 0;
-  min-width: 0;
+  /* die Messzeile geht vor dem Grund des gesperrten Ausgangs: dessen Text kürzt sich zuerst */
+  min-width: min(45%, 380px);
   display: flex;
   align-items: baseline;
   gap: var(--s-4);
@@ -994,19 +995,25 @@
   overflow: hidden;
 }
 
-/* Die Zusammenfassung bleibt einzeilig und kürzt hinten, statt mit hängendem „·“ umzubrechen */
+/*
+ * Die Zusammenfassung bleibt einzeilig: Was nicht mehr passt, bricht um und wird abgeschnitten, aber immer ganze Einträge
+ * (das „·“ steht im Eintrag), nie „P.“ oder „30…“. Im echten Fenster bei 1280 px mit gesperrtem Ausgang war sonst nichts lesbar.
+ */
 .outbar__summary .mz {
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   min-width: 0;
+  height: 20px;
   overflow: hidden;
 }
 
 .outbar__summary .mz__item {
-  flex: 0 1 auto;
-  overflow: hidden;
+  flex: 0 0 auto;
 }
 
+/* Ein einzelner Eintrag, der allein nicht passt (langer Pfad), kürzt sich am Ende */
 .outbar__summary .mz__value {
+  min-width: 0;
+  max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -1020,10 +1027,19 @@
   display: flex;
   align-items: center;
   gap: var(--s-3);
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.outbar__actions > .btn {
   flex: 0 0 auto;
 }
 
 .outbar__reason {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   color: var(--mute);
 }
 

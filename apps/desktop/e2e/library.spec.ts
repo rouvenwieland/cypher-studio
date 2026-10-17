@@ -106,6 +106,8 @@ test.describe("Bibliothek (CONCEPT.md 6.7)", () => {
   test("Kein Ordner: Leerzustand mit Ordner wählen", async ({ page }) => {
     await openApp(page, "bibliothek", { scenario: "libraryEmpty" });
     await expect(page.getByTestId("library-empty")).toContainText("Noch kein gemeinsamer Ordner");
+    // ohne Ordner wird die Bibliothek gar nicht erst abgefragt (Rust antwortete mit libraryNotConfigured)
+    expect(await mockCalls(page)).not.toContain("library_query");
     await page.getByTestId("choose-folder").click();
     const dialog = page.getByTestId("choose-root-dialog");
     await expect(dialog).toContainText("3.104 Dateien");

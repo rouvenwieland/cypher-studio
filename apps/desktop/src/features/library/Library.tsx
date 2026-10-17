@@ -79,7 +79,7 @@ export default function Library() {
   const imgH = Math.round(cellW * 0.75);
   const rowH = view === "list" ? 36 : imgH + 52;
   const [visiblePages, setVisiblePages] = useState<number[]>([0]);
-  const data = useLibraryPages(effective, visiblePages);
+  const data = useLibraryPages(effective, visiblePages, status.data?.configured === true);
   const rowCount = Math.ceil(data.total / columns);
   const virt = useVirtualizer({
     count: rowCount,
