@@ -244,23 +244,43 @@ mod tests {
         assert!(matches!(e, VerifyError::Io(_)), "{e}");
     }
 
-    /// Echte Dateien aus der Linux-Probe (`scripts/probe-linux.sh` legt sie in `~/probe-dl`): Krita-AppImage mit dem
-    /// Krita-Schlüssel. Nur mit `CYPHER_PROBE_DL=<ordner>` und `--ignored`.
+    /// Echte Dateien aus der Linux-Probe: die Krita-AppImage und ihre `.sig` (liegen in `CYPHER_PROBE_DL`), geprüft mit dem
+    /// Schlüssel und der Fingerabdruck-Liste aus dem eingebetteten Katalog. Nur mit `--ignored`.
     #[test]
     #[ignore = "braucht die heruntergeladene Krita-AppImage (CYPHER_PROBE_DL)"]
-    fn real_krita_appimage_signature_verifies() {
+    fn real_krita_appimage_signature_verifies_with_the_catalog_key() {
         let Ok(dir) = std::env::var("CYPHER_PROBE_DL") else { return };
         let dir = std::path::PathBuf::from(dir);
-        let key = std::fs::read_to_string(dir.join("key-E9FB29E74ADEACC5E3035B8AB69EB4CF7468332F.asc")).unwrap();
-        let sig = std::fs::read(dir.join("krita-5.3.4.1-x86_64.AppImage.sig")).unwrap();
-        let armored = [key];
-        let allowed = ["E9FB29E74ADEACC5E3035B8AB69EB4CF7468332F".to_owned()];
-        let got = verify_pgp_detached(
-            &dir.join("krita-5.3.4.1-x86_64.AppImage"),
-            &sig,
-            &PgpTrust { public_keys_armored: &armored, allowed_fingerprints: &allowed },
-        )
-        .unwrap();
-        assert_eq!(got, "E9FB29E74ADEACC5E3035B8AB69EB4CF7468332F");
+        let catalog: serde_json::Value = serde_json::from_slice(crate::catalog::EMBEDDED_CATALOG_JSON).unwrap();
+        let krita = catalog["programs"].as_array().unwrap().iter().find(|p| p["id"] == "krita").unwrap();
+        let artifact = krita["releases"][0]["artifacts"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|a| a["kind"] == "appImage")
+            .expect("Linux-Artefakt");
+        let signature = &artifact["signature"];
+        let armored: Vec<String> =
+            signature["publicKeys"].as_array().unwrap().iter().map(|k| k.as_str().unwrap().to_owned()).collect();
+        let allowed: Vec<String> =
+            signature["fingerprints"].as_array().unwrap().iter().map(|k| k.as_str().unwrap().to_owned()).collect();
+        let file_name = artifact["fileName"].as_str().unwrap();
+        let sig = std::fs::read(dir.join(format!("{file_name}.sig"))).unwrap();
+        let trust = PgpTrust { public_keys_armored: &armored, allowed_fingerprints: &allowed };
+        let got = verify_pgp_detached(&dir.join(file_name), &sig, &trust).unwrap();
+        assert!(allowed.contains(&got), "{got}");
+
+        // dieselbe Datei mit verändertem Byte im Kopf: die Signatur stimmt nicht mehr (nur Kopie, Original bleibt)
+        let copy = std::env::temp_dir().join(format!("cypher-pgp-{}.AppImage", std::process::id()));
+        std::fs::copy(dir.join(file_name), &copy).unwrap();
+        {
+            use std::io::{Seek, SeekFrom, Write};
+            let mut f = std::fs::OpenOptions::new().write(true).open(&copy).unwrap();
+            f.seek(SeekFrom::Start(4096)).unwrap();
+            f.write_all(&[0xA5]).unwrap();
+        }
+        let e = verify_pgp_detached(&copy, &sig, &trust).unwrap_err();
+        let _ = std::fs::remove_file(&copy);
+        assert!(matches!(e, VerifyError::Signature(_)), "{e}");
     }
 }
