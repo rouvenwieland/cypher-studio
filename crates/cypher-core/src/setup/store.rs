@@ -141,6 +141,16 @@ pub struct Journal {
     pub roots: std::collections::BTreeMap<RootId, String>,
 }
 
+/// Ist `id` eine zulässige Kennung einer Einrichtung? 1 bis 64 Zeichen aus Buchstaben, Ziffern, `-` und `_` (die App
+/// vergibt UUIDs). Alles andere, vor allem Trenner und Punkte, kann nie Teil eines Pfads werden.
+pub fn is_setup_id(id: &str) -> bool {
+    (1..=64).contains(&id.len()) && id.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-' || b == b'_')
+}
+
+fn checked_id(id: &str) -> &str {
+    if is_setup_id(id) { id } else { "_ungueltig" }
+}
+
 /// Dateisystem-Speicher der Einrichtung.
 #[derive(Debug, Clone)]
 pub struct SetupStore {
@@ -165,17 +175,19 @@ impl SetupStore {
         self.root.join("journal")
     }
 
+    /// Pfad der Manifestdatei. Eine Kennung, die keine UUID ist, ergibt einen Pfad, den es nie gibt (Befund N11:
+    /// Kennungen kommen aus dem Frontend und aus Dateien und werden nie Teil eines Pfads, ohne geprüft zu sein).
     pub fn manifest_path(&self, setup_id: &str) -> PathBuf {
-        self.manifests_dir().join(format!("{setup_id}.json"))
+        self.manifests_dir().join(format!("{}.json", checked_id(setup_id)))
     }
 
     pub fn journal_path(&self, setup_id: &str) -> PathBuf {
-        self.journal_dir().join(format!("{setup_id}.json"))
+        self.journal_dir().join(format!("{}.json", checked_id(setup_id)))
     }
 
     /// Pfad einer Sicherung (`backups/<setupId>/<root>/<rel>`), relativ zu `root`.
     pub fn backup_rel(setup_id: &str, root: RootId, rel: &str) -> String {
-        format!("backups/{setup_id}/{}/{rel}", root.as_str())
+        format!("backups/{}/{}/{rel}", checked_id(setup_id), root.as_str())
     }
 
     pub fn resolve(&self, store_rel: &str) -> Result<PathBuf, SetupError> {
@@ -187,6 +199,9 @@ impl SetupStore {
     }
 
     pub fn load_manifest(&self, setup_id: &str) -> Result<Option<Manifest>, IoError> {
+        if !is_setup_id(setup_id) {
+            return Ok(None);
+        }
         fsx::read_json(&self.manifest_path(setup_id))
     }
 
@@ -241,7 +256,9 @@ impl SetupStore {
     }
 
     pub fn remove_backups(&self, setup_id: &str) {
-        let _ = std::fs::remove_dir_all(self.root.join("backups").join(setup_id));
+        if is_setup_id(setup_id) {
+            let _ = std::fs::remove_dir_all(self.root.join("backups").join(setup_id));
+        }
     }
 }
 
@@ -289,6 +306,26 @@ mod tests {
         assert_eq!(all.iter().map(|m| m.setup_id.as_str()).collect::<Vec<_>>(), ["a", "b"]);
         assert_eq!(store.load_manifest("a").unwrap().unwrap(), manifest("a", "2026-10-01T00:00:00Z"));
         assert!(store.load_manifest("fehlt").unwrap().is_none());
+    }
+
+    #[test]
+    fn setup_ids_never_become_path_parts() {
+        // Befund N11: `setupId` kommt aus dem Frontend; Trenner und Punkte dürfen nie in einen Pfad gelangen
+        let dir = tempfile::tempdir().unwrap();
+        let store = SetupStore::new(dir.path().join("setup"));
+        std::fs::write(dir.path().join("geheim.json"), br#"{"setupId":"x"}"#).unwrap();
+        for bad in ["../../geheim", "..", "a/b", "a\\b", "", ".", "x.json", &"a".repeat(65), "a\0b", "C:x", "a b"] {
+            assert!(!is_setup_id(bad), "{bad:?}");
+            assert!(store.load_manifest(bad).unwrap().is_none(), "{bad:?}");
+            assert!(store.manifest_path(bad).starts_with(dir.path().join("setup/manifests")), "{bad:?}");
+            assert!(store.manifest_path(bad).ends_with("_ungueltig.json"));
+            assert!(SetupStore::backup_rel(bad, RootId::UserFonts, "x").starts_with("backups/_ungueltig/"));
+            store.remove_backups(bad); // darf nichts außerhalb anfassen
+        }
+        assert!(dir.path().join("geheim.json").exists());
+        for good in ["a", "ok", "3f2a9c1e-5b7d-4e8a-9c0d-1a2b3c4d5e6f", "x_y-1"] {
+            assert!(is_setup_id(good), "{good}");
+        }
     }
 
     #[test]

@@ -52,6 +52,17 @@ pub struct Prepared {
 
 impl Prepared {
     pub fn load(path: &Path, name: &str, limits: &Limits, cancel: &CancellationToken) -> Result<Self, PrintError> {
+        // Eine präparierte Datei darf in `png`, `image`, `tiff` oder `moxcms` nur einen Fehler auslösen, nie die App beenden
+        crate::util::catch_panic("Druckprüfung", || Self::load_unguarded(path, name, limits, cancel))
+            .map_err(PrintError::Decode)?
+    }
+
+    fn load_unguarded(
+        path: &Path,
+        name: &str,
+        limits: &Limits,
+        cancel: &CancellationToken,
+    ) -> Result<Self, PrintError> {
         let meta = read_meta(path, limits.max_pixels)?;
         check_cancel(cancel)?;
         let image =

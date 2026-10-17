@@ -21,6 +21,21 @@ pub fn to_iso(t: OffsetDateTime) -> String {
     t.format(&Rfc3339).unwrap_or_else(|_| "1970-01-01T00:00:00Z".to_owned())
 }
 
+/// Führt `f` aus und macht aus einer Panik einen Fehlertext. Fremde Dekoder (Bilder, ICC-Profile, Archive) dürfen bei einer
+/// präparierten Datei nur einen Fehler liefern, nicht die App beenden (Befund N14). Setzt `panic = "unwind"` im
+/// Release-Profil voraus (ein Test prüft das); bei `abort` hilft nur die Begrenzung der Eingaben vor dem Dekodieren.
+pub fn catch_panic<T>(what: &str, f: impl FnOnce() -> T) -> Result<T, String> {
+    std::panic::catch_unwind(std::panic::AssertUnwindSafe(f)).map_err(|payload| {
+        let detail = payload
+            .downcast_ref::<&str>()
+            .map(|s| (*s).to_owned())
+            .or_else(|| payload.downcast_ref::<String>().cloned())
+            .unwrap_or_else(|| "unbekannt".to_owned());
+        tracing::error!("{what}: Absturz im Dekoder abgefangen ({detail})");
+        format!("{what}: interner Fehler beim Lesen der Datei")
+    })
+}
+
 /// Liest RFC 3339; `None` bei ungültigem Text.
 pub fn parse_iso(text: &str) -> Option<OffsetDateTime> {
     OffsetDateTime::parse(text, &Rfc3339).ok()
@@ -80,6 +95,18 @@ pub fn human_bytes(bytes: u64) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn catch_panic_turns_a_decoder_panic_into_an_error_and_passes_values_through() {
+        // Befund N14: ein Panic in einem Fremd-Dekoder darf die App nicht beenden
+        assert_eq!(catch_panic("Test", || 41 + 1), Ok(42));
+        let msg = catch_panic("Vorschau", || -> u32 { panic!("kaputtes Bild") }).unwrap_err();
+        assert_eq!(msg, "Vorschau: interner Fehler beim Lesen der Datei");
+        let owned = catch_panic("Test", || -> u32 { std::panic::panic_any(String::from("owned")) });
+        assert!(owned.is_err());
+        let other = catch_panic("Test", || -> u32 { std::panic::panic_any(7_u8) });
+        assert!(other.is_err());
+    }
 
     #[test]
     fn iso_round_trip_and_format() {

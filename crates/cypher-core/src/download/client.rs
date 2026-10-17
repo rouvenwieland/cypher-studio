@@ -9,7 +9,7 @@ use std::time::Duration;
 use reqwest::header::HeaderMap;
 use url::Url;
 
-use super::hosts::HostPolicy;
+use super::hosts::{HostPolicy, is_public_ip};
 use crate::api::{NetworkPurpose, NetworkRequestLog};
 use crate::error::DownloadError;
 use crate::platform::fsx;
@@ -29,6 +29,32 @@ impl std::fmt::Display for BlockedRedirect {
 }
 
 impl StdError for BlockedRedirect {}
+
+/// DNS-Auflöser, der Spiegel-Namen auf öffentliche Adressen beschränkt. Die Hosts der eingebetteten Liste lösen unverändert
+/// auf (auch Firmennetze mit eigenem DNS bleiben nutzbar); jeder andere Name, also ein Spiegel hinter einer Weiterleitung,
+/// darf nur auf öffentliche Adressen zeigen. Ein Name, der auf `127.0.0.1` oder `192.168.x.x` zeigt, scheitert.
+struct PublicMirrorResolver {
+    /// Namen der Hostliste, die ohne Einschränkung aufgelöst werden.
+    exempt: Vec<String>,
+}
+
+impl reqwest::dns::Resolve for PublicMirrorResolver {
+    fn resolve(&self, name: reqwest::dns::Name) -> reqwest::dns::Resolving {
+        let host = name.as_str().to_ascii_lowercase();
+        let exempt = self.exempt.contains(&host);
+        Box::pin(async move {
+            let all: Vec<std::net::SocketAddr> = tokio::net::lookup_host((host.as_str(), 0)).await?.collect();
+            let chosen: Vec<std::net::SocketAddr> =
+                if exempt { all } else { all.into_iter().filter(|a| is_public_ip(a.ip())).collect() };
+            if chosen.is_empty() {
+                let reason = format!("{host} zeigt auf keine öffentliche Adresse");
+                return Err(Box::new(std::io::Error::new(std::io::ErrorKind::PermissionDenied, reason))
+                    as Box<dyn StdError + Send + Sync>);
+            }
+            Ok(Box::new(chosen.into_iter()) as reqwest::dns::Addrs)
+        })
+    }
+}
 
 /// Ringpuffer der letzten Anfragen (Einstellungen → „Netzwerk und Daten“). Enthält nie Inhalte.
 pub struct NetLog {
@@ -93,7 +119,11 @@ fn build(user_agent: &str, policy: &Arc<HostPolicy>, strict: bool) -> Result<req
                     retryable: false,
                 }));
             }
-            let Some(first) = attempt.previous().first() else { return attempt.follow() };
+            // Geschlossen scheitern: ohne Ursprungsadresse lässt sich die Weiterleitung nicht beurteilen
+            let Some(first) = attempt.previous().first() else {
+                let host = attempt.url().host_str().unwrap_or_default().to_owned();
+                return attempt.error(BlockedRedirect(DownloadError::HostNotAllowed(host)));
+            };
             let mut origin = match policy.check(first) {
                 Ok(rule) => *rule,
                 Err(e) => return attempt.error(BlockedRedirect(e)),
@@ -107,7 +137,13 @@ fn build(user_agent: &str, policy: &Arc<HostPolicy>, strict: bool) -> Result<req
             }
         })
     };
-    reqwest::Client::builder()
+    let resolver = PublicMirrorResolver { exempt: policy.rules().iter().map(|r| r.host.to_owned()).collect() };
+    let mut builder = reqwest::Client::builder();
+    // Tests laufen gegen 127.0.0.1 (Adresse, kein Name); der Standardauflöser bleibt dort unverändert
+    if !policy.allows_loopback_http() {
+        builder = builder.dns_resolver(Arc::new(resolver));
+    }
+    builder
         .user_agent(user_agent)
         .https_only(!policy.allows_loopback_http())
         .connect_timeout(Duration::from_secs(15))

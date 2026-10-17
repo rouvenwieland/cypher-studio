@@ -230,6 +230,22 @@ fn validation_rejects_dangerous_or_broken_data() {
     assert!(
         mutated(|c| c.programs[1].releases[0].artifacts[2].signature.as_mut().unwrap().public_keys.clear()).is_err()
     );
+    // macAppName wird als Pfad benutzt (Befund N7): nur ein einzelner Name auf .app
+    for bad in ["../../x.app", "a/b.app", "..\\x.app", "Blender", "Blender.app/..", ".app", "", "C:\\x.app", "x.app "] {
+        assert!(mutated(|c| first_artifact(c).mac_app_name = Some(bad.into())).is_err(), "macAppName {bad:?}");
+    }
+    assert!(mutated(|c| first_artifact(c).mac_app_name = Some("Blender.app".into())).is_ok());
+    // Schlüsseltexte: Länge und Zeichensatz
+    assert!(
+        mutated(|c| c.programs[1].releases[0].artifacts[2].signature.as_mut().unwrap().public_keys =
+            vec!["x".repeat(40_000)])
+        .is_err()
+    );
+    assert!(
+        mutated(|c| c.programs[1].releases[0].artifacts[2].signature.as_mut().unwrap().public_keys =
+            vec!["Schl\u{fc}ssel".into()])
+        .is_err()
+    );
     // Zeiten
     assert!(mutated(|c| c.expires_at = c.generated_at.clone()).is_err());
     assert!(mutated(|c| c.generated_at = "gestern".into()).is_err());
@@ -358,6 +374,23 @@ async fn refresh_takes_a_newer_signed_catalog_and_caches_it() {
     let restarted = h.store(5);
     assert_eq!(restarted.current().catalog.sequence, 5);
     assert_eq!(restarted.current().source, CatalogSourceKind::Cache);
+}
+
+#[tokio::test]
+async fn an_older_signed_catalog_in_the_cache_is_not_used_after_a_newer_one_was_seen() {
+    // Befund N6: ein lokaler Angreifer spielt einen alten, noch gültig signierten Katalog in den Zwischenspeicher
+    let h = Harness::new().await;
+    h.publish("alt", 5);
+    let store = h.store(0);
+    store.refresh_from(&h.http, &[h.url("alt")], &CancellationToken::new()).await.unwrap();
+    assert_eq!(store.current().catalog.sequence, 5);
+    // Beim nächsten Start steht in state.json schon die Sequenz 9 (ein neuerer Katalog war einmal aktiv)
+    let restarted = h.store(9);
+    assert_eq!(restarted.current().source, CatalogSourceKind::Embedded, "der alte Cache wird verworfen");
+    assert_eq!(restarted.current().catalog.sequence, 1);
+    assert_eq!(restarted.highest_seen(), 9);
+    // Ohne höhere gesehene Sequenz bleibt der Cache der beste Katalog
+    assert_eq!(h.store(5).current().source, CatalogSourceKind::Cache);
 }
 
 #[tokio::test]

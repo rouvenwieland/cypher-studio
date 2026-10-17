@@ -77,6 +77,9 @@ fn from_svg(path: &Path, config: &ThumbConfig) -> Result<image::DynamicImage, Li
         return Err(decode_err("SVG", "Datei zu groß"));
     }
     let mut options = resvg::usvg::Options::default();
+    // Bildverweise nur als `data:`-Adresse: ein SVG aus einem Austauschpaket darf keine andere lokale Datei in sein
+    // Vorschaubild ziehen (Befund N13). Der Standard löst auch absolute Pfade zu Dateien auf.
+    options.image_href_resolver.resolve_string = Box::new(|_, _| None);
     {
         let db = options.fontdb_mut();
         for f in &config.fonts {
@@ -211,8 +214,12 @@ fn from_blend(path: &Path) -> Result<image::DynamicImage, LibraryError> {
     img.map(image::DynamicImage::ImageRgba8).ok_or_else(|| decode_err("Blender", "keine eingebettete Vorschau"))
 }
 
-/// Erzeugt das Vorschaubild als PNG-Bytes.
+/// Erzeugt das Vorschaubild als PNG-Bytes. Eine Panik in einem Dekoder (`image`, `resvg`, `zip`) wird zum Fehler.
 pub fn render(path: &Path, config: &ThumbConfig) -> Result<Vec<u8>, LibraryError> {
+    crate::util::catch_panic("Vorschau", || render_unguarded(path, config)).map_err(|e| decode_err("Datei", e))?
+}
+
+fn render_unguarded(path: &Path, config: &ThumbConfig) -> Result<Vec<u8>, LibraryError> {
     let ext = extension_of(&path.to_string_lossy());
     let md = std::fs::metadata(path).map_err(|e| IoError::read(path, e))?;
     if md.len() > MAX_SOURCE_BYTES {
@@ -290,6 +297,22 @@ mod tests {
         let bad = tmp.path().join("b.svg");
         std::fs::write(&bad, b"<svg nicht zu Ende").unwrap();
         assert!(render(&bad, &ThumbConfig::default()).is_err());
+    }
+
+    #[test]
+    fn svg_cannot_pull_other_local_files_into_its_preview() {
+        // Befund N13: `<image href="/pfad/andere.svg">` löste lokale Dateien auf
+        let tmp = tempfile::tempdir().unwrap();
+        let other = tmp.path().join("fremd.svg");
+        std::fs::write(&other, r##"<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#00ff00"/></svg>"##).unwrap();
+        let href = other.to_string_lossy().replace('\\', "/");
+        let main = tmp.path().join("haupt.svg");
+        let svg = format!(
+            r##"<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="100" height="100"><image x="0" y="0" width="100" height="100" href="{href}" xlink:href="{href}"/></svg>"##
+        );
+        std::fs::write(&main, svg).unwrap();
+        let t = decode(&render(&main, &ThumbConfig::default()).unwrap());
+        assert_eq!(t.get_pixel(256, 256).0[3], 0, "fremde Datei darf nicht erscheinen: {:?}", t.get_pixel(256, 256));
     }
 
     #[test]

@@ -75,10 +75,13 @@ pub fn write_sidecar(root: &Path, rel: &str, file: &SidecarFile) -> Result<(), L
     Ok(())
 }
 
-fn image_size(path: &Path) -> (Option<u32>, Option<u32>) {
-    match image::ImageReader::open(path).and_then(|r| r.with_guessed_format()).map(image::ImageReader::into_dimensions)
-    {
-        Ok(Ok((w, h))) => (Some(w), Some(h)),
+/// Breite und Höhe aus dem Bildkopf; ein Fehler oder eine Panik des Dekoders ergibt `(None, None)`.
+pub(crate) fn image_size(path: &Path) -> (Option<u32>, Option<u32>) {
+    let read = || {
+        image::ImageReader::open(path).and_then(|r| r.with_guessed_format()).map(image::ImageReader::into_dimensions)
+    };
+    match crate::util::catch_panic("Bildgröße", read) {
+        Ok(Ok(Ok((w, h)))) => (Some(w), Some(h)),
         _ => (None, None),
     }
 }

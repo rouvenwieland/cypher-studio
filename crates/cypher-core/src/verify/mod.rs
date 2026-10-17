@@ -15,7 +15,7 @@ use tokio_util::sync::CancellationToken;
 use crate::api::IoOp;
 use crate::error::{IoError, VerifyError};
 
-pub use pgp_verify::{PgpTrust, verify_pgp_detached};
+pub use pgp_verify::{KeyValidity, PgpTrust, check_key_validity, primary_validity, verify_pgp_detached};
 
 /// Puffergröße beim Lesen großer Dateien.
 const BUFFER: usize = 1024 * 1024;
@@ -184,7 +184,9 @@ impl TrustedKeys {
 /// Prüft eine minisign-Signatur über `data` gegen die vertrauten Schlüssel; liefert die Schlüssel-ID.
 pub fn verify_minisign(data: &[u8], minisig: &str, keys: &TrustedKeys) -> Result<KeyId, VerifyError> {
     let (key, signature) = keys.for_signature(minisig)?;
-    key.key.verify(data, &signature, true).map_err(|e| VerifyError::Signature(format!("{e}")))?;
+    // `allow_legacy = false`: nur Signaturen über den vorab gehashten Inhalt (BLAKE2b-512) gelten. Die ältere Form
+    // signiert die Rohdaten ohne Hash; wir signieren den Katalog nie so (Befund N5).
+    key.key.verify(data, &signature, false).map_err(|e| VerifyError::Signature(format!("{e}")))?;
     Ok(key.id.clone())
 }
 

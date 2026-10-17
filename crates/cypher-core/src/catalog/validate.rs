@@ -125,10 +125,28 @@ fn check_artifact(path: &str, a: &ArtifactSpec, hosts: &HostPolicy) -> Result<()
     if a.kind == ArtifactKind::Dmg && a.mac_app_name.is_none() {
         return fail(format!("{path}.macAppName"), "dmg braucht den Namen des .app");
     }
+    // `macAppName` wird als Pfad benutzt (`programs/<name>`, `staging/<name>`): genau eine sichere Komponente auf `.app`
+    if let Some(name) = &a.mac_app_name
+        && (fsx::validate_component(name).is_err() || !name.to_ascii_lowercase().ends_with(".app") || name.len() < 5)
+    {
+        return fail(format!("{path}.macAppName"), "ein einzelner Name, der auf .app endet, ohne Pfadteile");
+    }
     if let Some(sig) = &a.signature {
         allowed_url(&format!("{path}.signature.url"), &sig.url, hosts)?;
         if sig.public_keys.is_empty() || sig.fingerprints.is_empty() {
             return fail(format!("{path}.signature"), "Schlüssel und Fingerprints fehlen");
+        }
+        if sig.public_keys.len() > 8
+            || sig.public_keys.iter().any(|k| {
+                k.is_empty()
+                    || k.len() > 32 * 1024
+                    || !k.chars().all(|c| c.is_ascii_graphic() || c == ' ' || c == '\n' || c == '\r')
+            })
+        {
+            return fail(
+                format!("{path}.signature.publicKeys"),
+                "höchstens 8 Schlüssel aus druckbarem ASCII (bis 32 KiB)",
+            );
         }
         if sig.fingerprints.iter().any(|f| f.len() != 40 || !f.bytes().all(|b| b.is_ascii_hexdigit())) {
             return fail(format!("{path}.signature.fingerprints"), "40 Hex-Zeichen erwartet");

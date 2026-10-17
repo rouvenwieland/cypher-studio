@@ -14,8 +14,7 @@ use super::content::check_content;
 use super::plan::{InstallPlanData, cache_extension};
 use super::{appimage, dmg, exe, registry};
 use crate::api::{
-    AppImageMode, ArtifactKind, InstallConsent, InstallEvent, InstallPhase, Installation, IoOp, NetworkPurpose,
-    Settings,
+    ArtifactKind, InstallConsent, InstallEvent, InstallPhase, Installation, IoOp, NetworkPurpose, Settings,
 };
 use crate::catalog::SignatureKind;
 use crate::download::{DownloadProgress, DownloadRequest, HttpClient, fetch_small, fetch_to_file};
@@ -111,12 +110,18 @@ async fn verify_signature(
     let file = file.to_path_buf();
     let spec = spec.clone();
     let token = cancel.clone();
+    // Dokumentierte Ausnahme: nur wenn Cypher die SHA-256 selbst festgenagelt hat, darf eine SHA-1-Signatur zusätzlich gelten
+    let weak_hash_ok = plan.artifact.checksum_origin == crate::catalog::ChecksumOrigin::CypherPinned;
     let checked = blocking(move || -> Result<Result<(), VerifyError>, InstallError> {
         let result = match spec.kind {
             SignatureKind::Pgp => verify_pgp_detached(
                 &file,
                 &sig_bytes,
-                &PgpTrust { public_keys_armored: &spec.public_keys, allowed_fingerprints: &spec.fingerprints },
+                &PgpTrust {
+                    public_keys_armored: &spec.public_keys,
+                    allowed_fingerprints: &spec.fingerprints,
+                    allow_weak_hash: weak_hash_ok,
+                },
             )
             .map(|_| ()),
             SignatureKind::Minisign => {
@@ -337,19 +342,13 @@ async fn extract_into_staging(
             Ok(None)
         }
         ArtifactKind::AppImage => {
+            // Das AppImage wird bei der Installation nie ausgeführt (ARCHITEKTUR 6.4): nur kopieren und ausführbar machen.
+            // Ohne FUSE (oder im Modus „Entpacken“) startet es später mit APPIMAGE_EXTRACT_AND_RUN, also erst durch die
+            // Nutzerin, nach der SHA-256-Prüfung gegen den signierten Katalog.
             let target = fsx::safe_join(staging, &artifact.file_name)
                 .map_err(|e| InstallError::VerificationFailed(e.to_string()))?;
             std::fs::copy(downloaded, &target).map_err(|e| IoError::new(IoOp::Copy, &target, e))?;
             appimage::make_executable(&target)?;
-            let extract_now = match ctx.settings.linux.app_image_mode {
-                AppImageMode::Extract => true,
-                AppImageMode::Direct => false,
-                AppImageMode::Auto => !appimage::fuse2_available(),
-            };
-            if extract_now {
-                let (target, dest, token) = (target.clone(), staging.to_path_buf(), cancel.clone());
-                blocking(move || appimage::extract(&target, &dest, &token)).await?;
-            }
             Ok(None)
         }
         ArtifactKind::Dmg => {

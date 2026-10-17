@@ -142,6 +142,9 @@ impl App {
     }
 
     pub async fn setup_undo(self: &Arc<Self>, req: &SetupUndoReq) -> Result<UndoReport, CoreError> {
+        if !crate::setup::store::is_setup_id(&req.setup_id) {
+            return Err(CoreError::invalid_input("setupId", "Ungültige Kennung der Einrichtung"));
+        }
         let manifest = self
             .setup_store
             .load_manifest(&req.setup_id)?

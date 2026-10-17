@@ -174,9 +174,16 @@ pub fn build(
         Launcher::MsStore { aumid } => {
             let mut args = Vec::new();
             args.push(OsString::from(format!("shell:AppsFolder\\{aumid}")));
-            base(PathBuf::from("explorer.exe"), args, None, vec![])
+            base(windows_explorer(), args, None, vec![])
         }
     })
+}
+
+/// `explorer.exe` aus dem Windows-Ordner (`%SystemRoot%`, sonst `C:\Windows`). Ein bloßer Name würde Rust zuerst im Ordner
+/// der eigenen Exe suchen und dann im `PATH`; dort kann ein anderes Programm liegen (Befund N17).
+fn windows_explorer() -> PathBuf {
+    let root = std::env::var_os("SystemRoot").map(PathBuf::from).filter(|p| p.is_absolute());
+    root.unwrap_or_else(|| PathBuf::from("C:\\Windows")).join("explorer.exe")
 }
 
 /// Entfernt Einträge, die mit dem Ordner `appdir` beginnen, aus einer Pfadliste (`PATH`, `XDG_DATA_DIRS`).
@@ -357,7 +364,12 @@ mod tests {
             &plat(Os::Windows),
         )
         .unwrap();
-        assert_eq!(store.program, Path::new("explorer.exe"));
+        // nie der bloße Name: der Windows-Ordner ist Teil des Pfads
+        assert_ne!(store.program, Path::new("explorer.exe"));
+        assert!(
+            store.program.ends_with("explorer.exe")
+                && store.program.to_string_lossy().to_lowercase().contains("windows")
+        );
         assert_eq!(strings(&store), ["shell:AppsFolder\\49800Krita_x!Krita"]);
         if which::which("flatpak").is_ok() {
             let fp = build(

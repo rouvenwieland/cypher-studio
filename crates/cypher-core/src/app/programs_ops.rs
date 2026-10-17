@@ -454,7 +454,9 @@ impl App {
     // --- Start -------------------------------------------------------------------------------------
 
     pub(crate) fn launcher_for(&self, inst: &Installation) -> Result<Launcher, CoreError> {
-        let fuse = crate::install::appimage::fuse2_available();
+        // Modus „Entpacken“: nie über FUSE starten, das AppImage entpackt sich beim Start selbst
+        let fuse = crate::install::appimage::fuse2_available()
+            && self.settings.get().linux.app_image_mode != crate::api::AppImageMode::Extract;
         if let Some(stored) = self.state.read(|s| s.installations.iter().find(|i| i.id == inst.id).cloned()) {
             return Ok(Launcher::from_stored(&stored, fuse));
         }

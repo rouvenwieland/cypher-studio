@@ -580,13 +580,7 @@ impl Library {
             write_sidecar(&self.root, &rel, &SidecarFile::from_meta(&id, &m, Some(sha.clone())))?;
             let (width_px, height_px) =
                 if matches!(ext.as_str(), "png" | "jpg" | "jpeg" | "webp" | "tif" | "tiff" | "gif" | "bmp") {
-                    match image::ImageReader::open(&target)
-                        .and_then(|r| r.with_guessed_format())
-                        .map(image::ImageReader::into_dimensions)
-                    {
-                        Ok(Ok((w, h))) => (Some(w), Some(h)),
-                        _ => (None, None),
-                    }
+                    scan::image_size(&target)
                 } else {
                     (None, None)
                 };

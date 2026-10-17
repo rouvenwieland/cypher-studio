@@ -121,6 +121,34 @@ async fn check(file: &Path, online: bool, download: bool) -> CliResult {
     for w in warnings {
         println!("Hinweis: {w:?}");
     }
+    // PGP-Schlüssel der Upstream-Signaturen: nicht widerrufen, nicht abgelaufen (die App prüft das zur Signaturzeit)
+    let mut key_problems = 0usize;
+    for program in &parsed.programs {
+        for release in &program.releases {
+            for a in release
+                .artifacts
+                .iter()
+                .filter(|a| a.signature.as_ref().is_some_and(|s| s.kind == catalog::SignatureKind::Pgp))
+            {
+                let Some(sig) = &a.signature else { continue };
+                let label = format!("{} {} {}/{:?}", program.name, release.version, a.os, a.arch);
+                match cypher_core::verify::check_key_validity(
+                    &sig.public_keys,
+                    &sig.fingerprints,
+                    std::time::SystemTime::now(),
+                ) {
+                    Ok(fps) => println!("OK     {label}: PGP-Schlüssel {} gültig", fps.join(", ")),
+                    Err(e) => {
+                        println!("FEHLER {label}: {e}");
+                        key_problems += 1;
+                    }
+                }
+            }
+        }
+    }
+    if key_problems > 0 {
+        return Err(CliError(format!("{key_problems} PGP-Schlüssel widerrufen, abgelaufen oder nicht auffindbar")));
+    }
     if !online && !download {
         return Ok(());
     }

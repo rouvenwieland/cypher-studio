@@ -134,11 +134,8 @@ pub fn plan(
         }
         crate::api::Os::Linux => {
             if artifact.kind == ArtifactKind::AppImage && !input.fuse_available {
-                let fallback = match input.settings.linux.app_image_mode {
-                    crate::api::AppImageMode::Direct => FuseFallback::ExtractAndRun,
-                    _ => FuseFallback::Extracted,
-                };
-                notes.push(InstallNote::LinuxFuseMissing { fallback });
+                // Ohne FUSE entpackt das AppImage sich beim Start selbst; bei der Installation läuft nichts
+                notes.push(InstallNote::LinuxFuseMissing { fallback: FuseFallback::ExtractAndRun });
             }
         }
     }

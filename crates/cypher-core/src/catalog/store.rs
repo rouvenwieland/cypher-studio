@@ -127,8 +127,17 @@ impl CatalogStore {
         let embedded = embedded(&keys, hosts, &app_version)?;
         let cache_dir = dirs.catalog_cache();
         let cached = Self::read_cache(&cache_dir, &keys, hosts, &app_version);
+        // Ein signierter, aber älterer Katalog im Cache (zum Beispiel mit bekannten Lücken, von Hand zurückgespielt) gewinnt
+        // nicht gegen die höchste je gesehene Sequenz (Befund N6)
         let best = match cached {
-            Some(c) if c.catalog.sequence > embedded.catalog.sequence => c,
+            Some(c) if c.catalog.sequence > embedded.catalog.sequence && c.catalog.sequence >= highest_seen => c,
+            Some(c) if c.catalog.sequence > embedded.catalog.sequence => {
+                tracing::warn!(
+                    "zwischengespeicherter Katalog (Sequenz {}) liegt unter der höchsten gesehenen ({highest_seen}) und wird ignoriert",
+                    c.catalog.sequence
+                );
+                embedded
+            }
             _ => embedded,
         };
         let highest = highest_seen.max(best.catalog.sequence);
