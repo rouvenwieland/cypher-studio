@@ -62,3 +62,12 @@ cd apps/desktop && npm run e2e:real
   Einrichtung sehen nur den Testordner), `CYPHER_DEV_DIALOGS=<ordner>` (native Dialoge werden aus `next.json` beantwortet).
 - Installationen laufen nur gegen einen lokalen Test-Server mit kleinen Fixture-Zips und einem mit Testschlüssel signierten Katalog
   (BAU-REGELN 9); echte Programme werden nicht geladen.
+
+## Veröffentlichen (GitHub-Release)
+
+1. Version in `Cargo.toml` (Workspace) und `apps/desktop/src-tauri/tauri.conf.json` gleich setzen, `CHANGELOG.md` und `docs/release-notes/v<Version>.md` schreiben, auf `main` pushen, `ci` muss grün sein.
+2. Tag setzen und pushen: `git tag -a v<Version> -m "…"` und `git push origin v<Version>`. **Achtung:** Trägt der getaggte Commit `[skip ci]` in der Nachricht, startet GitHub auch den Release-Lauf nicht. Dann den Lauf von Hand für den Tag starten: `gh workflow run release.yml --ref v<Version>` (der Workflow erkennt den Tag trotzdem und prüft ihn gegen die Version).
+3. Der Bauauftrag wartet auf die Freigabe im Environment `release` (Actions → Lauf → „Review deployments“ → „Approve and deploy“).
+4. Ergebnis ist ein **Entwurf** mit Installern, `.sig`-Dateien und `latest.json`. Prüfen, Release-Notizen eintragen (`gh release edit v<Version> --notes-file docs/release-notes/v<Version>.md`), dann veröffentlichen.
+5. Seite aktualisieren (nach dem Veröffentlichen): Release-Daten holen (`gh api repos/rouvenwieland/cypher-studio/releases/tags/v<Version> > release-gh.json`, `latest.json` und die Installer mit `gh release download v<Version>` in einen Ordner laden), dann in `site/`:
+   `node scripts/gen-release-json.mjs --github-release release-gh.json --tauri-latest latest.json --files-dir <ordner>` schreibt `public/release.json` und `public/releases/latest.json`; danach `npm run deploy`. Alle Schalter stehen im Kopf von `site/scripts/gen-release-json.mjs`.
