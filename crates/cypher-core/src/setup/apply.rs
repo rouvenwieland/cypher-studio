@@ -98,13 +98,30 @@ fn target_of(roots: &BTreeMap<RootId, String>, root: RootId, rel: &str) -> Optio
     fsx::safe_join(Path::new(roots.get(&root)?), rel).ok()
 }
 
-/// Ordner entfernen, solange sie leer sind (nie die Wurzel selbst).
+/// Name der Markierungsdatei, die fontconfig (z. B. 2.13.1 unter Ubuntu 22.04) beim Auffrischen des Schriftcaches in einen
+/// Schriftordner legt. Sie gehört nicht zum Inhalt, den die Einrichtung angelegt hat.
+const FONTCONFIG_MARKER: &str = ".uuid";
+
+/// Entfernt die fontconfig-Markierung, wenn sie das Einzige ist, was in `dir` noch liegt.
+fn remove_lone_fontconfig_marker(dir: &Path) {
+    let Ok(mut entries) = std::fs::read_dir(dir) else { return };
+    if let Some(Ok(only)) = entries.next()
+        && entries.next().is_none()
+        && only.file_name() == FONTCONFIG_MARKER
+    {
+        let _ = std::fs::remove_file(only.path());
+    }
+}
+
+/// Ordner entfernen, solange sie leer sind (nie die Wurzel selbst). Eine allein verbliebene fontconfig-Markierung zählt
+/// nicht als Inhalt: Sonst bliebe nach dem Zurücknehmen von Schriften ein Ordner mit nur dieser Datei zurück.
 fn prune_empty_parents(file: &Path, root_dir: &Path) {
     let mut dir = file.parent();
     while let Some(d) = dir {
         if d == root_dir || !d.starts_with(root_dir) {
             break;
         }
+        remove_lone_fontconfig_marker(d);
         if std::fs::remove_dir(d).is_err() {
             break;
         }
@@ -599,7 +616,6 @@ fn rollback(
             report.fonts_removed += 1;
         }
     }
-    fonts.flush();
     for e in entries.iter().rev() {
         let Some(target) = target_of(roots, e.root, &e.rel) else { continue };
         if keep.contains(&target) {
@@ -642,6 +658,9 @@ fn rollback(
             }
         }
     }
+    // Erst nach dem Löschen der Dateien: Der Schriftcache soll den Stand ohne die Schriften abbilden (unter Windows geht
+    // die Abmeldung der Löschung ohnehin voraus), und fontconfig legt keine Markierung mehr in Ordner, die schon weg sind
+    fonts.flush();
     report
 }
 

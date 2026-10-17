@@ -64,8 +64,14 @@ test.describe("Bewegung (DESIGN.md Vertrag „Bewegung“)", () => {
     await expect(page.getByTestId("print-output")).toHaveAttribute("data-state", "ready");
     await page.keyboard.press("Control+Enter");
     await expect(page.getByTestId("print-output")).toHaveAttribute("data-state", "done", { timeout: 15_000 });
-    const started = await page.evaluate(() => (window as unknown as { __anim?: string[] }).__anim ?? []);
-    expect(started).toContain("outbar-fill:0.24s");
+    // Der Beginn der Animation wird erst im nächsten Bild gemeldet, nicht im selben Augenblick, in dem das Attribut
+    // gesetzt ist; auf einem ausgelasteten Rechner liegen dazwischen mehrere Bilder. Also auf den Zustand warten.
+    await expect
+      .poll(() => page.evaluate(() => (window as unknown as { __anim?: string[] }).__anim ?? []), {
+        message: "Die Ausgangsleiste füllt sich mit 0,24 s",
+        timeout: 10_000,
+      })
+      .toContain("outbar-fill:0.24s");
   });
 
   test("Einstellung „Voll“ gilt vor dem Systemwunsch, „Reduziert“ vor dem Gegenteil", async ({ page }) => {

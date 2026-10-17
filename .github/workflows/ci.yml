@@ -117,8 +117,13 @@ jobs:
       - name: Clippy (mit dev-tools)
         run: cargo clippy -p cypher-studio -p cypher-cli --all-targets --locked --features dev-tools -- -D warnings
 
+      # --no-fail-fast: Alle Testprogramme laufen, auch wenn eines scheitert; so zeigt ein Lauf jeden Fehler, nicht nur den ersten
+      # CYPHER_EMBED_TEST_MANIFEST: Windows, die Testprogramme der Tauri-Schicht brauchen das Common-Controls-Manifest
+      # (sonst STATUS_ENTRYPOINT_NOT_FOUND beim Start, siehe apps/desktop/src-tauri/build.rs); auf Linux ohne Wirkung
       - name: Tests
-        run: cargo test --workspace --locked
+        env:
+          CYPHER_EMBED_TEST_MANIFEST: "1"
+        run: cargo test --workspace --locked --no-fail-fast
 
       - uses: taiki-e/install-action@8cca0918f8471c33515202b73f56ab27f2bed283 # v2.87.29
         with:
@@ -180,7 +185,9 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Playwright gegen den Mock
         run: npm run e2e
+      # Läuft auch, wenn der Mock-Lauf scheitert, damit ein Lauf beide Ergebnisse zeigt
       - name: Playwright mit Produktions-CSP
+        if: ${{ !cancelled() }}
         run: npm run e2e:csp
 
   site:

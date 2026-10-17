@@ -365,12 +365,27 @@ fn setup_apply_and_undo_work_in_the_isolated_home() {
 
     let undone = env.run(&["setup", "undo", &id]);
     assert!(undone.status.success(), "{}", text(&undone.stderr));
-    assert_eq!(walk_count(&fonts), 0, "nach dem Zurücknehmen liegt nichts mehr da");
+    let left = walk_files(&fonts);
+    assert!(left.is_empty(), "nach dem Zurücknehmen liegt nichts mehr da: {left:?}");
+}
+
+/// Alle Dateien unterhalb von `dir` (auch versteckte), rekursiv.
+#[cfg(target_os = "linux")]
+fn walk_files(dir: &Path) -> Vec<PathBuf> {
+    let mut out = Vec::new();
+    if let Ok(rd) = std::fs::read_dir(dir) {
+        for entry in rd.filter_map(Result::ok) {
+            if entry.path().is_dir() {
+                out.extend(walk_files(&entry.path()));
+            } else {
+                out.push(entry.path());
+            }
+        }
+    }
+    out
 }
 
 #[cfg(target_os = "linux")]
 fn walk_count(dir: &Path) -> usize {
-    std::fs::read_dir(dir)
-        .map(|rd| rd.filter_map(Result::ok).map(|e| if e.path().is_dir() { walk_count(&e.path()) } else { 1 }).sum())
-        .unwrap_or(0)
+    walk_files(dir).len()
 }

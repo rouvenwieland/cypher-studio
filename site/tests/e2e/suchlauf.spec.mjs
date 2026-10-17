@@ -1,5 +1,7 @@
 // Suchlauf der Familie: Orange → Gelb → Cyan, einmal, von außen, jede Eingabe bricht ab, nie bei reduzierter Bewegung.
 // Zeitgrenzen großzügig: Auf geteilten CI-Rechnern startet der erste Schnitt später als lokal; gemessen wird der Ablauf, nicht der Start.
+// Wo der Suchlauf laufen soll, wartet der Test auf den Zustand (Aufzeichnung vollständig), nicht auf einen Zeitpunkt. Die
+// Mindestdauer je Schnitt (800 ms, WCAG 2.3.1) wird weiter aus den aufgezeichneten Zeiten gemessen.
 import { test, expect } from '@playwright/test';
 import { B, open } from './util.mjs';
 
@@ -27,7 +29,9 @@ test('von außen: Orange → Gelb → Cyan, jeder Schnitt mindestens 800 ms (WCA
   const page = await ctx.newPage();
   await record(page);
   await page.goto(B + '/');
-  await page.waitForTimeout(4200);
+  // auf den ganzen Ablauf warten (Ausgangszustand, zwei Schnitte, Rückkehr zu Cyan), dann prüfen, dass Ruhe herrscht
+  await page.waitForFunction(() => window.__rec.length >= 4, null, { timeout: 20_000 });
+  await page.waitForTimeout(1200);
   const rec = await page.evaluate(() => window.__rec);
   expect(rec.map((r) => r[0])).toEqual(['', 'news', 'shop', '']);
   expect(rec.map((r) => r[2])).toEqual([CYAN, ORANGE, YELLOW, CYAN]);
@@ -45,9 +49,9 @@ test('während des Schnitts steht der Kanalname in der Kopfzeile (Kanal 1 News, 
   const ctx = await open(browser, { still: false });
   const page = await ctx.newPage();
   await page.goto(B + '/');
-  await expect(page.locator('.tb[data-on="news"] .m-k[data-ch="news"]')).toBeVisible({ timeout: 8000 });
+  await expect(page.locator('.tb[data-on="news"] .m-k[data-ch="news"]')).toBeVisible({ timeout: 20_000 });
   await expect(page.locator('.m-k[data-ch="studio"]')).toBeHidden();
-  await expect(page.locator('.tb[data-on="shop"] .m-k[data-ch="shop"]')).toBeVisible({ timeout: 8000 });
+  await expect(page.locator('.tb[data-on="shop"] .m-k[data-ch="shop"]')).toBeVisible({ timeout: 20_000 });
   await ctx.close();
 });
 
@@ -57,7 +61,7 @@ test('jede Eingabe bricht ab und stellt Cyan her: Zeigerbewegung, Taste, Scrolle
     const page = await ctx.newPage();
     await record(page);
     await page.goto(B + '/');
-    await expect(page.locator('.tb[data-on="news"]')).toBeVisible({ timeout: 8000 });
+    await expect(page.locator('.tb[data-on="news"]')).toBeVisible({ timeout: 20_000 });
     if (input === 'mouse') await page.mouse.move(300, 300);
     if (input === 'key') await page.keyboard.press('Tab');
     if (input === 'wheel') await page.mouse.wheel(0, 120);
@@ -112,7 +116,7 @@ test('nicht aus der Familie, nicht beim Neuladen, nicht mit Sprungmarke', async 
   page = await ctx.newPage();
   await record(page);
   await page.goto(B + '/', { referer: 'https://example.org/' });
-  await page.waitForTimeout(3600);
+  await page.waitForFunction(() => window.__rec.some((r) => r[0] === 'shop'), null, { timeout: 20_000 });
   expect((await page.evaluate(() => window.__rec)).map((r) => r[0])).toContain('shop');
   await ctx.close();
 });
@@ -122,7 +126,7 @@ test('der Suchlauf verändert Layout und Lesbarkeit nicht: Kennung und Balken bl
   const page = await ctx.newPage();
   await page.goto(B + '/');
   const before = await page.locator('.id').boundingBox();
-  await expect(page.locator('.tb[data-on="shop"]')).toBeVisible({ timeout: 4000 });
+  await expect(page.locator('.tb[data-on="shop"]')).toBeVisible({ timeout: 20_000 });
   const during = await page.locator('.id').boundingBox();
   expect(during).toEqual(before);
   // Tinte auf Gelb und Orange bleibt lesbar (Kontrast steht in tokens.test.mjs)

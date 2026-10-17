@@ -11,7 +11,11 @@ async function measure(browser, base, path, { ua = 'android', viewport = { width
     new PerformanceObserver((l) => { for (const e of l.getEntries()) { window.__m.lcp = e.startTime; window.__m.lcpEl = e.element ? `${e.element.tagName.toLowerCase()}.${e.element.className}` : ''; } }).observe({ type: 'largest-contentful-paint', buffered: true });
     new PerformanceObserver((l) => { for (const e of l.getEntries()) if (!e.hadRecentInput) window.__m.cls += e.value; }).observe({ type: 'layout-shift', buffered: true });
     new PerformanceObserver((l) => { for (const e of l.getEntries()) window.__m.long.push(Math.round(e.duration)); }).observe({ type: 'longtask', buffered: true });
-    new PerformanceObserver((l) => { for (const e of l.getEntries()) window.__m.inp = Math.max(window.__m.inp, e.duration); }).observe({ type: 'event', durationThreshold: 16, buffered: true });
+    // INP zählt nur Eingaben (Zeiger drücken und loslassen, Klick, Tasten), keine Hover-Ereignisse (pointerover, mouseover, ...).
+    // Chromium meldet beim Laden ohne Zutun ein pointerover/mouseover an der Stelle 0,0; seine „Dauer“ reicht bis zum ersten Bild
+    // und ist unter 4x Drosselung ein Ladewert (LCP), keine Reaktionszeit.
+    const INTERACTION = new Set(['pointerdown', 'pointerup', 'mousedown', 'mouseup', 'click', 'touchstart', 'touchend', 'keydown', 'keyup', 'keypress']);
+    new PerformanceObserver((l) => { for (const e of l.getEntries()) if (INTERACTION.has(e.name)) window.__m.inp = Math.max(window.__m.inp, e.duration); }).observe({ type: 'event', durationThreshold: 16, buffered: true });
   });
   const page = await ctx.newPage();
   const cdp = await ctx.newCDPSession(page);

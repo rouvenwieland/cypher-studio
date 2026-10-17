@@ -26,6 +26,13 @@ ignore = [
   "RUSTSEC-2026-0367",
   "RUSTSEC-2026-0368",
   "RUSTSEC-2026-0369",
+  # zbus_names, zvariant, zvariant_derive (nicht mehr eigenständig gepflegt, in zbus 6 aufgegangen; Meldung vom 17.10.2026).
+  # Sie kommen über zbus 5.19 aus tauri-plugin-opener und tauri-plugin-single-instance (nur Linux, D-Bus). Es ist keine
+  # Sicherheitslücke gemeldet, nur der Pflegestatus. Ein Wechsel auf zbus 6 liegt bei den Plugins; die neuesten Fassungen
+  # (3.0.0-alpha.3) sind Vorabfassungen. Erledigt sich mit einem stabilen Plugin-Update (Dependabot meldet es).
+  "RUSTSEC-2026-0370",
+  "RUSTSEC-2026-0371",
+  "RUSTSEC-2026-0372",
 ]
 
 [licenses]

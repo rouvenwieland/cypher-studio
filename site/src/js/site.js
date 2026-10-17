@@ -103,13 +103,19 @@
   function stop() {
     clearTimeout(timer);
     delete tb.dataset.on;
-    inputs.forEach(function (t) { removeEventListener(t, stop, true); });
+    inputs.forEach(function (t) { removeEventListener(t, onInput, true); });
     if (reduce.removeEventListener) reduce.removeEventListener('change', stop);
+  }
+  // Nach dem Layout meldet Chromium eine Mausbewegung ohne Bewegung (gleiche Stelle, movement 0), nur um den Hover-Zustand
+  // zu erneuern. Das ist keine Eingabe der Person und darf den Suchlauf nicht abbrechen.
+  function onInput(e) {
+    if ((e.type === 'pointermove' || e.type === 'mousemove') && e.movementX === 0 && e.movementY === 0) return;
+    stop();
   }
   function step() {
     if (i < order.length) { tb.dataset.on = order[i++]; timer = setTimeout(step, STEP); } else stop();
   }
-  inputs.forEach(function (t) { addEventListener(t, stop, { capture: true, passive: true }); });
+  inputs.forEach(function (t) { addEventListener(t, onInput, { capture: true, passive: true }); });
   if (reduce.addEventListener) reduce.addEventListener('change', stop);
   timer = setTimeout(step, 900);
 })();

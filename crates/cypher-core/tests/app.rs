@@ -1177,7 +1177,9 @@ async fn external_urls_and_reveal_targets_are_resolved_in_rust() {
         .unwrap();
     assert!(path.is_file());
     let by_handle = fx.app.reveal_path(&RevealTarget::FileHandle { handle_id: file.handle.id.clone() }).await.unwrap();
-    assert_eq!(by_handle, path);
+    // Dieselbe Datei: Der Handle merkt sich den Pfad, wie er angelegt wurde; „Im Ordner zeigen“ löst über das Projekt
+    // auf (kanonisch). Unter Windows unterscheiden sich beide, wenn der Ordner einen Kurznamen (`RUNNER~1`) enthält.
+    assert_eq!(std::fs::canonicalize(&by_handle).unwrap(), std::fs::canonicalize(&path).unwrap());
     assert!(
         fx.app
             .reveal_path(&RevealTarget::ProjectFile { project_id: project.id, rel_path: "../x".into() })
