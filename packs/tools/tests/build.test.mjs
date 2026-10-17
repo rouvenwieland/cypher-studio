@@ -56,6 +56,21 @@ test('dist: vollständig, Prüfsummen stimmen, Manifest deckt alle Dateien ab', 
   assert.ok(!walk(out).some((f) => /[\\/](tools|node_modules)[\\/]/.test(f)), 'Werkzeuge gehören nicht in dist');
 });
 
+test('dist: schlank (Risiko R18, .deb/.rpm unter 24 MiB): keine Mockup-Vorschaubilder, die Melange nur einmal, Größenrahmen', () => {
+  const out = mkdtempSync(join(tmpdir(), 'cypher-dist-size-'));
+  tmp.push(out);
+  build({ outDir: out, skipValidate: true });
+  const files = walk(out).map((f) => f.slice(out.length + 1).split('\\').join('/'));
+  assert.deepEqual(files.filter((f) => /^mockups\/[^/]+\/preview\.png$/.test(f)), [], 'preview.png gehört nicht in dist');
+  assert.deepEqual(files.filter((f) => f.startsWith('mockups/') && f.endsWith('heather.png')), ['mockups/common/heather.png']);
+  for (const id of ['tee-front', 'tee-back', 'hoodie-front', 'hoodie-back']) {
+    const tpl = JSON.parse(readFileSync(join(out, 'mockups', id, 'template.json'), 'utf8'));
+    for (const v of tpl.variants) assert.equal(v.layers.heather, '../common/heather.png', id);
+  }
+  const total = files.reduce((n, f) => n + readFileSync(join(out, f)).length, 0);
+  assert.ok(total < 16 * 1024 * 1024, `dist ist ${(total / 1048576).toFixed(1)} MiB, erlaubt sind unter 16 MiB`);
+});
+
 test('dist: zwei Läufe liefern bytegleiche Ausgabe', () => {
   const a = mkdtempSync(join(tmpdir(), 'cypher-dist-a-'));
   const b = mkdtempSync(join(tmpdir(), 'cypher-dist-b-'));

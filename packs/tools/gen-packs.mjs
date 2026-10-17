@@ -8,6 +8,7 @@ import { join, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { PACKS_DIR, loadBrand } from './gen-palettes.mjs';
 import { readFontInfo } from './lib/ttf.mjs';
+import { allTemplates } from './gen-templates.mjs';
 
 const brand = loadBrand();
 const formats = JSON.parse(readFileSync(join(PACKS_DIR, 'shared', 'formats.json'), 'utf8'));
@@ -72,7 +73,10 @@ function krita() {
   const base = 'templates/Cypher'; // relativ zum Paketordner packs/krita
   tpl.push(b.file('vorlage', `${base}/.directory`, 'kritaResources', 'templates/Cypher/.directory'));
   for (const f of ls(`krita/${base}`).filter((n) => n.endsWith('.desktop'))) tpl.push(b.file('vorlage', `${base}/${f}`, 'kritaResources', `templates/Cypher/${f}`));
-  for (const f of ls(`krita/${base}/.source`)) tpl.push(b.file('vorlage', `${base}/.source/${f}`, 'kritaResources', `templates/Cypher/.source/${f}`));
+  // Dieselben .kra liegen als Projektvorlagen (packs/projects/<id>/files) ein zweites Mal im Paket; die Quelle verweist dorthin, damit dist
+  // und die Installer jede Datei nur einmal enthalten (Paketgröße, Risiko R18). Das Ziel in Krita bleibt `templates/Cypher/.source/…`.
+  const projectCopy = new Map(allTemplates().filter((t) => t.copy?.from.endsWith('.kra')).map((t) => [basename(t.copy.from), `../projects/${t.id}/${t.copy.to}`]));
+  for (const f of ls(`krita/${base}/.source`)) tpl.push(b.file('vorlage', projectCopy.get(f) ?? `${base}/.source/${f}`, 'kritaResources', `templates/Cypher/.source/${f}`));
   for (const f of ls(`krita/${base}/.icon`)) tpl.push(b.file('vorlage', `${base}/.icon/${f}`, 'kritaResources', `templates/Cypher/.icon/${f}`));
   b.component({ id: 'templates', kind: 'templates', label: 'Vorlagen: Shirt, Hoodie, Poster, Sticker, Post, Story, Reel-Cover', optional: false, files: tpl, preview: { colors: [], formats: formatLabels, fonts: [] } });
   const fonts = variableFonts().map((src) => b.file('schrift', src, 'kritaResources', `fonts/cypher/${basename(src)}`));

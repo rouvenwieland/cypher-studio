@@ -38,13 +38,13 @@
           "layers": {
             "type": "object",
             "properties": {
-              "mask": { "$ref": "common.schema.json#/$defs/relPath" },
-              "shade": { "$ref": "common.schema.json#/$defs/relPath" },
-              "light": { "$ref": "common.schema.json#/$defs/relPath" },
-              "displace": { "oneOf": [{ "$ref": "common.schema.json#/$defs/relPath" }, { "type": "null" }] },
-              "texture": { "oneOf": [{ "$ref": "common.schema.json#/$defs/relPath" }, { "type": "null" }] },
-              "heather": { "oneOf": [{ "$ref": "common.schema.json#/$defs/relPath" }, { "type": "null" }] },
-              "background": { "oneOf": [{ "$ref": "common.schema.json#/$defs/relPath" }, { "type": "null" }] }
+              "mask": { "$ref": "common.schema.json#/$defs/layerPath" },
+              "shade": { "$ref": "common.schema.json#/$defs/layerPath" },
+              "light": { "$ref": "common.schema.json#/$defs/layerPath" },
+              "displace": { "oneOf": [{ "$ref": "common.schema.json#/$defs/layerPath" }, { "type": "null" }] },
+              "texture": { "oneOf": [{ "$ref": "common.schema.json#/$defs/layerPath" }, { "type": "null" }] },
+              "heather": { "oneOf": [{ "$ref": "common.schema.json#/$defs/layerPath" }, { "type": "null" }] },
+              "background": { "oneOf": [{ "$ref": "common.schema.json#/$defs/layerPath" }, { "type": "null" }] }
             },
             "required": ["mask", "shade", "light", "displace", "texture", "heather", "background"],
             "additionalProperties": false

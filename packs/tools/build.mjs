@@ -3,7 +3,7 @@
 //   <id>/pack.json   mit eingetragenen Prüfsummen (`sha256`: Schlüssel = src, Wert = SHA-256 der Quelldatei)
 //   alle von den Paketen genannten Dateien an ihrem relativen Ort (../shared/… landet in dist/shared/…)
 //   schema/, shared/brand (brand.json, Logos, LICENSE-BRAND.md) samt den dort genannten Schriften, shared/formats.json,
-//   projects/, social/, mockups/ (Team C2, ohne Arbeitsdateien), samples/
+//   projects/, social/, mockups/ (Team C2, ohne Arbeitsdateien und ohne preview.png), samples/
 // und schreibt dist/manifest.json (alle Dateien mit Größe und SHA-256, ohne Zeitstempel: zwei Läufe liefern bytegleiche Ausgabe).
 // Danach wird dist mit validate (--dist) geprüft: Prüfsummen vollständig und richtig.
 //   node packs/tools/build.mjs [--out <ordner>]   (Standard: packs/dist)
@@ -61,7 +61,12 @@ export function build(opts = {}) {
       put(relative(packsDir, abs), data);
     }
     const actionZips = pack.actions.filter((a) => a.type === 'blenderExtensionInstall').map((a) => a.zip);
-    for (const z of actionZips) if (existsSync(join(packsDir, id, z))) put(join(id, z), readFileSync(join(packsDir, id, z)));
+    for (const z of actionZips) {
+      if (!existsSync(join(packsDir, id, z))) continue;
+      const data = readFileSync(join(packsDir, id, z));
+      put(join(id, z), data);
+      sums[z] = sha256(data); // auch die Erweiterung (ZIP) trägt ihre Prüfsumme: der Lader prüft sie vor dem Aufruf von Blender
+    }
     pack.sha256 = Object.fromEntries(sorted(Object.keys(sums)).map((k) => [k, sums[k]]));
     put(`${id}/pack.json`, `${JSON.stringify(pack, null, 2)}\n`);
     packs.push(id);
@@ -75,6 +80,8 @@ export function build(opts = {}) {
   for (const dir of ['projects', 'social', 'samples']) for (const f of walk(join(packsDir, dir))) copyFromSource(relative(packsDir, f));
   for (const f of walk(join(packsDir, 'mockups'))) {
     const rel = relative(packsDir, f).replaceAll('\\', '/');
+    // preview.png sind Prüfbilder der Entwicklung (mehrere MB); die App zeichnet die Vorschau selbst aus den Ebenen
+    if (rel.endsWith('/preview.png')) continue;
     if (!rel.split('/').some((p) => p.startsWith('_') || p.startsWith('.'))) copyFromSource(rel);
   }
 

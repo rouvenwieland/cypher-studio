@@ -36,6 +36,15 @@ fn join(base: &str, rel: &str) -> String {
     if base.is_empty() { rel.to_owned() } else { format!("{base}/{rel}") }
 }
 
+/// Pfad einer Mockup-Ebene unter `packs/`. `../common/…` verweist auf Dateien, die alle Vorlagen teilen
+/// (`mockups/common/heather.png`); sonst liegt die Ebene neben `template.json`. Mehr als dieses eine `../common/` gibt es nicht.
+fn layer_path(base: &str, rel: &str) -> String {
+    match rel.strip_prefix("../common/") {
+        Some(shared) => join(&join(base.rsplit_once('/').map_or("", |(parent, _)| parent), "common"), shared),
+        None => join(base, rel),
+    }
+}
+
 /// Dateiname einer Vorlage ist sicher? (eine einzige Pfadkomponente)
 fn plain_name(name: &str) -> bool {
     !name.is_empty() && !name.contains(['/', '\\', ':']) && name != "." && name != ".."
@@ -86,7 +95,7 @@ pub fn load_mockup_templates(packs_root: &Path) -> Vec<MockupTemplate> {
                     if let Some(layers) = v.get_mut("layers").and_then(Value::as_object_mut) {
                         for (_, value) in layers.iter_mut() {
                             if let Value::String(rel) = value {
-                                *value = asset(&join(&base, rel));
+                                *value = asset(&layer_path(&base, rel));
                             }
                         }
                     }
@@ -180,6 +189,10 @@ mod tests {
         for m in &mockups {
             for v in &m.variants {
                 assert!(v.layers.mask.contains(&format!("mockups/{}/mask.png", m.id)), "{}", v.layers.mask);
+                // die Melange liegt einmal unter mockups/common und lässt sich ausliefern
+                let heather = v.layers.heather.as_deref().unwrap_or_default();
+                assert!(heather.contains("mockups/common/heather.png"), "{heather}");
+                assert!(resolve_asset(&root, "mockups/common/heather.png").is_some());
             }
         }
 
@@ -190,6 +203,16 @@ mod tests {
                 .iter()
                 .all(|s| s.preview_url.as_deref().is_some_and(|u| u.contains(&format!("social/{}/preview.png", s.id))))
         );
+    }
+
+    #[test]
+    fn layer_paths_stay_next_to_the_template_or_in_common() {
+        assert_eq!(layer_path("mockups/tee-front", "mask.png"), "mockups/tee-front/mask.png");
+        assert_eq!(layer_path("mockups/tee-front", "../common/heather.png"), "mockups/common/heather.png");
+        // alles andere bleibt unverändert hinter der Vorlage; `resolve_asset` weist `..` ab
+        let odd = layer_path("mockups/tee-front", "../krita/pack.json");
+        assert_eq!(odd, "mockups/tee-front/../krita/pack.json");
+        assert!(crate::platform::fsx::split_rel(&odd).is_err());
     }
 
     #[test]

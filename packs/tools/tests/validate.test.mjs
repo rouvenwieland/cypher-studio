@@ -165,3 +165,32 @@ test('Mockup (Team C2): Schemaverstoß ist ein Hinweis, mit strict ein Fehler', 
     rmSync(join(copy, 'mockups'), { recursive: true, force: true });
   }
 });
+
+test('Mockup: byte-gleiche Ebenen in mehreren Vorlagen werden gemeldet, eine gemeinsame unter common nicht', () => {
+  const layers = (heather) => ({ mask: 'mask.png', shade: 'shade.png', light: 'light.png', displace: null, texture: null, heather, background: null });
+  const tpl = (id, heather) => ({
+    id, title: id, product: 'tee', view: 'front', canvas: { width: 2000, height: 2500 }, printProfileId: 'shirtigo-tee-front',
+    printArea: { quad: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 1, y: 1 }, { x: 0, y: 1 }] }, displaceStrengthPx: 1,
+    variants: [{ exposure: 'light', layers: layers(heather), colorIds: ['weiss'] }],
+  });
+  const write = (rel, data) => {
+    mkdirSync(dirname(join(copy, rel)), { recursive: true });
+    writeFileSync(join(copy, rel), data);
+  };
+  const duplicates = () => validate({ packsDir: copy, strict: true }).errors.filter((e) => e.includes('byte-gleiche Ebene'));
+  try {
+    for (const id of ['tee-front', 'tee-back']) {
+      for (const f of ['mask', 'shade', 'light']) write(`mockups/${id}/${f}.png`, `${id}-${f}`);
+      write(`mockups/${id}/template.json`, JSON.stringify(tpl(id, 'heather.png')));
+      write(`mockups/${id}/heather.png`, 'gleiche-melange');
+    }
+    assert.equal(duplicates().length, 1, 'zwei Vorlagen mit eigener, byte-gleicher heather.png');
+    rmSync(join(copy, 'mockups/tee-front/heather.png'));
+    rmSync(join(copy, 'mockups/tee-back/heather.png'));
+    write('mockups/common/heather.png', 'gleiche-melange');
+    for (const id of ['tee-front', 'tee-back']) write(`mockups/${id}/template.json`, JSON.stringify(tpl(id, '../common/heather.png')));
+    assert.deepEqual(duplicates(), [], 'einmal unter mockups/common, beide verweisen darauf');
+  } finally {
+    rmSync(join(copy, 'mockups'), { recursive: true, force: true });
+  }
+});

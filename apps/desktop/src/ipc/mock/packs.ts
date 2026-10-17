@@ -35,15 +35,21 @@ const files = import.meta.glob<TemplateFile>("../../../../../packs/mockups/*/tem
   eager: true,
   import: "default",
 });
-const images = import.meta.glob<string>("../../../../../packs/mockups/*/*.png", {
-  eager: true,
-  query: "?url",
-  import: "default",
-});
+const images = import.meta.glob<string>(
+  ["../../../../../packs/mockups/*/*.png", "!../../../../../packs/mockups/*/preview.png"],
+  {
+    eager: true,
+    query: "?url",
+    import: "default",
+  },
+);
 
 function layerUrl(id: string, file: string | null): string | null {
   if (file === null) return null;
-  const key = Object.keys(images).find((k) => k.endsWith(`/mockups/${id}/${file}`));
+  // `../common/heather.png` liegt einmal für alle Vorlagen unter mockups/common (Paketgröße)
+  const shared = file.startsWith("../common/");
+  const rel = shared ? `common/${file.slice("../common/".length)}` : `${id}/${file}`;
+  const key = Object.keys(images).find((k) => k.endsWith(`/mockups/${rel}`));
   const url = key ? images[key] : undefined;
   if (!url) throw new Error(`Ebene fehlt im Paket: ${id}/${file}`);
   return url;

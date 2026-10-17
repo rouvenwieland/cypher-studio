@@ -9,7 +9,7 @@ Ebenen (8 Bit, Leinwand 2000 x 2500):
   light.png         Graustufen auf Schwarz, per screen (leichter Stoffglanz) für helle Stoffe
   light-dark.png    kräftigerer Glanz für dunkle Stoffe (eigene "Aufnahme" des schwarzen Stoffs)
   displace.png      R = dx, G = dy (128 = 0), aus dem Höhenverlauf der Falten
-  heather.png       Graustufen um 128, Melange-Struktur für soft-light
+  ../common/heather.png  Graustufen um 128, Melange-Struktur für soft-light (eine Datei für alle Vorlagen)
 """
 
 import json
@@ -161,8 +161,10 @@ def build_layers(garment_id, work_root, out_root, peak_light=0.13):
     disp = make_displace(height, alpha)
     heather = make_heather((h, w))
     sizes = {}
-    for name, arr in (("mask", mask_img), ("shade", shade), ("light", light_light), ("light-dark", light_dark), ("displace", disp), ("heather", heather)):
+    for name, arr in (("mask", mask_img), ("shade", shade), ("light", light_light), ("light-dark", light_dark), ("displace", disp)):
         sizes[name] = png_io.write_png(out / f"{name}.png", arr)
+    # Die Melange ist für alle Vorlagen gleich (fester Startwert): einmal unter mockups/common, nicht je Vorlage (Paketgröße)
+    sizes["heather"] = png_io.write_png(Path(out_root) / "common" / "heather.png", heather)
     write_template(g, out)
     print(f"{garment_id}: " + ", ".join(f"{k} {v / 1024:.0f} KB" for k, v in sizes.items()))
     return out
@@ -190,7 +192,7 @@ def print_quad_px(g):
 def write_template(g, out_dir):
     """template.json im Format MockupTemplate (packs/schema/mockup.schema.json)."""
     w, h = garments.CANVAS
-    shared = {"mask": "mask.png", "displace": "displace.png", "texture": None, "heather": "heather.png", "background": None}
+    shared = {"mask": "mask.png", "displace": "displace.png", "texture": None, "heather": "../common/heather.png", "background": None}
     data = {
         "$schema": "../../schema/mockup.schema.json",
         "formatVersion": 1,

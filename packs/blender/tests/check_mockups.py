@@ -82,8 +82,8 @@ def check(gid):
 
     # Dateiköpfe
     for name, ctype in COLOR_TYPE.items():
-        path = folder / f"{name}.png"
-        need(path.is_file(), f"{gid}: {name}.png fehlt")
+        path = ROOT / "common" / "heather.png" if name == "heather" else folder / f"{name}.png"
+        need(path.is_file(), f"{gid}: {name}.png fehlt ({path.relative_to(ROOT)})")
         if not path.is_file():
             continue
         w, h, depth, ct = png_header(path)
@@ -113,7 +113,9 @@ def check(gid):
     disp = load(folder / "displace.png")
     need(abs(float(disp[..., 0][inside].mean()) * 255 - 128) < 4 and abs(float(disp[..., 1][inside].mean()) * 255 - 128) < 4, f"{gid}: Displace nicht mittelwertfrei")
     need(float(np.abs(disp[..., 0][inside] * 255 - 128).max()) > 40, f"{gid}: Displace ohne Ausschlag")
-    heather = load(folder / "heather.png")[..., 0]
+    need(not (folder / "heather.png").exists(), f"{gid}: eigene heather.png (gehört einmal nach common/, Paketgröße)")
+    need(all(v["layers"]["heather"] == "../common/heather.png" for v in tpl["variants"]), f"{gid}: heather verweist nicht auf ../common/heather.png")
+    heather = load(ROOT / "common" / "heather.png")[..., 0]
     need(abs(float(heather.mean()) * 255 - 128) < 6 and float(heather.std()) * 255 > 4, f"{gid}: heather Mittel/Streuung")
     print(f"  {gid}: {cw}x{ch}, Maske {coverage:.0%}, Druckfläche {wpx:.0f} x {hpx:.0f} px ({px_per_cm:.1f} px/cm), Shade-Median {np.median(shade[inside]):.3f}")
 

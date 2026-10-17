@@ -23,7 +23,7 @@
         "mask": "mask.png",
         "displace": "displace.png",
         "texture": null,
-        "heather": "heather.png",
+        "heather": "../common/heather.png",
         "background": null,
         "shade": "shade.png",
         "light": "light.png"
@@ -41,7 +41,7 @@
         "mask": "mask.png",
         "displace": "displace.png",
         "texture": null,
-        "heather": "heather.png",
+        "heather": "../common/heather.png",
         "background": null,
         "shade": "shade.png",
         "light": "light-dark.png"

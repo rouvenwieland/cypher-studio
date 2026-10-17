@@ -30,6 +30,13 @@
       "maxLength": 200,
       "pattern": "^(?!/)(?!.*(^|/)\\.\\.?(/|$))(?!.*//)[^\\\\:*?\"<>|\\u0000-\\u001f]+$"
     },
+    "layerPath": {
+      "description": "Ebene einer Mockup-Vorlage: wie relPath (neben template.json), zusätzlich mit führendem \"../common/\" für Dateien, die alle Vorlagen teilen (mockups/common/heather.png liegt nur einmal im Paket).",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "pattern": "^(../common/)?(?!/)(?!.*(^|/)\\.\\.?(/|$))(?!.*//)[^\\\\:*?\"<>|\\u0000-\\u001f]+$"
+    },
     "srcPath": {
       "description": "Quelle innerhalb von packs/: wie relPath, zusätzlich mit führendem \"../\" erlaubt (z. B. ../shared/fonts/…), damit Pakete gemeinsame Dateien nutzen können.",
       "type": "string",

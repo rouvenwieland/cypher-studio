@@ -324,7 +324,14 @@ function checkPack(packsDir, r, reg, dir, { dist }) {
         if (info) r.ok(a.displayName === `${info.fullName} (TrueType)`, 'paket', `${label}: Anzeigename ${a.displayName} passt nicht zu "${info.fullName} (TrueType)"`);
       }
     }
-    if (a.type === 'blenderExtensionInstall') r.ok(pack.programId === 'blender', 'paket', `${label}: blenderExtensionInstall nur im Paket blender`);
+    if (a.type === 'blenderExtensionInstall') {
+      r.ok(pack.programId === 'blender', 'paket', `${label}: blenderExtensionInstall nur im Paket blender`);
+      const zip = join(packDir, a.zip);
+      if (dist && existsSync(zip)) {
+        r.ok(Boolean(pack.sha256?.[a.zip]), 'dist', `${label}: Prüfsumme für ${a.zip} fehlt`);
+        if (pack.sha256?.[a.zip]) r.ok(pack.sha256[a.zip] === sha256(readFileSync(zip)), 'dist', `${label}: Prüfsumme von ${a.zip} stimmt nicht`);
+      }
+    }
   }
   for (const req of pack.requiresPacks) r.ok(existsSync(join(packsDir, req, 'pack.json')), 'paket', `${label}: requiresPacks nennt unbekanntes Paket ${req}`);
   return pack;
@@ -667,6 +674,25 @@ function checkMockups(packsDir, r, reg) {
     if (!t || !validateJson(reg, r, 'mockup', 'mockup', `mockups/${id}/template.json`, t)) continue;
     r.ok(t.id === id, 'mockup', `mockups/${id}: id muss dem Ordnernamen entsprechen`);
     for (const v of t.variants) for (const [k, p] of Object.entries(v.layers)) if (p) r.ok(existsSync(join(dir, id, p)), 'mockup', `mockups/${id}: ${k}-Datei ${p} fehlt`);
+  }
+  // Byte-gleiche Ebenen in mehreren Vorlagen gehören einmal nach mockups/common (Paketgröße, Risiko R18: .deb/.rpm unter 24 MiB)
+  /** @type {Map<string, Set<string>>} Prüfsumme → Orte (aufgelöst) */
+  const places = new Map();
+  for (const id of existsSync(dir) ? readdirSync(dir) : []) {
+    const file = join(dir, id, 'template.json');
+    if (!existsSync(file)) continue;
+    const t = readJson(file, new Report(), 'mockup');
+    for (const v of t?.variants ?? []) {
+      for (const p of Object.values(v.layers ?? {})) {
+        const abs = typeof p === 'string' ? join(dir, id, p) : null;
+        if (!abs || !existsSync(abs)) continue;
+        const sum = createHash('sha256').update(readFileSync(abs)).digest('hex');
+        places.set(sum, (places.get(sum) ?? new Set()).add(relative(dir, abs).split('\\').join('/')));
+      }
+    }
+  }
+  for (const set of places.values()) {
+    r.ok(set.size < 2, 'mockup', `mockups: byte-gleiche Ebene an mehreren Orten (${[...set].join(', ')}): einmal nach mockups/common legen und mit ../common/… verweisen`);
   }
 }
 

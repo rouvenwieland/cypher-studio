@@ -58,15 +58,15 @@
         "vorlage-cypher-shirt-front-desktop",
         "vorlage-cypher-sticker-quadrat-desktop",
         "vorlage-cypher-story-desktop",
-        "vorlage-cypher-hoodie-back-kra",
-        "vorlage-cypher-hoodie-front-kra",
-        "vorlage-cypher-post-kra",
-        "vorlage-cypher-poster-a2-kra",
-        "vorlage-cypher-reel-cover-kra",
-        "vorlage-cypher-shirt-back-kra",
-        "vorlage-cypher-shirt-front-kra",
-        "vorlage-cypher-sticker-quadrat-kra",
-        "vorlage-cypher-story-kra",
+        "vorlage-hoodie-back-kra",
+        "vorlage-hoodie-front-kra",
+        "vorlage-post-kra",
+        "vorlage-poster-a2-kra",
+        "vorlage-reel-cover-kra",
+        "vorlage-shirt-back-kra",
+        "vorlage-shirt-front-kra",
+        "vorlage-sticker-kra",
+        "vorlage-story-kra",
         "vorlage-cypher-hoodie-back-png",
         "vorlage-cypher-hoodie-front-png",
         "vorlage-cypher-post-png",
@@ -249,56 +249,56 @@
       "rel": "templates/Cypher/cypher-story.desktop"
     },
     {
-      "id": "vorlage-cypher-hoodie-back-kra",
-      "src": "templates/Cypher/.source/cypher-hoodie-back.kra",
+      "id": "vorlage-hoodie-back-kra",
+      "src": "../projects/hoodie-back-krita/files/hoodie-back.kra",
       "root": "kritaResources",
       "rel": "templates/Cypher/.source/cypher-hoodie-back.kra"
     },
     {
-      "id": "vorlage-cypher-hoodie-front-kra",
-      "src": "templates/Cypher/.source/cypher-hoodie-front.kra",
+      "id": "vorlage-hoodie-front-kra",
+      "src": "../projects/hoodie-front-krita/files/hoodie-front.kra",
       "root": "kritaResources",
       "rel": "templates/Cypher/.source/cypher-hoodie-front.kra"
     },
     {
-      "id": "vorlage-cypher-post-kra",
-      "src": "templates/Cypher/.source/cypher-post.kra",
+      "id": "vorlage-post-kra",
+      "src": "../projects/post-krita/files/post.kra",
       "root": "kritaResources",
       "rel": "templates/Cypher/.source/cypher-post.kra"
     },
     {
-      "id": "vorlage-cypher-poster-a2-kra",
-      "src": "templates/Cypher/.source/cypher-poster-a2.kra",
+      "id": "vorlage-poster-a2-kra",
+      "src": "../projects/poster-a2-krita/files/poster-a2.kra",
       "root": "kritaResources",
       "rel": "templates/Cypher/.source/cypher-poster-a2.kra"
     },
     {
-      "id": "vorlage-cypher-reel-cover-kra",
-      "src": "templates/Cypher/.source/cypher-reel-cover.kra",
+      "id": "vorlage-reel-cover-kra",
+      "src": "../projects/reel-cover-krita/files/reel-cover.kra",
       "root": "kritaResources",
       "rel": "templates/Cypher/.source/cypher-reel-cover.kra"
     },
     {
-      "id": "vorlage-cypher-shirt-back-kra",
-      "src": "templates/Cypher/.source/cypher-shirt-back.kra",
+      "id": "vorlage-shirt-back-kra",
+      "src": "../projects/shirt-back-krita/files/shirt-back.kra",
       "root": "kritaResources",
       "rel": "templates/Cypher/.source/cypher-shirt-back.kra"
     },
     {
-      "id": "vorlage-cypher-shirt-front-kra",
-      "src": "templates/Cypher/.source/cypher-shirt-front.kra",
+      "id": "vorlage-shirt-front-kra",
+      "src": "../projects/shirt-front-krita/files/shirt-front.kra",
       "root": "kritaResources",
       "rel": "templates/Cypher/.source/cypher-shirt-front.kra"
     },
     {
-      "id": "vorlage-cypher-sticker-quadrat-kra",
-      "src": "templates/Cypher/.source/cypher-sticker-quadrat.kra",
+      "id": "vorlage-sticker-kra",
+      "src": "../projects/sticker-krita/files/sticker.kra",
       "root": "kritaResources",
       "rel": "templates/Cypher/.source/cypher-sticker-quadrat.kra"
     },
     {
-      "id": "vorlage-cypher-story-kra",
-      "src": "templates/Cypher/.source/cypher-story.kra",
+      "id": "vorlage-story-kra",
+      "src": "../projects/story-krita/files/story.kra",
       "root": "kritaResources",
       "rel": "templates/Cypher/.source/cypher-story.kra"
     },
