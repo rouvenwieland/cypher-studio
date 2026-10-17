@@ -28,12 +28,27 @@ cd "$DST/apps/desktop"
 npm ci --no-fund --no-audit --loglevel=error
 OUT="$SRC/dist-builds"
 mkdir -p "$OUT"
+# Updater-Signatur: entweder TAURI_SIGNING_PRIVATE_KEY (+ _PASSWORD) setzen oder CYPHER_KEYS_DIR auf den
+# Schlüsselordner zeigen lassen (updater.key + PASSWORT-SICHERN.txt). Ohne Schlüssel entstehen keine Update-Artefakte.
+UPDATER_CFG=()
+if [[ -z "${TAURI_SIGNING_PRIVATE_KEY:-}" && -n "${CYPHER_KEYS_DIR:-}" && -f "$CYPHER_KEYS_DIR/updater.key" ]]; then
+  TAURI_SIGNING_PRIVATE_KEY="$(cat "$CYPHER_KEYS_DIR/updater.key")"
+  export TAURI_SIGNING_PRIVATE_KEY
+  if [[ -z "${TAURI_SIGNING_PRIVATE_KEY_PASSWORD:-}" && -f "$CYPHER_KEYS_DIR/PASSWORT-SICHERN.txt" ]]; then
+    TAURI_SIGNING_PRIVATE_KEY_PASSWORD="$(sed -n 's/^Passwort: *//p' "$CYPHER_KEYS_DIR/PASSWORT-SICHERN.txt" | tr -d '\r')"
+    export TAURI_SIGNING_PRIVATE_KEY_PASSWORD
+  fi
+fi
+if [[ -z "${TAURI_SIGNING_PRIVATE_KEY:-}" ]]; then
+  echo "Hinweis: kein Updater-Schlüssel gesetzt – Installer ohne Update-Signaturen."
+  UPDATER_CFG=(--config '{"bundle":{"createUpdaterArtifacts":false}}')
+fi
 if [[ "$WHAT" == linux || "$WHAT" == all ]]; then
-  npx tauri build --bundles "${2:-deb,rpm,appimage}" "${@:3}"
+  npx tauri build --bundles "${2:-deb,rpm,appimage}" "${UPDATER_CFG[@]}" "${@:3}"
   find "$DST/target/release/bundle" \( -name '*.deb' -o -name '*.rpm' -o -name '*.AppImage' -o -name '*.sig' \) -newer package.json -exec cp {} "$OUT/" \;
 fi
 if [[ "$WHAT" == windows || "$WHAT" == all ]]; then
-  npx tauri build --runner cargo-xwin --target x86_64-pc-windows-msvc --bundles nsis "${@:3}"
+  npx tauri build --runner cargo-xwin --target x86_64-pc-windows-msvc --bundles nsis "${UPDATER_CFG[@]}" "${@:3}"
   find "$DST/target/x86_64-pc-windows-msvc/release/bundle/nsis" \( -name '*.exe' -o -name '*.sig' \) -newer package.json -exec cp {} "$OUT/" \;
   # Rohdatei plus Ressourcen für Tests ohne Installation (Tauri sucht Ressourcen neben der .exe)
   rm -rf "$OUT/windows-portable" && mkdir -p "$OUT/windows-portable"
@@ -41,7 +56,7 @@ if [[ "$WHAT" == windows || "$WHAT" == all ]]; then
   cp -r "$DST/packs/dist" "$OUT/windows-portable/packs"
 fi
 if [[ "$WHAT" == e2e ]]; then
-  npx tauri build --debug --no-bundle --runner cargo-xwin --target x86_64-pc-windows-msvc --features dev-tools
+  npx tauri build --debug --no-bundle --runner cargo-xwin --target x86_64-pc-windows-msvc --features dev-tools --config '{"bundle":{"createUpdaterArtifacts":false}}'
   rm -rf "$OUT/windows-e2e" && mkdir -p "$OUT/windows-e2e"
   cp "$DST/target/x86_64-pc-windows-msvc/debug/cypher-studio.exe" "$OUT/windows-e2e/"
   cp -r "$DST/packs/dist" "$OUT/windows-e2e/packs"

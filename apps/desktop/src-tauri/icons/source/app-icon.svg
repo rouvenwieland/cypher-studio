@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <!-- Cypher Studio: Testbild-Kennung in Studio-Cyan. Ring = Messspur, Fadenkreuz = Regie, Tintenquadrat = Ausgang. -->
+  <rect width="1024" height="1024" fill="#00d4d8"/>
+  <path d="M512 72v880M72 512h880" stroke="#0d0d0d" stroke-width="28" stroke-opacity=".55"/>
+  <circle cx="512" cy="512" r="330" fill="none" stroke="#0d0d0d" stroke-width="64"/>
+  <rect x="372" y="372" width="280" height="280" fill="#0d0d0d"/>
+</svg>
