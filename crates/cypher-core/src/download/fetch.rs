@@ -221,11 +221,26 @@ async fn verify_and_finish(req: &DownloadRequest, cancel: &CancellationToken) ->
             actual: to_hex(&digest),
         }));
     }
-    if let Err(e) = tokio::fs::rename(&req.part_path, &req.final_path).await {
+    if let Err(e) = rename_with_retry(&req.part_path, &req.final_path).await {
         return Attempt::Fatal(IoError::new(IoOp::Rename, &req.final_path, e).into());
     }
     let _ = tokio::fs::remove_file(meta_path(&req.part_path)).await;
     Attempt::Done(DownloadedFile { path: req.final_path.clone(), size: req.expected_size, sha256: digest })
+}
+
+/// Umbenennen mit Wiederholung bei kurzen Sperren (Windows: Virenscanner prüft die frisch geladene Datei).
+async fn rename_with_retry(from: &Path, to: &Path) -> std::io::Result<()> {
+    let deadline = std::time::Instant::now() + crate::platform::fsx::TRANSIENT_LOCK_PATIENCE;
+    let mut delay = Duration::from_millis(40);
+    loop {
+        match tokio::fs::rename(from, to).await {
+            Err(e) if crate::platform::fsx::is_transient_lock(&e) && std::time::Instant::now() < deadline => {
+                tokio::time::sleep(delay).await;
+                delay = (delay * 2).min(Duration::from_millis(400));
+            }
+            other => return other,
+        }
+    }
 }
 
 async fn attempt_once(

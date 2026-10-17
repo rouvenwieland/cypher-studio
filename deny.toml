@@ -14,19 +14,18 @@ all-features = false
 version = 2
 yanked = "deny"
 ignore = [
-  # Von Tauri/wry/GTK3 transitiv mitgebracht (gtk-rs 0.18 ist nicht mehr gepflegt); kein Einfluss auf unseren Code.
-  "RUSTSEC-2024-0411",
-  "RUSTSEC-2024-0412",
-  "RUSTSEC-2024-0413",
-  "RUSTSEC-2024-0414",
-  "RUSTSEC-2024-0415",
-  "RUSTSEC-2024-0416",
-  "RUSTSEC-2024-0417",
-  "RUSTSEC-2024-0418",
-  "RUSTSEC-2024-0419",
-  "RUSTSEC-2024-0420",
-  "RUSTSEC-2024-0429",
+  # proc-macro-error (unmaintained) kommt über Tauri/GTK3-Bindungen; kein Einfluss auf unseren Code.
   "RUSTSEC-2024-0370",
+  # rsa (Marvin-Angriff, Schlüsselgewinnung über Laufzeitunterschiede) kommt über rPGP. Wir prüfen mit rPGP nur öffentliche
+  # Signaturen (Krita-/Inkscape-AppImage); es gibt keine Entschlüsselung und keine Signatur mit privaten RSA-Schlüsseln.
+  # Upstream hat keine Korrektur ("patched = []").
+  "RUSTSEC-2023-0071",
+  # zip 4.6.1 steckt in tauri-plugin-updater 2.14 (Entpacken von Update-Paketen). Betroffen ist nur `extract()` mit
+  # Symlinks und SUID-Bits; unsere Update-Artefakte sind NSIS-Installer (Windows) und .tar.gz (macOS, Linux), und der eigene
+  # Entpacker nutzt zip 9. Erledigt sich mit einem Update des Plugins, das zip >= 9 verwendet.
+  "RUSTSEC-2026-0367",
+  "RUSTSEC-2026-0368",
+  "RUSTSEC-2026-0369",
 ]
 
 [licenses]
@@ -49,6 +48,8 @@ allow = [
   "OpenSSL",
   "Unlicense",
   "CDLA-Permissive-2.0",
+  # libbz2-rs-sys (Rust-Neuschreibung von bzip2, kommt über zip/sevenz): BSD-ähnliche Lizenz von bzip2
+  "bzip2-1.0.6",
 ]
 
 [bans]

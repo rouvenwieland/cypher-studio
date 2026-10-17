@@ -211,7 +211,7 @@ fn problem_name(p: &InstallationProblem) -> String {
 
 #[test]
 fn all_fixtures_produce_exactly_the_expected_installations() {
-    let dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/detect");
+    let dir = cypher_core::util::repo_root().join("crates/cypher-core/tests/fixtures/detect");
     let cat = catalog();
     let mut count = 0;
     for entry in std::fs::read_dir(&dir).unwrap() {
@@ -229,7 +229,8 @@ fn all_fixtures_produce_exactly_the_expected_installations() {
                 program_id: i.program_id.clone(),
                 kind: kind_name(i.kind),
                 version: i.version.clone(),
-                location: i.location.clone(),
+                // Die Fixtures schreiben `/`; auf Windows setzt `Path::join` ein `\` dazwischen
+                location: i.location.replace('\\', "/"),
                 problems: {
                     let mut p: Vec<String> = i.problems.iter().map(problem_name).collect();
                     p.sort();
@@ -241,6 +242,7 @@ fn all_fixtures_produce_exactly_the_expected_installations() {
         let mut expected: Vec<Expected> = fixture.expect;
         for e in &mut expected {
             e.problems.sort();
+            e.location = e.location.replace('\\', "/");
         }
         expected.sort();
         assert_eq!(actual, expected, "Fixture `{}` ({})", fixture.name, path.file_name().unwrap().to_string_lossy());
@@ -253,7 +255,7 @@ fn all_fixtures_produce_exactly_the_expected_installations() {
 
 #[test]
 fn installation_ids_are_stable_and_distinct() {
-    let dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/detect");
+    let dir = cypher_core::util::repo_root().join("crates/cypher-core/tests/fixtures/detect");
     let fixture: Fixture =
         serde_json::from_slice(&std::fs::read(dir.join("windows-registry-and-paths.json")).unwrap()).unwrap();
     let env = env_from(&fixture);

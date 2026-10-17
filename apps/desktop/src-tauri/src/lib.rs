@@ -153,7 +153,11 @@ mod tests {
     use super::*;
 
     fn root() -> std::path::PathBuf {
-        Path::new(env!("CARGO_MANIFEST_DIR")).join("../../..")
+        // Beim Cross-Build für Windows steht in CARGO_MANIFEST_DIR ein Linux-Pfad; CYPHER_TEST_REPO zeigt auf den echten
+        match std::env::var_os("CYPHER_TEST_REPO") {
+            Some(root) => std::path::PathBuf::from(root),
+            None => Path::new(env!("CARGO_MANIFEST_DIR")).join("../../.."),
+        }
     }
 
     /// Alle Zeichenketten in einem Textabschnitt `"…"` (für die Namenslisten).
@@ -187,14 +191,14 @@ mod tests {
         let registered: BTreeSet<String> = REGISTERED_COMMANDS.iter().map(|s| s.to_string()).collect();
 
         // build.rs: Liste der AppManifest-Commands
-        let build_rs = fs::read_to_string(Path::new(env!("CARGO_MANIFEST_DIR")).join("build.rs")).unwrap();
+        let build_rs = fs::read_to_string(root().join("apps/desktop/src-tauri/build.rs")).unwrap();
         let start = build_rs.find("const COMMANDS: &[&str] = &[").unwrap();
         let list = &build_rs[start..start + build_rs[start..].find("];").unwrap()];
         let in_build: BTreeSet<String> = quoted(list).into_iter().collect();
         assert_eq!(in_build, registered, "build.rs (AppManifest) und registrierte Commands weichen ab");
 
         // permissions/sets.toml: jede Freigabe `allow-<command>` steckt in genau einem Set
-        let sets = fs::read_to_string(Path::new(env!("CARGO_MANIFEST_DIR")).join("permissions/sets.toml")).unwrap();
+        let sets = fs::read_to_string(root().join("apps/desktop/src-tauri/permissions/sets.toml")).unwrap();
         for command in &registered {
             let permission = format!("\"allow-{}\"", command.replace('_', "-"));
             assert_eq!(
@@ -205,7 +209,7 @@ mod tests {
         }
 
         // capabilities/main.json: jedes Set ist freigegeben, sonst nichts außer den Event-Rechten
-        let cap = fs::read_to_string(Path::new(env!("CARGO_MANIFEST_DIR")).join("capabilities/main.json")).unwrap();
+        let cap = fs::read_to_string(root().join("apps/desktop/src-tauri/capabilities/main.json")).unwrap();
         let cap: serde_json::Value = serde_json::from_str(&cap).unwrap();
         let granted: BTreeSet<String> =
             cap["permissions"].as_array().unwrap().iter().map(|p| p.as_str().unwrap().to_owned()).collect();

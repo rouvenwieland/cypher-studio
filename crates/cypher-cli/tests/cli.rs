@@ -17,7 +17,9 @@ use cypher_core::catalog::{
 use sha2::{Digest, Sha256};
 
 fn cypher() -> Command {
-    Command::new(env!("CARGO_BIN_EXE_cypher"))
+    // Beim Cross-Build für Windows steht in CARGO_BIN_EXE_cypher ein Linux-Pfad; CYPHER_TEST_BIN zeigt auf die echte Datei
+    let exe = std::env::var_os("CYPHER_TEST_BIN").unwrap_or_else(|| env!("CARGO_BIN_EXE_cypher").into());
+    Command::new(exe)
 }
 
 fn text(bytes: &[u8]) -> String {
@@ -25,7 +27,7 @@ fn text(bytes: &[u8]) -> String {
 }
 
 fn packs() -> PathBuf {
-    Path::new(env!("CARGO_MANIFEST_DIR")).join("../../packs/dist")
+    cypher_core::util::repo_root().join("packs/dist")
 }
 
 /// Kleiner HTTP-Server (nur GET) in einem Thread: Pfad -> Antwortkörper.

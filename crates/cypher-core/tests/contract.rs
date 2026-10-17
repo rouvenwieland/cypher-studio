@@ -8,14 +8,14 @@
 
 use std::collections::BTreeSet;
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::process::Command;
 
 use cypher_core::api::names::{COMMAND_NAMES, EVENT_NAMES, IPC_CONTRACT_VERSION, RAW_COMMAND_NAMES};
 use cypher_core::api::{EXPORT_IMAGE_MAX_BYTES, EXPORT_IMAGE_META_HEADER, SocialFormat};
 
 fn root() -> PathBuf {
-    Path::new(env!("CARGO_MANIFEST_DIR")).join("../..").canonicalize().unwrap()
+    cypher_core::util::repo_root().canonicalize().unwrap()
 }
 
 fn contract_text() -> String {

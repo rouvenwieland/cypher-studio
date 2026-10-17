@@ -436,7 +436,7 @@ mod tests {
     #[test]
     fn spawn_reports_missing_programs() {
         let spec = LaunchSpec {
-            program: PathBuf::from("/gibt/es/nicht/programm"),
+            program: std::env::temp_dir().join("gibt-es-nicht").join("programm"),
             args: vec![],
             env_remove: vec![],
             env_set: vec![],

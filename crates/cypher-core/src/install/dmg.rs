@@ -167,7 +167,8 @@ mod tests {
             ]
         );
         assert_eq!(calls[1].exe, Path::new("/usr/bin/ditto"));
-        assert_eq!(calls[1].args[0], "/private/tmp/cy-mount/dmg.AbCdEf/Blender.app");
+        // Das Einhängen gibt es nur auf macOS; der Vergleich ist unabhängig vom Trennzeichen des Testsystems
+        assert_eq!(calls[1].args[0].replace('\\', "/"), "/private/tmp/cy-mount/dmg.AbCdEf/Blender.app");
         assert_eq!(calls[2].exe, Path::new("/usr/bin/hdiutil"));
         assert_eq!(calls[2].args, ["detach", "/private/tmp/cy-mount/dmg.AbCdEf", "-force"]);
     }

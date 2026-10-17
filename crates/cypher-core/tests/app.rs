@@ -1,22 +1,24 @@
 //! Die Anwendungsschicht im Zusammenspiel: Programme, Installation gegen den lokalen Test-Server, Einrichtung mit den echten
 //! Paketen, Projekte, Bibliothek, Druckprüfer, Dateien, Diagnose. Alles in Temp-Ordnern, ohne Internet.
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
+// Einige Abläufe (AppImage, Schriften im Linux-Profil) laufen nur unter Unix; auf Windows bleiben deren Hilfen ungenutzt
+#![cfg_attr(windows, allow(unused_imports, dead_code))]
 
 mod common;
 
 use std::io::{Cursor, Write};
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 
 use common::*;
 use cypher_core::api::{
     AddManualReq, Arch, ArtifactKind, BuildChannel, DirSetting, ExportDestination, ExportImageFormat, ExportImageMeta,
     HandleSource, InstallConsent, InstallEvent, InstallKind, InstallPreviewReq, InstallStartReq, InstallationRemoveReq,
-    JobKind, JobOutcome, LaunchReq, LibraryGetReq, LibraryQuery, LibraryUseRootReq, LicenseInfo, Os, PrintAnalyzeReq,
+    JobKind, JobOutcome, LibraryGetReq, LibraryQuery, LibraryUseRootReq, LicenseInfo, Os, PrintAnalyzeReq,
     PrintDestination, PrintExportEvent, PrintExportOptions, PrintExportReq, PrintOverlayReq, ProgramCategory,
     ProjectCreateReq, ProjectFileReq, ProjectFolder, ProjectNewFileReq, ProjectOpenOutcome, ProjectRef,
-    ProjectWriteDocumentReq, ReleaseChannel, RemoveMode, ScanEvent, SetPreferredReq, SettingsPatch, SetupApplyReq,
-    SetupEvent, SetupHistoryReq, SetupPreviewReq, SetupStatus,
+    ProjectWriteDocumentReq, ReleaseChannel, RemoveMode, ScanEvent, SettingsPatch, SetupApplyReq, SetupEvent,
+    SetupHistoryReq, SetupPreviewReq, SetupStatus,
 };
 use cypher_core::app::{App, AppConfig, AppEvent};
 use cypher_core::catalog::{
@@ -32,6 +34,10 @@ use cypher_core::progress::{Collect, ProgressSink};
 use cypher_core::setup::RootsEnv;
 use cypher_core::setup::fonts::RecordingFonts;
 use cypher_core::verify::TrustedKeys;
+
+/// Die Betriebssystem-Seite der Prüfstände: auf Windows läuft derselbe Test mit Windows-Artefakt und `.exe`.
+const TEST_OS: Os = if cfg!(windows) { Os::Windows } else { Os::Linux };
+const EXE: &str = if cfg!(windows) { "demo.exe" } else { "demo" };
 
 fn zip_bytes(entries: &[(&str, &[u8], u32)]) -> Vec<u8> {
     let mut buf = Cursor::new(Vec::new());
@@ -50,7 +56,7 @@ fn zip_bytes(entries: &[(&str, &[u8], u32)]) -> Vec<u8> {
 }
 
 fn packs_root() -> Option<PathBuf> {
-    let p = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../packs/dist");
+    let p = cypher_core::util::repo_root().join("packs/dist");
     p.join("manifest.json").is_file().then_some(p)
 }
 
@@ -75,7 +81,7 @@ impl Fx {
     async fn new() -> Fx {
         let packs = packs_root().expect("packs/dist fehlt");
         let archive = zip_bytes(&[
-            ("demo-1.0.0/demo", b"#!/bin/sh\nexit 0\n", 0o755),
+            (&format!("demo-1.0.0/{EXE}"), b"#!/bin/sh\nexit 0\n", 0o755),
             ("demo-1.0.0/data/readme.txt", b"hallo", 0o644),
         ]);
         let server = TestServer::start(Behavior::new(archive.clone())).await;
@@ -104,7 +110,7 @@ impl Fx {
                 channel: ReleaseChannel::Stable,
                 released_at: None,
                 artifacts: vec![ArtifactSpec {
-                    os: Os::Linux,
+                    os: TEST_OS,
                     arch: ArtifactArch::X86_64,
                     kind: ArtifactKind::Zip,
                     installer_type: None,
@@ -119,7 +125,7 @@ impl Fx {
                     unpacked_size_max: 10_000_000,
                     mac_app_name: None,
                     launch: LaunchSpec {
-                        exe: "demo".into(),
+                        exe: EXE.into(),
                         exe_glob: None,
                         args: vec![],
                         file_args: FileArgs::Append,
@@ -140,7 +146,7 @@ impl Fx {
 
         let mut rules: Vec<HostRule> = EMBEDDED_HOSTS.to_vec();
         rules.push(HostRule { host: "127.0.0.1", redirects: RedirectPolicy::WithinAllowlist });
-        let platform = PlatformInfo::fixed(Os::Linux, Arch::X86_64);
+        let platform = PlatformInfo::fixed(TEST_OS, Arch::X86_64);
         let known = KnownDirs { home: Some(dirs.home.clone()), ..KnownDirs::default() };
         let runner = Arc::new(FakeRunner::new().ok("--version", "Krita 5.3.4.1\n"));
         let fonts = Arc::new(RecordingFonts::default());
@@ -153,7 +159,7 @@ impl Fx {
             path_dirs: vec![],
         };
         let config = AppConfig {
-            roots_env: RootsEnv { os: Os::Linux, known, data_dir: dirs.data.clone(), inkscape_profile_dir: None },
+            roots_env: RootsEnv { os: TEST_OS, known, data_dir: dirs.data.clone(), inkscape_profile_dir: None },
             dirs,
             app_version: "0.3.0".into(),
             build_channel: BuildChannel::Dev,
@@ -287,7 +293,7 @@ async fn install_round_trip_against_the_local_server_into_the_test_folder() {
     let evs = events.take();
     assert!(matches!(evs.first(), Some(InstallEvent::Started { .. })));
     assert!(matches!(evs.last(), Some(InstallEvent::Finished { .. })));
-    assert!(programs_dir.join("demo/1.0.0/demo").is_file());
+    assert!(programs_dir.join("demo/1.0.0").join(EXE).is_file());
     assert!(fx.has_event("jobs:changed") && fx.has_event("programs:changed"));
 
     // Ansicht: verwaltete Installation, bevorzugt, Auftrag im Verlauf
@@ -302,6 +308,7 @@ async fn install_round_trip_against_the_local_server_into_the_test_folder() {
 
     #[cfg(unix)]
     {
+        use cypher_core::api::{LaunchReq, SetPreferredReq};
         let r = fx
             .app
             .program_launch(&LaunchReq { program_id: "demo".into(), installation_id: None, files: None, mode: None })
@@ -342,6 +349,7 @@ async fn install_round_trip_against_the_local_server_into_the_test_folder() {
     let _ = &fx.server;
 }
 
+#[cfg(unix)]
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
 async fn manual_installation_enables_setup_with_the_real_packs_and_undo() {
     let fx = Fx::new().await;
@@ -411,6 +419,7 @@ async fn manual_installation_enables_setup_with_the_real_packs_and_undo() {
     let _ = &fx.runner;
 }
 
+#[cfg(unix)]
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
 async fn fonts_pack_has_a_user_fonts_scope_and_registers_through_the_font_installer() {
     let fx = Fx::new().await;

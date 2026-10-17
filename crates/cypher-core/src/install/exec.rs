@@ -421,7 +421,7 @@ fn register(
     fsx::write_json_atomic(&journal, &entry)?;
 
     if let Some(old) = &old {
-        std::fs::rename(target, old).map_err(|e| IoError::new(IoOp::Rename, target, e))?;
+        fsx::retry_transient(|| std::fs::rename(target, old)).map_err(|e| IoError::new(IoOp::Rename, target, e))?;
     }
     if let Err(e) = fsx::rename_dir_atomic(staging, target) {
         if let Some(old) = &old {

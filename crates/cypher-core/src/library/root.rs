@@ -282,8 +282,14 @@ mod tests {
             validate_root(&inside, &dirs, Os::Linux, &known),
             Err(LibraryError::RootInvalid(LibraryRootInvalidReason::InsideAppData))
         ));
+        #[cfg(unix)]
         assert!(matches!(
             validate_root(Path::new("/usr"), &dirs, Os::Linux, &known),
+            Err(LibraryError::RootInvalid(LibraryRootInvalidReason::SystemDirectory))
+        ));
+        #[cfg(windows)]
+        assert!(matches!(
+            validate_root(Path::new("C:\\Windows"), &dirs, Os::Windows, &known),
             Err(LibraryError::RootInvalid(LibraryRootInvalidReason::SystemDirectory))
         ));
     }

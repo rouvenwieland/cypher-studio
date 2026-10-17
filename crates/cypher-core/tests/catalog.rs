@@ -5,7 +5,6 @@
 mod common;
 
 use std::io::Cursor;
-use std::path::Path;
 use std::sync::Arc;
 
 use common::*;
@@ -18,7 +17,7 @@ use cypher_core::verify::TrustedKeys;
 use tokio_util::sync::CancellationToken;
 
 fn repo_file(rel: &str) -> std::path::PathBuf {
-    Path::new(env!("CARGO_MANIFEST_DIR")).join("../..").join(rel)
+    cypher_core::util::repo_root().join(rel)
 }
 
 fn app_version() -> semver::Version {

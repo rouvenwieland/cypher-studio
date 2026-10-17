@@ -82,6 +82,28 @@ const COMMANDS: &[&str] = &[
     "bgremove_run",
 ];
 
+/// Windows: Die Testprogramme (`cargo test`) brauchen wie die App das Manifest mit Common Controls v6. Ohne es startet die
+/// Testdatei nicht (`STATUS_ENTRYPOINT_NOT_FOUND`), weil die Dialogbibliothek `TaskDialogIndirect` aus Version 6 verlangt.
+/// `tauri-build` bettet das Manifest nur in die App selbst ein.
+fn embed_test_manifest() {
+    const MANIFEST: &str = r#"<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
+  <dependency>
+    <dependentAssembly>
+      <assemblyIdentity type="win32" name="Microsoft.Windows.Common-Controls" version="6.0.0.0" processorArchitecture="*" publicKeyToken="6595b64144ccf1df" language="*"/>
+    </dependentAssembly>
+  </dependency>
+</assembly>
+"#;
+    let windows_msvc = std::env::var("CARGO_CFG_TARGET_OS").is_ok_and(|os| os == "windows")
+        && std::env::var("CARGO_CFG_TARGET_ENV").is_ok_and(|env| env == "msvc");
+    let Some(out_dir) = std::env::var_os("OUT_DIR").filter(|_| windows_msvc) else { return };
+    let file = Path::new(&out_dir).join("test.manifest");
+    if std::fs::write(&file, MANIFEST).is_ok() {
+        println!("cargo:rustc-link-arg-tests=/MANIFEST:EMBED");
+        println!("cargo:rustc-link-arg-tests=/MANIFESTINPUT:{}", file.display());
+    }
+}
+
 fn main() {
     // Ohne gebautes Frontend (`apps/desktop/dist`) bricht `generate_context!` ab. Für `cargo check/clippy/test`
     // im Debug-Profil legen wir deshalb einen Platzhalter an (der Ordner ist gitignored). Release-Builds brauchen
@@ -101,6 +123,7 @@ fn main() {
         let _ = std::fs::create_dir_all(packs_dist);
     }
     println!("cargo:rerun-if-changed=build.rs");
+    embed_test_manifest();
 
     let app = tauri_build::AppManifest::new().commands(COMMANDS);
     if let Err(e) = tauri_build::try_build(tauri_build::Attributes::new().app_manifest(app)) {

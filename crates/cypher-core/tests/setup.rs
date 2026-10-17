@@ -837,7 +837,7 @@ fn summary_reports_not_applied_applied_outdated_and_unsupported() {
 // ---------------------------------------------------------------------------------------------
 
 fn dist_root() -> Option<PathBuf> {
-    let p = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../packs/dist");
+    let p = cypher_core::util::repo_root().join("packs/dist");
     p.join("manifest.json").is_file().then_some(p)
 }
 

@@ -833,7 +833,7 @@ mod tests {
 
     #[test]
     fn real_templates_load() {
-        let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../packs/dist");
+        let root = crate::util::repo_root().join("packs/dist");
         if !root.join("projects").is_dir() {
             return;
         }

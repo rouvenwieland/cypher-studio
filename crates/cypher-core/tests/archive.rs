@@ -7,9 +7,9 @@ use std::path::{Path, PathBuf};
 
 use cypher_core::api::{ArtifactKind, UnsafeEntryReason};
 use cypher_core::error::ArchiveError;
-use cypher_core::install::archive::{
-    ExtractLimits, ExtractOptions, ExtractProgress, extract, verify_no_escaping_links,
-};
+#[cfg(unix)]
+use cypher_core::install::archive::verify_no_escaping_links;
+use cypher_core::install::archive::{ExtractLimits, ExtractOptions, ExtractProgress, extract};
 use cypher_core::progress::{Collect, NoProgress};
 use tokio_util::sync::CancellationToken;
 
@@ -250,10 +250,13 @@ fn zip_rejects_reserved_names_duplicates_and_symlinks() {
         unsafe_reason(run(ArtifactKind::Zip, &sb, &archive, strict(0)).unwrap_err()),
         UnsafeEntryReason::DuplicateEntry
     );
-    // ohne strenge Namen (Linux) sind das zwei verschiedene Dateien
-    let sb = Sandbox::new();
-    let archive = sb.archive("archiv.zip", &zip_with(&[("Readme.txt", b"a", None), ("README.TXT", b"b", None)]));
-    assert_eq!(run(ArtifactKind::Zip, &sb, &archive, relaxed(0, false)).unwrap().files, 2);
+    // ohne strenge Namen (Linux) sind das zwei verschiedene Dateien; auf Windows ist es dieselbe Datei
+    #[cfg(not(windows))]
+    {
+        let sb = Sandbox::new();
+        let archive = sb.archive("archiv.zip", &zip_with(&[("Readme.txt", b"a", None), ("README.TXT", b"b", None)]));
+        assert_eq!(run(ArtifactKind::Zip, &sb, &archive, relaxed(0, false)).unwrap().files, 2);
+    }
 
     // Symlink-Eintrag (Unix-Modus 120000) wird nie angelegt
     let sb = Sandbox::new();
@@ -400,6 +403,11 @@ fn tar_rejects_path_attacks_hardlinks_devices_and_duplicates() {
         ),
     ];
     for (label, tar, expected) in attacks {
+        // Auf Windows legt die App nie Symlinks an (das Archiv kommt dort aus zip); der Schreibversuch durch einen
+        // harmlosen Link scheitert dort schon beim Anlegen des Links
+        if cfg!(windows) && label == "durch-symlink-schreiben" {
+            continue;
+        }
         for (kind, bytes) in [(ArtifactKind::TarXz, xz(&tar)), (ArtifactKind::TarGz, gz(&tar))] {
             let sb = Sandbox::new();
             let archive = sb.archive("archiv.bin", &bytes);

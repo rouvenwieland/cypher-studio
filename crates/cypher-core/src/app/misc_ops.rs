@@ -317,7 +317,7 @@ impl App {
         }
         tmp.as_file().sync_all().map_err(|e| IoError::write(dest, e))?;
         fsx::set_shareable_mode(tmp.as_file());
-        tmp.persist(dest).map_err(|e| IoError::write(dest, e.error))?;
+        fsx::persist_with_retry(tmp, dest).map_err(|e| IoError::write(dest, e))?;
         Ok(self.handles.register(dest, HandleSource::Export)?)
     }
 

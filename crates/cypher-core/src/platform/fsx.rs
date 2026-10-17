@@ -81,13 +81,39 @@ pub fn duplicate_key(rel: &str) -> String {
     rel.replace('\\', "/").nfc().collect::<String>().to_lowercase()
 }
 
+/// Pfade ab dieser Länge behalten unter Windows das Präfix `\\?\` (ohne es wären sie für ältere Programme unbrauchbar).
+#[cfg(windows)]
+const VERBATIM_KEEP_FROM: usize = 250;
+
+/// Windows liefert `canonicalize` mit dem Präfix `\\?\`. Das gehört weder in Anzeigen noch in Programmargumente (Krita,
+/// Blender) oder den Dateimanager; kurze Pfade werden zurückverwandelt (`\\?\C:\x` zu `C:\x`, `\\?\UNC\s\f` zu `\\s\f`).
+/// Auf anderen Systemen unverändert.
+pub fn simplify_path(path: PathBuf) -> PathBuf {
+    #[cfg(windows)]
+    {
+        let text = path.to_string_lossy().into_owned();
+        if text.len() < VERBATIM_KEEP_FROM {
+            if let Some(rest) = text.strip_prefix(r"\\?\UNC\") {
+                return PathBuf::from(format!(r"\\{rest}"));
+            }
+            if let Some(rest) = text.strip_prefix(r"\\?\") {
+                let bytes = rest.as_bytes();
+                if bytes.len() >= 2 && bytes[0].is_ascii_alphabetic() && bytes[1] == b':' {
+                    return PathBuf::from(rest);
+                }
+            }
+        }
+    }
+    path
+}
+
 fn canonicalize_existing_prefix(path: &Path) -> Result<PathBuf, IoError> {
     let mut existing = path.to_path_buf();
     let mut rest: Vec<std::ffi::OsString> = Vec::new();
     loop {
         match fs::canonicalize(&existing) {
             Ok(canon) => {
-                let mut out = canon;
+                let mut out = simplify_path(canon);
                 for comp in rest.iter().rev() {
                     out.push(comp);
                 }
@@ -108,8 +134,9 @@ fn canonicalize_existing_prefix(path: &Path) -> Result<PathBuf, IoError> {
 /// Löst Symlinks auf (soweit der Pfad existiert) und prüft, dass `candidate` unterhalb von `base` liegt.
 /// Liefert den aufgelösten Pfad.
 pub fn ensure_within(base: &Path, candidate: &Path) -> Result<PathBuf, EnsureWithinError> {
-    let base_canon =
-        fs::canonicalize(base).map_err(|e| EnsureWithinError::Io(IoError::new(IoOp::Metadata, base, e)))?;
+    let base_canon = simplify_path(
+        fs::canonicalize(base).map_err(|e| EnsureWithinError::Io(IoError::new(IoOp::Metadata, base, e)))?,
+    );
     let cand_canon = canonicalize_existing_prefix(candidate).map_err(EnsureWithinError::Io)?;
     if cand_canon.starts_with(&base_canon) { Ok(cand_canon) } else { Err(EnsureWithinError::Path(PathError::Escapes)) }
 }
@@ -149,6 +176,58 @@ pub fn sanitize_file_name(name: &str) -> String {
     out
 }
 
+/// So lange wird bei einer kurzen Sperre höchstens wiederholt.
+pub const TRANSIENT_LOCK_PATIENCE: std::time::Duration = std::time::Duration::from_secs(10);
+
+/// Windows: Virenscanner, Indexdienst und Explorer halten frisch geschriebene Dateien kurz offen; Umbenennen scheitert dann
+/// mit „Zugriff verweigert“ (5) oder einer Freigabeverletzung (32, 33). Auf anderen Systemen gibt es das nicht.
+pub fn is_transient_lock(error: &std::io::Error) -> bool {
+    cfg!(windows)
+        && (error.kind() == std::io::ErrorKind::PermissionDenied || matches!(error.raw_os_error(), Some(5 | 32 | 33)))
+}
+
+/// Führt `op` aus und wiederholt es bei einer kurzen Sperre (Wartezeit wächst von 40 auf 400 ms), höchstens `patience` lang.
+pub fn retry_while<T>(
+    patience: std::time::Duration,
+    transient: impl Fn(&std::io::Error) -> bool,
+    mut op: impl FnMut() -> std::io::Result<T>,
+) -> std::io::Result<T> {
+    let deadline = std::time::Instant::now() + patience;
+    let mut delay = std::time::Duration::from_millis(40);
+    loop {
+        match op() {
+            Err(e) if transient(&e) && std::time::Instant::now() < deadline => {
+                std::thread::sleep(delay);
+                delay = (delay * 2).min(std::time::Duration::from_millis(400));
+            }
+            other => return other,
+        }
+    }
+}
+
+/// [`retry_while`] mit der Sperrenprüfung des Betriebssystems.
+pub fn retry_transient<T>(op: impl FnMut() -> std::io::Result<T>) -> std::io::Result<T> {
+    retry_while(TRANSIENT_LOCK_PATIENCE, is_transient_lock, op)
+}
+
+/// `persist` mit Wiederholung bei kurzen Sperren des Ziels (siehe [`is_transient_lock`]).
+pub fn persist_with_retry(tmp: tempfile::NamedTempFile, path: &Path) -> std::io::Result<()> {
+    let deadline = std::time::Instant::now() + TRANSIENT_LOCK_PATIENCE;
+    let mut delay = std::time::Duration::from_millis(40);
+    let mut tmp = tmp;
+    loop {
+        match tmp.persist(path) {
+            Ok(_) => return Ok(()),
+            Err(e) if is_transient_lock(&e.error) && std::time::Instant::now() < deadline => {
+                std::thread::sleep(delay);
+                delay = (delay * 2).min(std::time::Duration::from_millis(400));
+                tmp = e.file;
+            }
+            Err(e) => return Err(e.error),
+        }
+    }
+}
+
 /// Temp-Dateien entstehen mit den Rechten `0600`. Was die Nutzerin weitergibt oder wovon andere Programme lesen
 /// (Exporte, Pakete, Diagnose, Einstellungen), soll die üblichen Rechte `0644` haben. Unter Windows ohne Wirkung.
 pub fn set_shareable_mode(file: &std::fs::File) {
@@ -174,7 +253,7 @@ pub fn write_atomic(path: &Path, bytes: &[u8]) -> Result<(), IoError> {
     tmp.write_all(bytes).map_err(|e| IoError::write(path, e))?;
     tmp.as_file().sync_all().map_err(|e| IoError::write(path, e))?;
     set_shareable_mode(tmp.as_file());
-    tmp.persist(path).map_err(|e| IoError::new(IoOp::Rename, path, e.error))?;
+    persist_with_retry(tmp, path).map_err(|e| IoError::new(IoOp::Rename, path, e))?;
     Ok(())
 }
 
@@ -230,7 +309,7 @@ pub fn rename_dir_atomic(from: &Path, to: &Path) -> Result<(), IoError> {
     if let Some(parent) = to.parent() {
         fs::create_dir_all(parent).map_err(|e| IoError::new(IoOp::CreateDir, parent, e))?;
     }
-    fs::rename(from, to).map_err(|e| IoError::new(IoOp::Rename, from, e))
+    retry_transient(|| fs::rename(from, to)).map_err(|e| IoError::new(IoOp::Rename, from, e))
 }
 
 /// Löscht einen Ordner samt Inhalt, aber nur unterhalb von `managed_root` und nie `managed_root` selbst.
@@ -375,6 +454,46 @@ mod tests {
         assert_eq!(fs::read(&file).unwrap(), b"zwei");
         let names: Vec<_> = fs::read_dir(file.parent().unwrap()).unwrap().map(|e| e.unwrap().file_name()).collect();
         assert_eq!(names.len(), 1, "{names:?}");
+    }
+
+    #[test]
+    fn retry_while_repeats_only_transient_errors_and_only_for_the_patience_given() {
+        use std::time::Duration;
+        let mut calls = 0;
+        let ok = retry_while(
+            Duration::from_secs(5),
+            |_| true,
+            || {
+                calls += 1;
+                if calls < 3 { Err(std::io::Error::other("gesperrt")) } else { Ok(calls) }
+            },
+        );
+        assert_eq!(ok.unwrap(), 3);
+
+        let mut calls = 0;
+        let failed: std::io::Result<()> = retry_while(
+            Duration::from_secs(5),
+            |_| false,
+            || {
+                calls += 1;
+                Err(std::io::Error::other("endgültig"))
+            },
+        );
+        assert!(failed.is_err());
+        assert_eq!(calls, 1, "nicht kurzzeitige Fehler werden nicht wiederholt");
+
+        let started = std::time::Instant::now();
+        let gave_up: std::io::Result<()> =
+            retry_while(Duration::from_millis(150), |_| true, || Err(std::io::Error::other("immer gesperrt")));
+        assert!(gave_up.is_err());
+        assert!(started.elapsed() < Duration::from_secs(3));
+    }
+
+    #[test]
+    fn only_windows_treats_access_denied_as_a_short_lock() {
+        let denied = std::io::Error::from(std::io::ErrorKind::PermissionDenied);
+        assert_eq!(is_transient_lock(&denied), cfg!(windows));
+        assert!(!is_transient_lock(&std::io::Error::from(std::io::ErrorKind::NotFound)));
     }
 
     #[cfg(unix)]

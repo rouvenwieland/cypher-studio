@@ -198,7 +198,7 @@ pub fn export(
     zip.finish().map_err(|e| invalid(e.to_string()))?;
     tmp.as_file().sync_all().map_err(|e| IoError::write(dest, e))?;
     crate::platform::fsx::set_shareable_mode(tmp.as_file());
-    tmp.persist(dest).map_err(|e| IoError::write(dest, e.error))?;
+    crate::platform::fsx::persist_with_retry(tmp, dest).map_err(|e| IoError::write(dest, e))?;
     Ok(entries.len())
 }
 
@@ -464,7 +464,8 @@ pub fn import(
                     report.imported += 1;
                 }
                 crate::platform::fsx::set_shareable_mode(tmp.as_file());
-                tmp.persist(&target).map_err(|e| IoError::new(crate::api::IoOp::Rename, &target, e.error))?;
+                crate::platform::fsx::persist_with_retry(tmp, &target)
+                    .map_err(|e| IoError::new(crate::api::IoOp::Rename, &target, e))?;
                 if let Some(mut s) = rel_sidecar {
                     if final_rel != entry.rel_path || read_sidecar(root, &final_rel).is_some() {
                         s.id = new_id();

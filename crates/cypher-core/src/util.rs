@@ -26,6 +26,16 @@ pub fn parse_iso(text: &str) -> Option<OffsetDateTime> {
     OffsetDateTime::parse(text, &Rfc3339).ok()
 }
 
+/// Wurzel des Repositories, nur für Tests. Beim Cross-Build für Windows (`cargo xwin` in der WSL) steht in
+/// `CARGO_MANIFEST_DIR` ein Linux-Pfad (`/mnt/c/...`); dann zeigt `CYPHER_TEST_REPO` auf den Windows-Pfad.
+#[cfg(any(test, feature = "test-util"))]
+pub fn repo_root() -> std::path::PathBuf {
+    match std::env::var_os("CYPHER_TEST_REPO") {
+        Some(root) => std::path::PathBuf::from(root),
+        None => std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../.."),
+    }
+}
+
 /// Neue zufällige ID (UUID v4, klein geschrieben).
 pub fn new_id() -> String {
     uuid::Uuid::new_v4().to_string()

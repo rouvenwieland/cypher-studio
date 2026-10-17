@@ -155,7 +155,7 @@ mod tests {
     use super::*;
 
     fn root() -> Option<std::path::PathBuf> {
-        let p = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../packs/dist");
+        let p = crate::util::repo_root().join("packs/dist");
         p.join("shared/brand/brand.json").is_file().then_some(p)
     }
 

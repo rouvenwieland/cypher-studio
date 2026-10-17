@@ -5,7 +5,8 @@ use std::sync::Mutex;
 
 use clap::{Args, ValueEnum};
 use cypher_core::api::{
-    InstallConsent, InstallEvent, InstallPlan, InstallPreviewReq, InstallStartReq, Installation, ReleaseChannel,
+    DownloadsPatch, InstallConsent, InstallEvent, InstallPlan, InstallPreviewReq, InstallStartReq, Installation,
+    ReleaseChannel, SettingsPatch,
 };
 use cypher_core::progress::ProgressSink;
 use cypher_core::util::{human_bytes, now_iso};
@@ -32,6 +33,9 @@ pub struct InstallArgs {
     /// Plan bestätigen (Quelle, Prüfsumme, Lizenz und Ziel stimmen) und installieren
     #[arg(long)]
     yes: bool,
+    /// Die geladene Datei nach der Installation behalten (Probe: für den Negativtest mit veränderter Datei)
+    #[arg(long)]
+    keep_download: bool,
 }
 
 /// Der Plan in lesbarer Form, so wie ihn die App im Installationsdialog zeigt.
@@ -132,6 +136,12 @@ pub async fn run(global: &Global, args: InstallArgs) -> CliResult {
         target_dir: plan.target.dir.clone(),
         accepted_at: now_iso(),
     };
+    if args.keep_download {
+        app.settings_update(&SettingsPatch {
+            downloads: Some(DownloadsPatch { keep_cache: Some(true), max_parallel: None }),
+            ..SettingsPatch::default()
+        })?;
+    }
     let printer = Printer { last_percent: Mutex::new(0) };
     let installation = app.install_start(&InstallStartReq { plan_id: plan.plan_id, consent }, &printer).await?;
     println!("{}", render_result(&installation));
