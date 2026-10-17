@@ -4,6 +4,8 @@ mod boot;
 mod close_guard;
 mod commands;
 mod ctx;
+#[cfg(feature = "dev-tools")]
+mod dev;
 mod dialogs;
 mod dragdrop;
 mod events;
@@ -104,23 +106,31 @@ register_commands! {
 pub fn run() -> tauri::Result<()> {
     let builder = tauri::Builder::default();
 
+    // Ein Testlauf im eigenen Datenordner (nur Debug-Build, `CYPHER_STUDIO_DATA_DIR`) darf weder eine laufende App des
+    // Nutzers stören noch deren Fensterzustand überschreiben: ohne Einzelinstanz-Sperre und ohne gespeicherte Fenstergröße.
+    let isolated = boot::isolated_test_run();
+
     // Desktop-Plugins. `single-instance` muss als erstes Plugin stehen.
     #[cfg(desktop)]
-    let builder = builder.plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
-        // Zweiter Start: vorhandenes Fenster nach vorn holen.
-        if let Some(window) = app.get_webview_window("main") {
-            let _ = window.unminimize();
-            let _ = window.set_focus();
-        }
-    }));
+    let builder = if isolated {
+        builder
+    } else {
+        builder.plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+            // Zweiter Start: vorhandenes Fenster nach vorn holen.
+            if let Some(window) = app.get_webview_window("main") {
+                let _ = window.unminimize();
+                let _ = window.set_focus();
+            }
+        }))
+    };
 
     let builder = builder.plugin(tauri_plugin_dialog::init()).plugin(tauri_plugin_opener::init());
 
     #[cfg(desktop)]
-    let builder = builder
-        .plugin(tauri_plugin_updater::Builder::new().build())
-        .plugin(tauri_plugin_process::init())
-        .plugin(tauri_plugin_window_state::Builder::default().build());
+    let builder = builder.plugin(tauri_plugin_updater::Builder::new().build()).plugin(tauri_plugin_process::init());
+    #[cfg(desktop)]
+    let builder =
+        if isolated { builder } else { builder.plugin(tauri_plugin_window_state::Builder::default().build()) };
 
     builder
         .register_asynchronous_uri_scheme_protocol(protocols::CYFILE, protocols::handler(protocols::CYFILE))
@@ -175,6 +185,16 @@ mod tests {
         let mut all = section("COMMAND_NAMES");
         all.extend(section("RAW_COMMAND_NAMES"));
         all
+    }
+
+    #[test]
+    fn updater_endpoints_use_the_one_set_of_addresses() {
+        let conf = fs::read_to_string(root().join("apps/desktop/src-tauri/tauri.conf.json")).unwrap();
+        let conf: serde_json::Value = serde_json::from_str(&conf).unwrap();
+        let endpoints: Vec<&str> =
+            conf["plugins"]["updater"]["endpoints"].as_array().unwrap().iter().map(|e| e.as_str().unwrap()).collect();
+        assert_eq!(endpoints, [cypher_core::sites::UPDATE_SITE_URL, cypher_core::sites::UPDATE_REPOSITORY_URL]);
+        assert_eq!(conf["version"].as_str().unwrap(), env!("CARGO_PKG_VERSION"), "tauri.conf.json: Version");
     }
 
     #[test]

@@ -126,6 +126,37 @@ impl AppConfig {
     }
 }
 
+#[cfg(any(test, feature = "test-util"))]
+impl AppConfig {
+    /// Nur Tests und Entwicklung (E2E gegen die echte App): Erkennung, Einrichtung und Schriften sehen nichts vom echten
+    /// Rechner. Alles Bekannte (Heimat, AppData, Programme) liegt unter `dirs.home`; die Windows-Programmliste und `PATH`
+    /// bleiben leer; Schriften werden nicht angemeldet.
+    pub fn isolate_from_system(&mut self) {
+        use crate::detect::{DetectEnv, NoRegistry, RealFs};
+        use crate::platform::KnownDirs;
+
+        let home = self.dirs.home.clone();
+        let known = KnownDirs {
+            home: Some(home.clone()),
+            appdata: Some(home.join("AppData").join("Roaming")),
+            local_appdata: Some(home.join("AppData").join("Local")),
+            program_files: Vec::new(),
+            xdg_config_home: Some(home.join(".config")),
+            xdg_data_home: Some(home.join(".local").join("share")),
+        };
+        self.detect_env = Arc::new(DetectEnv {
+            platform: crate::platform::current(),
+            known: known.clone(),
+            fs: Arc::new(RealFs),
+            cmd: self.runner.clone(),
+            registry: Arc::new(NoRegistry),
+            path_dirs: Vec::new(),
+        });
+        self.roots_env = RootsEnv { known, inkscape_profile_dir: None, ..self.roots_env.clone() };
+        self.fonts = Arc::new(crate::setup::fonts::NoFontRegistration);
+    }
+}
+
 /// Marke und Vorlagen der Module, einmal geladen.
 pub(crate) struct BrandBundle {
     pub brand: crate::api::Brand,

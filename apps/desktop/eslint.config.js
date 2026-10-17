@@ -35,11 +35,11 @@ export default tseslint.config(
     },
   },
   {
-    files: ["src/i18n/**", "src/**/*.test.{ts,tsx}", "e2e/**", "src/ipc/mock/**", "src/test-setup.ts"],
+    files: ["src/i18n/**", "src/**/*.test.{ts,tsx}", "e2e/**", "e2e-real/**", "src/ipc/mock/**", "src/test-setup.ts"],
     rules: { "no-restricted-syntax": "off" },
   },
   {
-    files: ["e2e/**", "src/**/*.test.{ts,tsx}"],
+    files: ["e2e/**", "e2e-real/**", "src/**/*.test.{ts,tsx}"],
     rules: {
       "@typescript-eslint/no-unsafe-assignment": "off",
       "@typescript-eslint/no-unsafe-member-access": "off",

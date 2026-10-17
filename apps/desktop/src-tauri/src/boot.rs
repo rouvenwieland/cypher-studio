@@ -35,6 +35,11 @@ fn packs_root(bundled: PathBuf) -> PathBuf {
     if dev.join("manifest.json").is_file() { dev } else { bundled }
 }
 
+/// Läuft die App als Testlauf im eigenen Datenordner? Nur im Debug-Build und nur mit `CYPHER_STUDIO_DATA_DIR`.
+pub fn isolated_test_run() -> bool {
+    cfg!(debug_assertions) && std::env::var_os("CYPHER_STUDIO_DATA_DIR").is_some_and(|v| !v.is_empty())
+}
+
 fn build_core<R: Runtime>(app: &AppHandle<R>) -> Result<(Arc<App>, Option<WorkerGuard>), Box<dyn Error>> {
     let resources = app.path().resource_dir().unwrap_or_default();
     let dirs = AppDirs::discover(resources)?;
@@ -44,6 +49,8 @@ fn build_core<R: Runtime>(app: &AppHandle<R>) -> Result<(Arc<App>, Option<Worker
     tracing::info!("Cypher Studio {version} startet");
     let mut config = AppConfig::system(dirs, &version, build_channel())?;
     config.packs_root = packs_root(config.packs_root);
+    #[cfg(feature = "dev-tools")]
+    crate::dev::apply(&mut config)?;
     let core = App::new(config, events::event_sink(app.clone()))?;
     Ok((core, guard))
 }

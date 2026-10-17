@@ -66,6 +66,10 @@ pub async fn pick_files<R: Runtime>(
     purpose: FilePurpose,
     multiple: bool,
 ) -> Result<Vec<PathBuf>, AppError> {
+    #[cfg(feature = "dev-tools")]
+    if let Some(answer) = crate::dev::scripted_dialog() {
+        return Ok(if multiple { answer } else { answer.into_iter().take(1).collect() });
+    }
     let app = app.clone();
     run(move || {
         let filter = filter_for(purpose);
@@ -85,6 +89,10 @@ pub async fn pick_files<R: Runtime>(
 
 /// Eine Programmdatei wählen (Windows `.exe`, macOS `.app`, Linux jede Datei).
 pub async fn pick_program<R: Runtime>(app: &AppHandle<R>, program_name: &str) -> Result<Option<PathBuf>, AppError> {
+    #[cfg(feature = "dev-tools")]
+    if let Some(answer) = crate::dev::scripted_dialog() {
+        return Ok(answer.into_iter().next());
+    }
     let app = app.clone();
     let title = format!("{program_name} auswählen");
     run(move || {
@@ -101,6 +109,10 @@ pub async fn pick_program<R: Runtime>(app: &AppHandle<R>, program_name: &str) ->
 
 /// Ordnerauswahl. Abbruch = `None`.
 pub async fn pick_folder<R: Runtime>(app: &AppHandle<R>, title: &str) -> Result<Option<PathBuf>, AppError> {
+    #[cfg(feature = "dev-tools")]
+    if let Some(answer) = crate::dev::scripted_dialog() {
+        return Ok(answer.into_iter().next());
+    }
     let app = app.clone();
     let title = title.to_owned();
     run(move || {
@@ -116,6 +128,10 @@ pub async fn save_file<R: Runtime>(
     file_name: &str,
     filter: Option<(&'static str, &'static [&'static str])>,
 ) -> Result<Option<PathBuf>, AppError> {
+    #[cfg(feature = "dev-tools")]
+    if let Some(answer) = crate::dev::scripted_dialog() {
+        return Ok(answer.into_iter().next());
+    }
     let app = app.clone();
     let (title, file_name) = (title.to_owned(), file_name.to_owned());
     run(move || {

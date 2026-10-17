@@ -16,6 +16,12 @@ workspace = true
 name = "cypher_studio_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
+[features]
+default = []
+# Nur für die E2E-Suite gegen die echte App (Debug-Build): Testschlüssel, http gegen 127.0.0.1, getrennte Erkennung und
+# beantwortete Dialoge per Umgebungsvariablen (src/dev.rs). Ein Release-Build mit diesem Feature bricht ab.
+dev-tools = ["cypher-core/test-util"]
+
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
 
