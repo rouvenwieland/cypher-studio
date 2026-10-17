@@ -1,7 +1,7 @@
 /**
  * Cypher Studio – IPC-Vertrag zwischen Rust-Kern (Team A) und Frontend (Team B)
  * ============================================================================
- * Stand 16.10.2026 · Vertragsversion 0.2.0 · gehört zu docs/ARCHITEKTUR.md, Abschnitt 3
+ * Stand 17.10.2026 · Vertragsversion 0.3.0 · gehört zu docs/ARCHITEKTUR.md, Abschnitt 3
  * Bildschirme und Abläufe: docs/CONCEPT.md, Gestaltung: docs/DESIGN.md + docs/tokens.css
  *
  * Diese Datei ist die KANONISCHE Quelle für alle Typen, die über die Tauri-IPC-Grenze gehen.
@@ -29,7 +29,7 @@
  *   (src/i18n/de.ts). Ausnahme: Katalogtexte (Programmbeschreibungen) und Vorlagentitel sind bereits deutsch.
  */
 
-export const IPC_CONTRACT_VERSION = "0.2.0" as const;
+export const IPC_CONTRACT_VERSION = "0.3.0" as const;
 
 /* ========================================================================== */
 /* 0. Grundtypen                                                              */
@@ -104,7 +104,9 @@ export type EntityKind =
   | "mockupTemplate"
   | "socialTemplate"
   | "garmentColor"
-  | "artifact";
+  | "artifact"
+  | "catalogLink" // 0.3.0: unbekannter Verweis aus dem Katalog („Nur Verweis“)
+  | "setupPack"; // 0.3.0: unbekanntes Einrichtungspaket
 
 export type BusyReason = "jobRunning" | "setupRunning" | "updateRunning" | "programRunning";
 export type IoOp = "read" | "write" | "rename" | "remove" | "createDir" | "copy" | "metadata" | "spawn" | "mount";
@@ -630,6 +632,7 @@ export interface UndoReport {
   removed: number; // eigene Dateien entfernt
   keptModified: DisplayPath[]; // vom Nutzer seit der Einrichtung geänderte Dateien: bleiben liegen
   fontsRemoved: number;
+  extensionsRemoved: number; // 0.3.0: mit Blender installierte Erweiterungen, die beim Zurücknehmen entfernt wurden
 }
 
 export interface SetupStatusReq {
@@ -1394,7 +1397,10 @@ export interface JobCancelReq {
 }
 
 export interface AppCloseReq {
-  /** true = laufende Jobs abbrechen (Aufräumen läuft), dann beenden. */
+  /**
+   * true = laufende Jobs abbrechen (Aufräumen läuft, Rust wartet bis zu 10 s), dann beenden.
+   * false = bei laufenden Jobs Fehler `busy { jobRunning }`, die App bleibt offen (0.3.0: so gebaut, hier festgehalten).
+   */
   force: boolean;
 }
 
@@ -1572,6 +1578,7 @@ export interface EventMap {
   "programs:changed": { reason: "installed" | "removed" | "rescanned" | "setupChanged" | "preferredChanged" | "catalogChanged" };
   "library:changed": { reason: "watcher" | "import" | "scan" | "meta" | "packImport" | "rootChanged"; changedCount: number };
   "projects:changed": { projectId: ProjectId | null };
+  /** `position` in logischen CSS-Pixeln des Fensters (0.3.0: Rust rechnet die physische Position um). */
   "files:dropped": { handles: FileHandleInfo[]; position: Point };
   "update:available": UpdateCheck;
   "app:closeRequested": { activeJobs: JobInfo[] };

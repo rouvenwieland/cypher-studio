@@ -37,13 +37,15 @@ pub fn defaults(dirs: &AppDirs) -> Settings {
             measure_color: MeasureColor::Cyan,
             surround: Surround { paper: SurroundTone::Light, ink: SurroundTone::Dark },
             calibration_px_per_mm: None,
-            single_key_shortcuts: false,
+            // Einzeltasten (U, G, K …) wirken nur bei Fokus in der Vorschau (WCAG 2.1.4) und sind in den Einstellungen abschaltbar
+            single_key_shortcuts: true,
             shortcut_overrides: Default::default(),
         },
         onboarding: OnboardingState {
             status: OnboardingStatus::NotStarted,
             step: 0,
-            selected_programs: Vec::new(),
+            // Vorauswahl im Erststart (CONCEPT.md 6.10): Krita und Inkscape; die Nutzerin wählt ab oder dazu
+            selected_programs: vec!["krita".to_owned(), "inkscape".to_owned()],
             apply_setup: true,
             updated_at: None,
         },
@@ -292,6 +294,21 @@ mod tests {
         assert_eq!(s.programs_dir, dirs.programs_default().to_string_lossy());
         assert_eq!(s.projects_dir, dirs.projects_default().to_string_lossy());
         assert_eq!(s.downloads.max_parallel, 2);
+    }
+
+    #[test]
+    fn single_key_shortcuts_are_on_by_default_like_in_the_ui() {
+        let (_t, dirs) = dirs();
+        assert!(defaults(&dirs).ui.single_key_shortcuts);
+    }
+
+    #[test]
+    fn first_start_preselects_krita_and_inkscape() {
+        let (_t, dirs) = dirs();
+        let s = defaults(&dirs);
+        assert_eq!(s.onboarding.status, OnboardingStatus::NotStarted);
+        assert_eq!(s.onboarding.selected_programs, ["krita", "inkscape"]);
+        assert!(s.onboarding.apply_setup);
     }
 
     #[test]

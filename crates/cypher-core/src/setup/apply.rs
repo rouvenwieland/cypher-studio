@@ -532,19 +532,21 @@ fn extension_package_id(zip: &Path) -> Option<String> {
 
 /// Blender-Kommandozeile: Erweiterung entfernen (beim Zurücknehmen). Fehler bleiben im Protokoll: die Dateien der
 /// Einrichtung sind dann schon weg, und eine übrig gebliebene Erweiterung stört nicht.
-fn remove_blender_extensions(runner: &dyn CommandRunner, actions: &[ActionEntry]) {
+fn remove_blender_extensions(runner: &dyn CommandRunner, actions: &[ActionEntry]) -> u32 {
+    let mut removed = 0;
     for action in actions.iter().filter(|a| a.kind == "blenderExtensionInstall" && a.exit_code == Some(0)) {
         let (Some(exe), Some(package)) = (&action.exe, &action.package) else { continue };
         let args: Vec<OsString> =
             ["--command", "extension", "remove", package.as_str()].iter().map(OsString::from).collect();
         match runner.run(Path::new(exe), &args, BLENDER_CLI_TIMEOUT) {
-            Ok(out) if out.code == Some(0) => {}
+            Ok(out) if out.code == Some(0) => removed += 1,
             Ok(out) => {
                 tracing::warn!("Blender hat die Erweiterung {package} nicht entfernt (Exit-Code {:?})", out.code)
             }
             Err(e) => tracing::warn!("Blender ließ sich zum Entfernen von {package} nicht starten: {e}"),
         }
     }
+    removed
 }
 
 /// Blender-Kommandozeile: Erweiterung aus ZIP installieren und aktivieren.
@@ -704,9 +706,7 @@ fn undo_inner(
     }
     let keep = paths_needed_elsewhere(store, &manifest);
     let report = rollback(store, fonts, &manifest.roots, &manifest.entries, &manifest.fonts, &keep);
-    if let Some(runner) = runner {
-        remove_blender_extensions(runner, &manifest.actions);
-    }
+    let extensions_removed = runner.map_or(0, |runner| remove_blender_extensions(runner, &manifest.actions));
     manifest.status = ManifestStatus::Undone;
     manifest.undone_at = Some(now_iso());
     store.save_manifest(&manifest)?;
@@ -717,6 +717,7 @@ fn undo_inner(
         removed: report.removed,
         kept_modified: report.kept_modified.iter().map(|p| display_path(p)).collect(),
         fonts_removed: report.fonts_removed,
+        extensions_removed,
     })
 }
 

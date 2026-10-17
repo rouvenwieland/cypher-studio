@@ -1,7 +1,7 @@
 //! Namenslisten des Vertrags (Abschnitt 16 von docs/ipc-contract.ts). Ein Test vergleicht sie mit dem Vertrag.
 
 /// Vertragsversion, gegen die dieser Kern gebaut ist (`IPC_CONTRACT_VERSION`).
-pub const IPC_CONTRACT_VERSION: &str = "0.2.0";
+pub const IPC_CONTRACT_VERSION: &str = "0.3.0";
 
 /// Alle JSON-Commands (`COMMAND_NAMES`).
 pub const COMMAND_NAMES: &[&str] = &[

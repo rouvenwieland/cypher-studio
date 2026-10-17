@@ -1,4 +1,4 @@
-//! DTOs des IPC-Vertrags (`docs/ipc-contract.ts`, Version 0.2.0).
+//! DTOs des IPC-Vertrags (`docs/ipc-contract.ts`, Version 0.3.0).
 //!
 //! Alle Typen sind Serde-camelCase und werden von ts-rs nach `apps/desktop/src/ipc/generated/` exportiert.
 //! Der Vertrag ist kanonisch: Abweichungen findet der Test `contract::contract_matches_generated_types`.

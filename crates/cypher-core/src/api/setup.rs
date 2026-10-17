@@ -204,6 +204,7 @@ dto_struct! {
         pub removed: u32,
         pub kept_modified: Vec<DisplayPath>,
         pub fonts_removed: u32,
+        pub extensions_removed: u32,
     }
 }
 

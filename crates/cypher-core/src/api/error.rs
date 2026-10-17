@@ -21,6 +21,8 @@ dto_enum! {
         SocialTemplate,
         GarmentColor,
         Artifact,
+        CatalogLink,
+        SetupPack,
     }
 }
 

@@ -28,6 +28,8 @@ const ENTITY: Record<EntityKind, string> = {
   socialTemplate: "Die Social-Vorlage",
   garmentColor: "Die Textilfarbe",
   artifact: "Die Datei",
+  catalogLink: "Der Verweis",
+  setupPack: "Das Einrichtungspaket",
 };
 
 const IO_OP: Record<IoOp, string> = {
