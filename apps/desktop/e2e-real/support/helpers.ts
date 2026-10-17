@@ -35,6 +35,14 @@ export interface CleanOptions {
 }
 
 /**
+ * Tauri meldet nach einem Neuladen Antworten an Rückrufe der alten Seite. Die Suite lädt JEDE App direkt nach dem Start
+ * neu (launch.ts: Prüfhaken vom ersten Augenblick an), und Start-Abfragen mit Netz (Katalog, Update-Prüfung) antworten
+ * manchmal erst danach. Das ist eine Folge des Neuladens im Test, kein Fehler der App (dort gibt es kein Neuladen), und ist
+ * die einzige tolerierte Meldung; alle anderen Warnungen und Fehler bleiben verboten.
+ */
+const RELOAD_ARTIFACT = /^\[TAURI\] Couldn't find callback id \d+\. This might happen when the app is reloaded/;
+
+/**
  * Letzter Test jeder Datei: keine Konsolenfehler, keine Seitenfehler, keine CSP-Verstöße, keine fehlgeschlagenen
  * Anfragen und keine abgelehnten IPC-Aufrufe außer den ausdrücklich erwarteten.
  */
@@ -42,7 +50,8 @@ export async function expectClean(app: RunningApp, allow: CleanOptions = {}): Pr
   await app.takeIpcErrors();
   const csp = await app.page.evaluate(() => (window as unknown as { __csp?: string[] }).__csp ?? []);
   const d = app.diagnostics;
-  const consoleHits = d.console.filter((m) => !(allow.console ?? []).some((re) => re.test(m.text)));
+  const allowConsole = [...(allow.console ?? []), RELOAD_ARTIFACT];
+  const consoleHits = d.console.filter((m) => !allowConsole.some((re) => re.test(m.text)));
   const ipc = d.ipcErrors.filter((e) => ![...KNOWN_UNPUBLISHED, ...(allow.ipc ?? [])].includes(e.cmd));
   expect(consoleHits, "Konsolenfehler und -warnungen").toEqual([]);
   expect(d.pageErrors, "Seitenfehler").toEqual([]);
@@ -150,6 +159,19 @@ export async function createProject(page: Page, name: string): Promise<void> {
  */
 export async function reloadApp(app: RunningApp): Promise<void> {
   const { page, diagnostics } = app;
+  // Laufende Aufträge (Scan, Export, Download) senden über ihren Fortschrittskanal weiter; nach einem Neuladen gehören diese
+  // Kanäle zur alten Seite und Tauri warnt bei jeder Nachricht. In der App gibt es kein Neuladen; der Test wartet deshalb,
+  // bis kein Auftrag mehr läuft (höchstens 30 s), statt die Warnungen pauschal zu erlauben.
+  const deadline = Date.now() + 30_000;
+  while (Date.now() < deadline) {
+    const active = await page.evaluate(async () => {
+      const internals = (window as unknown as { __TAURI_INTERNALS__: { invoke(cmd: string): Promise<unknown[]> } })
+        .__TAURI_INTERNALS__;
+      return (await internals.invoke("jobs_active")).length;
+    });
+    if (active === 0) break;
+    await page.waitForTimeout(250);
+  }
   await page.waitForTimeout(500);
   await page.reload();
   await page.waitForSelector('[data-testid^="screen-"], [data-testid="kennung"]');
