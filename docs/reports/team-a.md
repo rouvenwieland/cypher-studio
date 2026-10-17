@@ -2,8 +2,8 @@
 
 Stand 17.10.2026. Zone: `crates/**`, `apps/desktop/src-tauri/**`, `catalog/**`, Erzeuger der TypeScript-Typen, `Cargo.lock`, `deny.toml`,
 `scripts/probe-linux.sh`, `docs/contract-fixtures/**`, `docs/third-party/A.md`, dieser Bericht. Alle Arbeit auf `main`, nur eigene Pfade
-committet, keine Pushes. Commits: `bd372d7` (Phase 0), `9856940`, `fa453c1`, `1b5703c`, `536ebd8`, `d493d6c`, `95f6e1f`, `d86a2ec`, `71a906e`,
-`e7bf829`, `07d65d1`, `99c6976` und der letzte Commit dieses Berichts.
+committet, keine Pushes. Commits: `47a35f4` (Phase 0), `0f855d8`, `4b35b9a`, `a0cbb8e`, `d1e8610`, `3f7de4b`, `c7a48da`, `47baef0`, `4841e7c`,
+`0817e84`, `a821fac`, `37686f6` und der letzte Commit dieses Berichts.
 
 ## 1. Stand je Modul
 
@@ -65,7 +65,7 @@ Die Tests installieren nichts auf dem Rechner und melden keine Schrift an: die e
    Blender-Kommandozeile installiert (`blender --command extension list` zeigt „cypher_export [installed]“ im Repository „User Default“), die
    App-Vorlage liegt in `portable/scripts/startup/bl_app_templates_user/cypher_ps2`, und `bpy.utils.extension_path_user(...)` liefert genau
    den Pfad, den `blenderExtensionConfig` annimmt (**Annahme bestätigt**). Dieser Lauf zeigte, dass das Zurücknehmen die Erweiterung stehen ließ;
-   behoben (Commit `07d65d1`, `blender --command extension remove`).
+   behoben (Commit `a821fac`, `blender --command extension remove`).
 
 **Echte Dateien (ignorierte Tests, einzeln grün):** Krita-AppImage (381 MB) gegen `.sig` mit dem Schlüssel aus dem Katalog, dazu dieselbe Datei mit
 verändertem Byte (abgewiesen); Inkscape-7z (BCJ2) und Kdenlive-Standalone-SFX entpacken.

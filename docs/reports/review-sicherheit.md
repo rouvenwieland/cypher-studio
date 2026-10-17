@@ -1,6 +1,6 @@
 # Sicherheitsreview vor der ersten Veröffentlichung
 
-Stand: 17.10.2026. Geprüft: Quellbaum `C:\Users\Nevuor\Code\cypher-studio` (Git `main`, Commit b098718; der Arbeitsbaum ist sauber bis auf die schon vorher vorhandene, nicht verfolgte Datei `scripts/probe-windows-install.mjs`). Am Code wurde bei der Prüfung nichts geändert; die Behebung steht am Ende dieses Berichts.
+Stand: 17.10.2026. Geprüft: Quellbaum `C:\Users\Nevuor\Code\cypher-studio` (Git `main`, Commit d81a3e1; der Arbeitsbaum ist sauber bis auf die schon vorher vorhandene, nicht verfolgte Datei `scripts/probe-windows-install.mjs`). Am Code wurde bei der Prüfung nichts geändert; die Behebung steht am Ende dieses Berichts.
 
 ## Urteil
 
@@ -134,7 +134,7 @@ Keiner.
 
 ## Behebung
 
-Stand 17.10.2026, Härtungsteam. Commits: **A** = `279250e` (M1 bis M3, N8, Blender ohne Autoexec), **B** = `3a043c1` (niedrige Befunde im Rust-Kern), **C** = `9909b94` (Oberfläche: ESLint, CSP, Deinstallationszustand), **D** = der Commit dieses Berichts (CI, Release, Skripte, Dokumente, Windows-Testkorrektur). Jede Behebung hat mindestens einen Test, der den Befund nachstellt; der Schreibweg-Test für Verknüpfungen läuft unter Linux mit Symlinks und unter Windows mit Junctions (`mklink /J`).
+Stand 17.10.2026, Härtungsteam. Commits: **A** = `d5a9b04` (M1 bis M3, N8, Blender ohne Autoexec), **B** = `bf9396d` (niedrige Befunde im Rust-Kern), **C** = `5d32e69` (Oberfläche: ESLint, CSP, Deinstallationszustand), **D** = der Commit dieses Berichts (CI, Release, Skripte, Dokumente, Windows-Testkorrektur). Jede Behebung hat mindestens einen Test, der den Befund nachstellt; der Schreibweg-Test für Verknüpfungen läuft unter Linux mit Symlinks und unter Windows mit Junctions (`mklink /J`).
 
 ### Mittel
 
