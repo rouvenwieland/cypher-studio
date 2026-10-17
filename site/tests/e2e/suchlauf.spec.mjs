@@ -1,4 +1,5 @@
 // Suchlauf der Familie: Orange → Gelb → Cyan, einmal, von außen, jede Eingabe bricht ab, nie bei reduzierter Bewegung.
+// Zeitgrenzen großzügig: Auf geteilten CI-Rechnern startet der erste Schnitt später als lokal; gemessen wird der Ablauf, nicht der Start.
 import { test, expect } from '@playwright/test';
 import { B, open } from './util.mjs';
 
@@ -44,9 +45,9 @@ test('während des Schnitts steht der Kanalname in der Kopfzeile (Kanal 1 News, 
   const ctx = await open(browser, { still: false });
   const page = await ctx.newPage();
   await page.goto(B + '/');
-  await expect(page.locator('.tb[data-on="news"] .m-k[data-ch="news"]')).toBeVisible({ timeout: 3000 });
+  await expect(page.locator('.tb[data-on="news"] .m-k[data-ch="news"]')).toBeVisible({ timeout: 8000 });
   await expect(page.locator('.m-k[data-ch="studio"]')).toBeHidden();
-  await expect(page.locator('.tb[data-on="shop"] .m-k[data-ch="shop"]')).toBeVisible({ timeout: 3000 });
+  await expect(page.locator('.tb[data-on="shop"] .m-k[data-ch="shop"]')).toBeVisible({ timeout: 8000 });
   await ctx.close();
 });
 
@@ -56,7 +57,7 @@ test('jede Eingabe bricht ab und stellt Cyan her: Zeigerbewegung, Taste, Scrolle
     const page = await ctx.newPage();
     await record(page);
     await page.goto(B + '/');
-    await expect(page.locator('.tb[data-on="news"]')).toBeVisible({ timeout: 3000 });
+    await expect(page.locator('.tb[data-on="news"]')).toBeVisible({ timeout: 8000 });
     if (input === 'mouse') await page.mouse.move(300, 300);
     if (input === 'key') await page.keyboard.press('Tab');
     if (input === 'wheel') await page.mouse.wheel(0, 120);

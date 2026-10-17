@@ -29,12 +29,16 @@ test.describe("Einstellungen und Updates (CONCEPT.md 6.9)", () => {
   test("Bewegung „Reduziert“ setzt alle Dauern auf 0", async ({ page }) => {
     await openApp(page, "einstellungen/darstellung", { reducedMotion: false });
     await page.getByRole("radio", { name: "Reduziert" }).click();
-    const durations = await page.evaluate(() =>
-      ["--dur-ui", "--dur-fuellung", "--dur-einrasten", "--dur-suchlauf-takt"].map((n) =>
-        getComputedStyle(document.documentElement).getPropertyValue(n).trim(),
-      ),
-    );
-    expect(durations).toEqual(["0ms", "0ms", "0ms", "0ms"]);
+    // Die Einstellung wird erst gespeichert und dann angewendet: auf den neuen Zustand warten, nicht den Augenblick messen
+    await expect
+      .poll(() =>
+        page.evaluate(() =>
+          ["--dur-ui", "--dur-fuellung", "--dur-einrasten", "--dur-suchlauf-takt"].map((n) =>
+            getComputedStyle(document.documentElement).getPropertyValue(n).trim(),
+          ),
+        ),
+      )
+      .toEqual(["0ms", "0ms", "0ms", "0ms"]);
   });
 
   test("App-Zoom wirkt auf das Gerüst", async ({ page }) => {

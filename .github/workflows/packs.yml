@@ -67,4 +67,6 @@ jobs:
           name: packs-dist
           path: packs/dist
           if-no-files-found: error
+          # Krita-Vorlagen liegen in Punkt-Ordnern (.icon, .directory); ohne diese Zeile fehlen sie im Artefakt
+          include-hidden-files: true
           retention-days: 3
