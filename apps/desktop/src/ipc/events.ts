@@ -10,13 +10,33 @@ export function onEvent<K extends EventName>(name: K, handler: (payload: EventMa
 }
 
 /**
+ * Invalidiert Abfragen so, dass keine Antwort gewinnt, die älter ist als das Ereignis. TanStack Query ersetzt eine laufende
+ * Abfrage ohne Daten nicht, sondern hängt die Invalidierung an sie an: Kommt ein Ereignis, während die erste Abfrage noch
+ * läuft (z. B. die Bibliothek direkt nach der Ordnerwahl, bevor das Einlesen fertig ist), bliebe deren veraltete Antwort
+ * stehen. Läuft also beim Ereignis schon eine Abfrage, wird nach ihrem Ende noch einmal geladen.
+ */
+export function invalidateFresh(qc: QueryClient, ...names: CommandName[]): void {
+  for (const name of names) {
+    const filter = { queryKey: [name] };
+    const wasFetching = qc.isFetching(filter) > 0;
+    void qc.invalidateQueries(filter);
+    if (!wasFetching) continue;
+    const timer = setTimeout(() => off(), 60_000);
+    const off = qc.getQueryCache().subscribe(() => {
+      if (qc.isFetching(filter) > 0) return;
+      off();
+      clearTimeout(timer);
+      void qc.invalidateQueries(filter);
+    });
+  }
+}
+
+/**
  * Frontend-Regel (ARCHITEKTUR 3.5): Ereignisse invalidieren nur, Daten kommen immer über Commands.
  * Ausnahme: Fortschritt der Aufträge (≤ 2/s) landet direkt im Speicher, damit nicht ständig neu geladen wird.
  */
 export async function bridgeEvents(qc: QueryClient): Promise<() => void> {
-  const invalidate = (...names: CommandName[]) => {
-    for (const name of names) void qc.invalidateQueries({ queryKey: [name] });
-  };
+  const invalidate = (...names: CommandName[]) => invalidateFresh(qc, ...names);
   const handles: UnlistenFn[] = [];
   handles.push(
     await onEvent("catalog:updated", () => invalidate("catalog_status", "programs_list")),
