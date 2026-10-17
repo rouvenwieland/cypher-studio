@@ -28,9 +28,15 @@ chunks_exact_to_as_chunks = "allow"
 # Tests rechnen Bilder und entpacken Archive: Abhängigkeiten immer optimiert, eigener Code leicht optimiert
 [profile.dev]
 opt-level = 1
+# Schlanke Artefakte (Platz auf der Entwicklungsplatte): nur Zeilentabellen für Backtraces, keine vollen Debug-Infos.
+debug = "line-tables-only"
 
 [profile.dev.package."*"]
 opt-level = 3
+debug = false
+
+[profile.test]
+debug = "line-tables-only"
 
 [profile.release]
 codegen-units = 1

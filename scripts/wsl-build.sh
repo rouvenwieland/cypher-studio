@@ -13,6 +13,14 @@ SRC="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DST="$HOME/build/cypher-studio"
 export PATH="$HOME/.local/node/bin:$HOME/.cargo/bin:$PATH"
 BLENDER="${BLENDER:-$(ls -d "$HOME"/apps/blender-5.*-linux-x64/blender 2>/dev/null | sort -V | tail -1)}"
+# Die WSL-Platte (ext4.vhdx) wächst auf Laufwerk C: mit. Unter 10 GB frei dort wird nicht gebaut (MIN_FREE_GB überschreibt).
+if [[ -d /mnt/c ]]; then
+  FREE_GB=$(df -BG --output=avail /mnt/c | tail -1 | tr -dc '0-9')
+  if (( FREE_GB < ${MIN_FREE_GB:-10} )); then
+    echo "Abbruch: auf C: sind nur ${FREE_GB} GB frei (mindestens ${MIN_FREE_GB:-10} GB nötig)." >&2
+    exit 3
+  fi
+fi
 mkdir -p "$DST"
 rsync -a --delete \
   --exclude node_modules --exclude target --exclude .git \
@@ -36,6 +44,14 @@ if [[ -z "${TAURI_SIGNING_PRIVATE_KEY:-}" && -n "${CYPHER_KEYS_DIR:-}" && -f "$C
   export TAURI_SIGNING_PRIVATE_KEY
   if [[ -z "${TAURI_SIGNING_PRIVATE_KEY_PASSWORD:-}" && -f "$CYPHER_KEYS_DIR/PASSWORT-SICHERN.txt" ]]; then
     TAURI_SIGNING_PRIVATE_KEY_PASSWORD="$(sed -n 's/^Passwort: *//p' "$CYPHER_KEYS_DIR/PASSWORT-SICHERN.txt" | tr -d '\r')"
+    export TAURI_SIGNING_PRIVATE_KEY_PASSWORD
+    # Passwort neben dem Schlüssel hebt dessen Schutz auf (docs/security/README.md): nach der Sicherung löschen
+    echo "WARNUNG: $CYPHER_KEYS_DIR/PASSWORT-SICHERN.txt liegt neben updater.key. Passwort in den Passwortmanager legen und die Datei löschen." >&2
+  fi
+  # Weder Umgebung noch Datei: das Passwort wird zur Laufzeit abgefragt (nicht angezeigt, nicht in der Prozessliste)
+  if [[ -z "${TAURI_SIGNING_PRIVATE_KEY_PASSWORD:-}" && -t 0 ]]; then
+    read -r -s -p "Passwort des Updater-Schlüssels (leer = Schlüssel ohne Passwort): " TAURI_SIGNING_PRIVATE_KEY_PASSWORD
+    echo >&2
     export TAURI_SIGNING_PRIVATE_KEY_PASSWORD
   fi
 fi
@@ -62,3 +78,8 @@ if [[ "$WHAT" == e2e ]]; then
   cp -r "$DST/packs/dist" "$OUT/windows-e2e/packs"
 fi
 ls -la "$OUT"
+# Aufräumen: die Zwischenstände eines Release-Builds sind 10–20 GB groß und werden beim nächsten Lauf neu erzeugt.
+if [[ "${KEEP_TARGET:-0}" != 1 ]]; then
+  rm -rf -- "$DST/target" && echo "Build-Zwischenstände gelöscht (KEEP_TARGET=1 behält sie)."
+fi
+df -h "$HOME" | tail -1
