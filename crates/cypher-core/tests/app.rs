@@ -1032,3 +1032,171 @@ async fn printcheck_analyze_export_and_overlay() {
         .unwrap();
     assert!(overlay.url.is_some() && overlay.mime == "image/png");
 }
+
+// ---------------------------------------------------------------------------------------------
+// Ziele für „Im Browser öffnen“ / „Im Ordner zeigen“ und die Protokolle
+// ---------------------------------------------------------------------------------------------
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn external_urls_and_reveal_targets_are_resolved_in_rust() {
+    use cypher_core::api::{AppPage, ExternalTarget, ProgramPage, RevealTarget};
+    let fx = Fx::new().await;
+    for page in [ProgramPage::Homepage, ProgramPage::License, ProgramPage::ReleaseNotes] {
+        let url = fx.app.external_url(&ExternalTarget::ProgramPage { program_id: "blender".into(), page }).unwrap();
+        assert!(url.starts_with("https://"), "{url}");
+    }
+    for page in [AppPage::Help, AppPage::SourceCode, AppPage::ThirdParty, AppPage::ReleaseNotes, AppPage::Downloads] {
+        assert!(fx.app.external_url(&ExternalTarget::AppPage { page }).unwrap().starts_with("https://"));
+    }
+    let link = fx.app.programs_view().links.first().cloned().expect("der Katalog hat Verweise");
+    assert!(fx.app.external_url(&ExternalTarget::CatalogLink { link_id: link.id }).unwrap().starts_with("https://"));
+    assert!(fx.app.external_url(&ExternalTarget::CatalogLink { link_id: "gibtsnicht".into() }).is_err());
+    assert!(matches!(
+        fx.app.external_url(&ExternalTarget::ProgramPage {
+            program_id: "gibtsnicht".into(),
+            page: ProgramPage::Homepage
+        }),
+        Err(CoreError::NotFound { .. })
+    ));
+
+    let project = fx.app.project_create(&ProjectCreateReq { name: "Zeigen".into(), collection: None }).unwrap();
+    let dir = fx.app.reveal_path(&RevealTarget::Project { project_id: project.id.clone() }).await.unwrap();
+    assert!(dir.is_dir() && dir.ends_with("Zeigen"));
+    let tpl = fx.app.templates_list().into_iter().find(|t| t.id == "builtin:social-zitat").unwrap();
+    let file = fx
+        .app
+        .project_new_file(&ProjectNewFileReq {
+            project_id: project.id.clone(),
+            template_id: tpl.id,
+            file_name: "Z".into(),
+        })
+        .unwrap();
+    let path = fx
+        .app
+        .reveal_path(&RevealTarget::ProjectFile {
+            project_id: project.id.clone(),
+            rel_path: file.file_ref.rel_path.clone(),
+        })
+        .await
+        .unwrap();
+    assert!(path.is_file());
+    let by_handle = fx.app.reveal_path(&RevealTarget::FileHandle { handle_id: file.handle.id.clone() }).await.unwrap();
+    assert_eq!(by_handle, path);
+    assert!(
+        fx.app
+            .reveal_path(&RevealTarget::ProjectFile { project_id: project.id, rel_path: "../x".into() })
+            .await
+            .is_err()
+    );
+    assert!(fx.app.reveal_path(&RevealTarget::FileHandle { handle_id: "nope".into() }).await.is_err());
+    assert!(matches!(
+        fx.app.reveal_path(&RevealTarget::LibraryEntry { entry_id: "x".into() }).await,
+        Err(CoreError::Library(cypher_core::error::LibraryError::NotConfigured))
+    ));
+    let backups = fx.app.reveal_path(&RevealTarget::SetupBackups { pack_id: "krita".into() }).await.unwrap();
+    assert!(backups.is_dir());
+    assert!(fx.app.reveal_path(&RevealTarget::SetupBackups { pack_id: "nope".into() }).await.is_err());
+}
+
+fn png16(w: u32, h: u32) -> Vec<u8> {
+    let mut out = Vec::new();
+    {
+        let mut enc = png::Encoder::new(&mut out, w, h);
+        enc.set_color(png::ColorType::Rgba);
+        enc.set_depth(png::BitDepth::Sixteen);
+        let mut writer = enc.write_header().unwrap();
+        writer.write_image_data(&vec![0x80u8; (w * h * 8) as usize]).unwrap();
+    }
+    out
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn cyfile_serves_only_registered_raster_images_and_previews_what_browsers_cannot_show() {
+    let fx = Fx::new().await;
+    let register = |rel: &str, bytes: &[u8]| {
+        let path = fx.write(rel, bytes);
+        fx.app.handles.register(&path, HandleSource::Dialog).unwrap().id
+    };
+
+    // kleines PNG: unverändert
+    let small = png(8, 8, [1, 2, 3, 255]);
+    let served = fx.app.serve_file(&register("b/klein.png", &small)).await.unwrap();
+    assert_eq!((served.mime.as_str(), served.body.as_slice()), ("image/png", small.as_slice()));
+    assert_eq!(served.cache, cypher_core::app::serve::CachePolicy::NoStore);
+
+    // zu breit: verkleinert auf höchstens 4096, Seitenverhältnis bleibt
+    let wide = fx.app.serve_file(&register("b/breit.png", &png(5000, 20, [9, 9, 9, 255]))).await.unwrap();
+    let decoded = image::load_from_memory(&wide.body).unwrap();
+    assert_eq!((decoded.width(), decoded.height()), (4096, 16));
+
+    // 16 Bit: als 8-Bit-PNG
+    let sixteen = fx.app.serve_file(&register("b/sechzehn.png", &png16(10, 10))).await.unwrap();
+    let reader = png::Decoder::new(std::io::BufReader::new(Cursor::new(&sixteen.body))).read_info().unwrap();
+    assert_eq!(reader.info().bit_depth, png::BitDepth::Eight);
+
+    // TIFF: als PNG-Vorschau
+    let mut tiff = Vec::new();
+    image::RgbaImage::from_pixel(12, 12, image::Rgba([5, 6, 7, 255]))
+        .write_to(&mut Cursor::new(&mut tiff), image::ImageFormat::Tiff)
+        .unwrap();
+    let served = fx.app.serve_file(&register("b/scan.tif", &tiff)).await.unwrap();
+    assert_eq!(served.mime, "image/png");
+    assert_eq!(image::load_from_memory(&served.body).unwrap().width(), 12);
+    assert!(
+        fx.tmp.path().join("root/cache/previews").read_dir().unwrap().count() >= 3,
+        "Vorschauen liegen im Zwischenspeicher"
+    );
+
+    // SVG, Text und unbekannte Handles: nie
+    assert!(fx.app.serve_file(&register("b/bild.svg", b"<svg xmlns=\"http://www.w3.org/2000/svg\"/>")).await.is_none());
+    assert!(fx.app.serve_file(&register("b/notiz.txt", b"hallo")).await.is_none());
+    assert!(fx.app.serve_file("gibtsnicht").await.is_none());
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn cyasset_serves_package_files_but_nothing_outside_the_whitelist() {
+    let fx = Fx::new().await;
+    let mask = fx.app.serve_asset("mockups/tee-front/mask.png").await.unwrap();
+    assert_eq!(mask.mime, "image/png");
+    assert_eq!(mask.cache, cypher_core::app::serve::CachePolicy::MaxAge(86_400));
+    // eine Schrift der Marke, mit der URL, die das Frontend bekommt
+    let brand = fx.app.brand_get().unwrap();
+    let url = &brand.fonts[0].files[0].url;
+    let rel = cypher_core::urls::decode_request_path(url.split_once("localhost/").unwrap().1).unwrap();
+    let font = fx.app.serve_asset(&rel).await.unwrap();
+    assert!(font.mime.starts_with("font/"), "{}", font.mime);
+    for hostile in [
+        "../Cargo.toml",
+        "mockups/../../Cargo.toml",
+        "mockups/tee-front/../../manifest.json",
+        "manifest.json",
+        "krita/pack.json",
+        "mockups/tee-front/gibtsnicht.png",
+        "mockups",
+        "",
+        "/etc/passwd",
+    ] {
+        assert!(fx.app.serve_asset(hostile).await.is_none(), "{hostile}");
+    }
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn cythumb_serves_library_thumbnails() {
+    let fx = Fx::new().await;
+    assert!(fx.app.serve_thumbnail("x").await.is_none(), "ohne Bibliothek gibt es nichts");
+    let root = fx.tmp.path().join("Cypher");
+    std::fs::create_dir_all(root.join("Motive")).unwrap();
+    std::fs::write(root.join("Motive/ratte.png"), png(64, 32, [1, 2, 3, 255])).unwrap();
+    let candidate = fx.app.library_choose_root(&root).await.unwrap();
+    fx.app
+        .library_use_root(&LibraryUseRootReq { candidate_id: candidate.candidate_id, initialize: true })
+        .await
+        .unwrap();
+    let (_, s) = sink::<ScanEvent>();
+    fx.app.library_scan(s).await.unwrap();
+    let id = fx.app.library_query(&query()).await.unwrap().entries[0].id.clone();
+    let thumb = fx.app.serve_thumbnail(&id).await.unwrap();
+    assert!(thumb.mime.starts_with("image/"));
+    assert!(image::load_from_memory(&thumb.body).is_ok());
+    assert!(fx.app.serve_thumbnail("gibtsnicht").await.is_none());
+}

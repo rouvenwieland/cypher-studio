@@ -328,6 +328,9 @@ impl App {
 
     pub fn install_preview(&self, req: &InstallPreviewReq) -> Result<InstallPlan, CoreError> {
         let current = self.catalog.current();
+        if current.catalog.program(&req.program_id).is_none() {
+            return Err(not_found(EntityKind::Program, &req.program_id));
+        }
         let settings = self.settings.get();
         let known = self.all_installations();
         let expired = current.warnings.iter().any(|w| matches!(w, crate::catalog::CatalogWarning::Expired { .. }));

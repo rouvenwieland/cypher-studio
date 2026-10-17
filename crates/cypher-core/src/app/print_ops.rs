@@ -109,6 +109,15 @@ impl App {
         .await
     }
 
+    /// Vorgeschlagener Dateiname des Exports (für den Speichern-Dialog).
+    pub fn printcheck_suggested_name(&self, req: &PrintExportReq) -> Result<String, CoreError> {
+        let profile = self.profile_by_id(&req.profile_id)?;
+        let source =
+            self.handles.resolve(&req.handle_id).ok_or_else(|| not_found(EntityKind::FileHandle, &req.handle_id))?;
+        let stem = source.file_stem().map(|s| s.to_string_lossy().into_owned()).unwrap_or_else(|| "motiv".into());
+        Ok(suggested_file_name(&stem, &profile, &req.options))
+    }
+
     /// Zieldatei des Exports. `dialog_path` stammt aus dem Speichern-Dialog (nur bei `Dialog`).
     fn export_target(
         &self,

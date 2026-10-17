@@ -27,6 +27,11 @@ tauri-plugin-opener = "2"
 serde.workspace = true
 serde_json.workspace = true
 tokio.workspace = true
+tracing = "0.1"
+time = "0.3"
+# Protokoll in Dateien mit täglichem Wechsel; kein Netz, keine Telemetrie
+tracing-subscriber = { version = "0.3", default-features = false, features = ["fmt", "std", "registry"] }
+tracing-appender = "0.2"
 
 # Desktop-Plugins (wie in der Tauri-Dokumentation empfohlen)
 [target.'cfg(any(target_os = "macos", windows, target_os = "linux"))'.dependencies]
@@ -37,3 +42,5 @@ tauri-plugin-window-state = "2"
 
 [dev-dependencies]
 tauri = { version = "2", features = ["test"] }
+tempfile = "3"
+image = { version = "0.25", default-features = false, features = ["png"] }

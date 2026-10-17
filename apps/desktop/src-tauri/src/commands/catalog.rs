@@ -1,19 +1,18 @@
-//! Commands: catalog (Phase 0: antworten mit sauberem Fehler, bis das Modul gebaut ist).
-
-#![allow(unused_variables)]
+//! Commands: catalog (Stand und Aktualisierung des signierten Katalogs).
 
 use cypher_core::api::{CatalogRefreshResult, CatalogStatus};
 use tauri::{AppHandle, Runtime, State};
 
-use super::{R, not_built};
+use super::R;
 use crate::ctx::AppCtx;
 
 #[tauri::command]
 pub async fn catalog_status(ctx: State<'_, AppCtx>) -> R<CatalogStatus> {
-    not_built("catalog_status")
+    Ok(ctx.app.catalog_status())
 }
 
+/// Holt den Katalog neu; die Ereignisse `catalog:updated` und `programs:changed` sendet der Kern.
 #[tauri::command]
-pub async fn catalog_refresh<Rt: Runtime>(app: AppHandle<Rt>, ctx: State<'_, AppCtx>) -> R<CatalogRefreshResult> {
-    not_built("catalog_refresh")
+pub async fn catalog_refresh<Rt: Runtime>(_app: AppHandle<Rt>, ctx: State<'_, AppCtx>) -> R<CatalogRefreshResult> {
+    Ok(ctx.app.catalog_refresh().await?)
 }

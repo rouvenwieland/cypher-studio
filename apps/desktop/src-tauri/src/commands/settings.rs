@@ -1,33 +1,38 @@
-//! Commands: settings (Phase 0: antworten mit sauberem Fehler, bis das Modul gebaut ist).
+//! Commands: settings (Einstellungen, Ordnerwahl, Netzwerkübersicht).
 
-#![allow(unused_variables)]
-
-use cypher_core::api::{NetworkInfo, Settings, SettingsChooseDirReq, SettingsPatch};
+use cypher_core::api::{DirSetting, NetworkInfo, Settings, SettingsChooseDirReq, SettingsPatch};
 use tauri::{AppHandle, Runtime, State};
 
-use super::{R, not_built};
+use super::{R, blocking};
 use crate::ctx::AppCtx;
+use crate::dialogs;
 
 #[tauri::command]
 pub async fn settings_get(ctx: State<'_, AppCtx>) -> R<Settings> {
-    not_built("settings_get")
+    Ok(ctx.app.settings_get())
 }
 
 #[tauri::command]
 pub async fn settings_update(ctx: State<'_, AppCtx>, req: SettingsPatch) -> R<Settings> {
-    not_built("settings_update")
+    Ok(ctx.app.settings_update(&req)?)
 }
 
+/// Ordner wählen und übernehmen (Programmordner, Projektordner). Abbruch = `null`.
 #[tauri::command]
 pub async fn settings_choose_dir<Rt: Runtime>(
     app: AppHandle<Rt>,
     ctx: State<'_, AppCtx>,
     req: SettingsChooseDirReq,
 ) -> R<Option<Settings>> {
-    not_built("settings_choose_dir")
+    let title = match req.which {
+        DirSetting::ProgramsDir => "Ordner für Programme wählen",
+        DirSetting::ProjectsDir => "Ordner für Projekte wählen",
+    };
+    let Some(path) = dialogs::pick_folder(&app, title).await? else { return Ok(None) };
+    Ok(Some(blocking(&ctx, move |core| core.settings_set_dir(req.which, &path)).await?))
 }
 
 #[tauri::command]
 pub async fn network_info(ctx: State<'_, AppCtx>) -> R<NetworkInfo> {
-    not_built("network_info")
+    Ok(ctx.app.network_info())
 }

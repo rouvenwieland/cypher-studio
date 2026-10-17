@@ -1,14 +1,12 @@
-//! Commands: launch (Phase 0: antworten mit sauberem Fehler, bis das Modul gebaut ist).
-
-#![allow(unused_variables)]
+//! Commands: launch (Programm starten).
 
 use cypher_core::api::{LaunchReq, LaunchResult};
 use tauri::State;
 
-use super::{R, not_built};
+use super::{R, blocking};
 use crate::ctx::AppCtx;
 
 #[tauri::command]
 pub async fn program_launch(ctx: State<'_, AppCtx>, req: LaunchReq) -> R<LaunchResult> {
-    not_built("program_launch")
+    blocking(&ctx, move |core| core.program_launch(&req)).await
 }

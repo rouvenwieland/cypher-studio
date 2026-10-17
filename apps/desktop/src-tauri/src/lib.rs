@@ -1,7 +1,15 @@
 //! Cypher Studio – Tauri-Schicht: Plugins, Commands, Protokolle. Die Fachlogik liegt in `cypher-core`.
 
+mod boot;
+mod close_guard;
 mod commands;
 mod ctx;
+mod dialogs;
+mod dragdrop;
+mod events;
+mod logging;
+mod protocols;
+mod updater;
 
 use tauri::Manager;
 
@@ -114,7 +122,17 @@ pub fn run() -> tauri::Result<()> {
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_window_state::Builder::default().build());
 
-    builder.manage(ctx::AppCtx::new()).invoke_handler(invoke_handler()).run(tauri::generate_context!())
+    builder
+        .register_asynchronous_uri_scheme_protocol(protocols::CYFILE, protocols::handler(protocols::CYFILE))
+        .register_asynchronous_uri_scheme_protocol(protocols::CYTHUMB, protocols::handler(protocols::CYTHUMB))
+        .register_asynchronous_uri_scheme_protocol(protocols::CYASSET, protocols::handler(protocols::CYASSET))
+        .on_window_event(|window, event| {
+            dragdrop::on_event(window, event);
+            close_guard::on_event(window, event);
+        })
+        .setup(boot::setup)
+        .invoke_handler(invoke_handler())
+        .run(tauri::generate_context!())
 }
 
 #[cfg(test)]
@@ -122,11 +140,17 @@ mod tests {
     use std::collections::BTreeSet;
     use std::fs;
     use std::path::Path;
+    use std::sync::{Arc, Mutex};
 
-    use super::*;
+    use cypher_core::api::BuildChannel;
+    use cypher_core::app::{App, AppConfig};
+    use cypher_core::platform::AppDirs;
     use tauri::ipc::{CallbackFn, InvokeBody};
     use tauri::test::{INVOKE_KEY, MockRuntime, get_ipc_response, mock_builder};
     use tauri::webview::InvokeRequest;
+    use tauri::{Listener, WebviewWindow};
+
+    use super::*;
 
     fn root() -> std::path::PathBuf {
         Path::new(env!("CARGO_MANIFEST_DIR")).join("../../..")
@@ -215,39 +239,231 @@ mod tests {
         }
     }
 
-    fn app() -> tauri::App<MockRuntime> {
-        mock_builder()
+    /// Eine Mock-App mit echtem Kern in einem Temp-Ordner und den echten Paketen.
+    fn app() -> (tauri::App<MockRuntime>, tempfile::TempDir) {
+        let tmp = tempfile::tempdir().unwrap();
+        let app = mock_builder()
             .plugin(tauri_plugin_dialog::init())
             .plugin(tauri_plugin_updater::Builder::new().build())
-            .manage(ctx::AppCtx::new())
             .invoke_handler(invoke_handler())
             .build(tauri::generate_context!())
-            .unwrap()
+            .unwrap();
+        let dirs = AppDirs::with_root(tmp.path(), tmp.path().join("res"));
+        let mut config = AppConfig::system(dirs, "0.1.0", BuildChannel::Dev).unwrap();
+        config.packs_root = root().join("packs/dist");
+        let core = App::new(config, events::event_sink(app.handle().clone())).unwrap();
+        app.manage(ctx::AppCtx::new(core));
+        (app, tmp)
+    }
+
+    fn main_window(app: &tauri::App<MockRuntime>) -> WebviewWindow<MockRuntime> {
+        tauri::WebviewWindowBuilder::new(app, "main", Default::default()).build().unwrap()
+    }
+
+    fn call<T: serde::de::DeserializeOwned>(
+        window: &WebviewWindow<MockRuntime>,
+        cmd: &str,
+        body: serde_json::Value,
+    ) -> Result<T, serde_json::Value> {
+        get_ipc_response(window, request(cmd, body)).map(|r| r.deserialize::<T>().unwrap())
     }
 
     #[test]
-    fn commands_are_reachable_from_the_main_window_and_answer_cleanly() {
-        let app = app();
-        let main = tauri::WebviewWindowBuilder::new(&app, "main", Default::default()).build().unwrap();
-        let err = get_ipc_response(&main, request("app_info", serde_json::json!({}))).unwrap_err();
-        assert_eq!(err["kind"], "internal", "{err}");
-        assert!(err["message"].as_str().unwrap().contains("app_info"));
-        // Request-Argument und Channel-Parameter werden angenommen (Phase 0: noch nicht gebaut)
-        let err = get_ipc_response(&main, request("settings_update", serde_json::json!({ "req": {} }))).unwrap_err();
-        assert_eq!(err["kind"], "internal");
+    fn commands_are_reachable_from_the_main_window_and_run_against_the_core() {
+        let (app, _tmp) = app();
+        let main = main_window(&app);
+        let info: serde_json::Value = call(&main, "app_info", serde_json::json!({})).unwrap();
+        assert_eq!(info["contractVersion"], cypher_core::api::names::IPC_CONTRACT_VERSION);
+        assert_eq!(info["appVersion"], "0.1.0");
+
+        let settings: serde_json::Value =
+            call(&main, "settings_update", serde_json::json!({ "req": { "profile": { "displayName": "Rouven" } } }))
+                .unwrap();
+        assert_eq!(settings["profile"]["displayName"], "Rouven");
+        let again: serde_json::Value = call(&main, "settings_get", serde_json::json!({})).unwrap();
+        assert_eq!(again["profile"]["displayName"], "Rouven");
+
+        let net: serde_json::Value = call(&main, "network_info", serde_json::json!({})).unwrap();
+        assert_eq!(net["telemetry"], false);
+        let view: serde_json::Value = call(&main, "programs_list", serde_json::json!({})).unwrap();
+        assert!(view["programs"].as_array().unwrap().iter().any(|p| p["id"] == "blender"));
+        let cancelled: bool =
+            call(&main, "job_cancel", serde_json::json!({ "req": { "jobId": "gibtsnicht" } })).unwrap();
+        assert!(!cancelled);
+        let profiles: Vec<serde_json::Value> = call(&main, "print_profiles_list", serde_json::json!({})).unwrap();
+        assert_eq!(profiles.len(), 10);
+        let brand: serde_json::Value = call(&main, "brand_get", serde_json::json!({})).unwrap();
+        assert!(brand["garmentColors"].as_array().unwrap().iter().any(|g| g["id"] == "schwarz"));
+        let bg: serde_json::Value = call(&main, "bgremove_status", serde_json::json!({})).unwrap();
+        assert_eq!(bg["modelFeature"], false);
+    }
+
+    #[test]
+    fn errors_reach_the_frontend_in_the_contract_form() {
+        let (app, _tmp) = app();
+        let main = main_window(&app);
+        let err = call::<serde_json::Value>(
+            &main,
+            "install_preview",
+            serde_json::json!({ "req": { "programId": "gibtsnicht" } }),
+        )
+        .unwrap_err();
+        assert_eq!(err["kind"], "notFound", "{err}");
+        assert_eq!(err["entity"], "program");
+
+        let err = call::<serde_json::Value>(
+            &main,
+            "project_new_file",
+            serde_json::json!({ "req": { "projectId": "x", "templateId": "y", "fileName": "z" } }),
+        )
+        .unwrap_err();
+        assert_eq!(err["kind"], "notFound");
+
+        // das Modellverfahren gibt es noch nicht: der Plan ist unbekannt
+        let err = call::<serde_json::Value>(
+            &main,
+            "bgremove_model_preview",
+            serde_json::json!({ "req": { "modelId": "isnet" } }),
+        )
+        .unwrap_err();
+        assert_eq!(err["kind"], "notFound");
+
+        // ohne Zustimmung zu einem unbekannten Plan
+        let err = call::<serde_json::Value>(
+            &main,
+            "setup_preview",
+            serde_json::json!({ "req": { "packId": "gibtsnicht", "scopeId": "x" } }),
+        )
+        .unwrap_err();
+        assert_eq!(err["kind"], "notFound");
+
+        // ungültige Eingabe: leerer Projektname
+        let err = call::<serde_json::Value>(&main, "project_create", serde_json::json!({ "req": { "name": "  " } }))
+            .unwrap_err();
+        assert_eq!(err["kind"], "invalidInput");
+        assert_eq!(err["field"], "name");
+    }
+
+    #[test]
+    fn core_events_arrive_as_tauri_events_with_the_contract_names() {
+        let (app, _tmp) = app();
+        let main = main_window(&app);
+        let seen: Arc<Mutex<Vec<String>>> = Arc::default();
+        let sink = seen.clone();
+        app.listen("projects:changed", move |event| sink.lock().unwrap().push(event.payload().to_owned()));
+        let project: serde_json::Value =
+            call(&main, "project_create", serde_json::json!({ "req": { "name": "Ereignis" } })).unwrap();
+        let seen = seen.lock().unwrap();
+        assert_eq!(seen.len(), 1, "{seen:?}");
+        assert!(seen[0].contains(project["id"].as_str().unwrap()), "{}", seen[0]);
+    }
+
+    #[test]
+    fn export_save_image_takes_raw_bytes_and_a_percent_encoded_header() {
+        let (app, _tmp) = app();
+        let main = main_window(&app);
+        let project: serde_json::Value =
+            call(&main, "project_create", serde_json::json!({ "req": { "name": "Bilder" } })).unwrap();
+        let mut png = Vec::new();
+        image::RgbaImage::from_pixel(8, 8, image::Rgba([1, 2, 3, 255]))
+            .write_to(&mut std::io::Cursor::new(&mut png), image::ImageFormat::Png)
+            .unwrap();
+        let meta = serde_json::json!({
+            "fileName": "Mockup Rot.png",
+            "format": "png",
+            "destination": { "kind": "project", "projectId": project["id"], "folder": "Export/Social" },
+            "dpi": 300
+        });
+        let mut headers = tauri::http::HeaderMap::new();
+        headers.insert(
+            cypher_core::api::EXPORT_IMAGE_META_HEADER,
+            cypher_core::urls::encode_path(&meta.to_string()).parse().unwrap(),
+        );
+        let mut req = request("export_save_image", serde_json::json!({}));
+        req.body = InvokeBody::Raw(png.clone());
+        req.headers = headers;
+        let saved: serde_json::Value = get_ipc_response(&main, req).map(|r| r.deserialize().unwrap()).unwrap();
+        assert_eq!(saved["name"], "Mockup Rot.png");
+        assert!(saved["displayPath"].as_str().unwrap().contains("Export"));
+
+        // ohne Kopf oder mit JSON-Körper: Eingabefehler
+        let mut no_header = request("export_save_image", serde_json::json!({}));
+        no_header.body = InvokeBody::Raw(png);
+        let err = get_ipc_response(&main, no_header).unwrap_err();
+        assert_eq!(err["kind"], "invalidInput", "{err}");
     }
 
     #[test]
     fn other_windows_and_plugins_are_not_allowed() {
-        let app = app();
+        let (app, _tmp) = app();
         let other = tauri::WebviewWindowBuilder::new(&app, "fremd", Default::default()).build().unwrap();
         let err = get_ipc_response(&other, request("app_info", serde_json::json!({}))).unwrap_err();
         assert!(err.to_string().contains("not allowed"), "{err}");
 
         // Dialog-Plugin ist nur aus Rust erlaubt, nicht für das Frontend
-        let main = tauri::WebviewWindowBuilder::new(&app, "main", Default::default()).build().unwrap();
+        let main = main_window(&app);
         let err =
             get_ipc_response(&main, request("plugin:dialog|open", serde_json::json!({ "options": {} }))).unwrap_err();
         assert!(err.to_string().contains("not allowed"), "{err}");
+    }
+
+    fn protocol_request(scheme: &str, path: &str) -> tauri::http::Request<Vec<u8>> {
+        tauri::http::Request::builder()
+            .method("GET")
+            .uri(format!("{scheme}://localhost/{path}"))
+            .header("Origin", "tauri://localhost")
+            .body(Vec::new())
+            .unwrap()
+    }
+
+    #[test]
+    fn protocols_serve_only_registered_files_and_package_assets_with_cors_headers() {
+        let (app, tmp) = app();
+        let core = app.state::<ctx::AppCtx>().app.clone();
+        let file = tmp.path().join("motiv.png");
+        image::RgbaImage::from_pixel(4, 4, image::Rgba([9, 9, 9, 255])).save(&file).unwrap();
+        let handle = core.handles.register(&file, cypher_core::api::HandleSource::Dialog).unwrap();
+        let svg = tmp.path().join("bild.svg");
+        fs::write(&svg, b"<svg xmlns=\"http://www.w3.org/2000/svg\"/>").unwrap();
+        let svg_handle = core.handles.register(&svg, cypher_core::api::HandleSource::Dialog).unwrap();
+
+        tauri::async_runtime::block_on(async {
+            let ok = protocols::respond(core.clone(), "cyfile", &protocol_request("cyfile", &handle.id)).await;
+            assert_eq!(ok.status(), 200);
+            assert_eq!(ok.headers()["content-type"], "image/png");
+            assert_eq!(ok.headers()["x-content-type-options"], "nosniff");
+            assert_eq!(ok.headers()["access-control-allow-origin"], "tauri://localhost");
+            assert_eq!(ok.headers()["cache-control"], "no-store");
+
+            for (scheme, path) in [
+                ("cyfile", "unbekannt"),
+                ("cyfile", svg_handle.id.as_str()),
+                ("cyfile", "..%2F..%2Fetc%2Fpasswd"),
+                ("cyasset", "..%2FCargo.toml"),
+                ("cyasset", "mockups%2F..%2F..%2Fmanifest.json"),
+                ("cyasset", "krita/pack.json"),
+                ("cythumb", "unbekannt"),
+            ] {
+                let denied = protocols::respond(core.clone(), scheme, &protocol_request(scheme, path)).await;
+                assert_eq!(denied.status(), 404, "{scheme}/{path}");
+                assert!(denied.body().is_empty());
+                assert_eq!(denied.headers()["access-control-allow-origin"], "tauri://localhost");
+            }
+
+            let asset =
+                protocols::respond(core.clone(), "cyasset", &protocol_request("cyasset", "mockups/tee-front/mask.png"))
+                    .await;
+            assert_eq!(asset.status(), 200);
+            assert_eq!(asset.headers()["cache-control"], "max-age=86400");
+            assert_eq!(asset.headers()["content-type"], "image/png");
+
+            // nur lesen
+            let post = tauri::http::Request::builder()
+                .method("POST")
+                .uri(format!("cyfile://localhost/{}", handle.id))
+                .body(Vec::new())
+                .unwrap();
+            assert_eq!(protocols::respond(core, "cyfile", &post).await.status(), 404);
+        });
     }
 }

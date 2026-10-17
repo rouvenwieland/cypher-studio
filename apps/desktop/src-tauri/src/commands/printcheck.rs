@@ -1,27 +1,28 @@
-//! Commands: printcheck (Phase 0: antworten mit sauberem Fehler, bis das Modul gebaut ist).
-
-#![allow(unused_variables)]
+//! Commands: printcheck (Druckprofile, Analyse, Export, Überlagerungen).
 
 use cypher_core::api::{
-    FileHandleInfo, PrintAnalyzeReq, PrintExportEvent, PrintExportReq, PrintExportResult, PrintOverlayReq,
-    PrintProfile, PrintReport,
+    AppError, FileHandleInfo, PrintAnalyzeReq, PrintDestination, PrintExportEvent, PrintExportReq, PrintExportResult,
+    PrintOverlayReq, PrintProfile, PrintReport,
 };
 use tauri::ipc::Channel;
 use tauri::{AppHandle, Runtime, State};
 
-use super::{R, not_built};
+use super::R;
 use crate::ctx::AppCtx;
+use crate::dialogs;
+use crate::events::shared;
 
 #[tauri::command]
 pub async fn print_profiles_list(ctx: State<'_, AppCtx>) -> R<Vec<PrintProfile>> {
-    not_built("print_profiles_list")
+    Ok(ctx.app.print_profiles_list())
 }
 
 #[tauri::command]
 pub async fn printcheck_analyze(ctx: State<'_, AppCtx>, req: PrintAnalyzeReq) -> R<PrintReport> {
-    not_built("printcheck_analyze")
+    Ok(ctx.app.printcheck_analyze(&req).await?)
 }
 
+/// Exportiert das geprüfte Motiv. Bei Ziel „Dialog“ fragt ein Speichern-Dialog; Abbruch dort ist ein `cancelled`.
 #[tauri::command]
 pub async fn printcheck_export<Rt: Runtime>(
     app: AppHandle<Rt>,
@@ -29,10 +30,19 @@ pub async fn printcheck_export<Rt: Runtime>(
     req: PrintExportReq,
     on_event: Channel<PrintExportEvent>,
 ) -> R<PrintExportResult> {
-    not_built("printcheck_export")
+    let dialog_path = if matches!(req.options.destination, PrintDestination::Dialog) {
+        let suggestion = ctx.app.printcheck_suggested_name(&req)?;
+        match dialogs::save_file(&app, "Druckdatei speichern", &suggestion, Some(("PNG-Bild", &["png"]))).await? {
+            Some(path) => Some(path),
+            None => return Err(AppError::Cancelled),
+        }
+    } else {
+        None
+    };
+    Ok(ctx.app.printcheck_export(&req, dialog_path.as_deref(), shared(on_event)).await?)
 }
 
 #[tauri::command]
 pub async fn printcheck_overlay(ctx: State<'_, AppCtx>, req: PrintOverlayReq) -> R<FileHandleInfo> {
-    not_built("printcheck_overlay")
+    Ok(ctx.app.printcheck_overlay(&req).await?)
 }

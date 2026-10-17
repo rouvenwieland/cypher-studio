@@ -1,43 +1,44 @@
-//! Commands: bgremove (Phase 0: antworten mit sauberem Fehler, bis das Modul gebaut ist).
-
-#![allow(unused_variables)]
+//! Commands: bgremove (Hintergrund entfernen). Der Farbschlüssel ist immer da; das Modellverfahren ist ein späterer Ausbau
+//! (ARCHITEKTUR.md 2.16): bis dahin meldet `bgremove_status` `modelFeature = false`.
 
 use cypher_core::api::{
-    BgRemoveEvent, BgRemoveModelReq, BgRemoveRunReq, BgRemoveStatus, FileHandleInfo, InstallEvent, InstallPlan,
-    InstallStartReq,
+    AppError, BgRemoveEvent, BgRemoveModelReq, BgRemoveRunReq, BgRemoveStatus, EntityKind, FileHandleInfo,
+    InstallEvent, InstallPlan, InstallStartReq,
 };
 use tauri::ipc::Channel;
 use tauri::{AppHandle, Runtime, State};
 
-use super::{R, not_built};
+use super::R;
 use crate::ctx::AppCtx;
+use crate::events::shared;
 
 #[tauri::command]
 pub async fn bgremove_status(ctx: State<'_, AppCtx>) -> R<BgRemoveStatus> {
-    not_built("bgremove_status")
+    Ok(ctx.app.bgremove_status())
 }
 
 #[tauri::command]
 pub async fn bgremove_model_preview(ctx: State<'_, AppCtx>, req: BgRemoveModelReq) -> R<InstallPlan> {
-    not_built("bgremove_model_preview")
+    Ok(ctx.app.bgremove_model_preview(&req)?)
 }
 
+/// Ohne eingebautes Modellverfahren gibt es nichts zu installieren: der Plan ist unbekannt.
 #[tauri::command]
 pub async fn bgremove_model_install<Rt: Runtime>(
-    app: AppHandle<Rt>,
-    ctx: State<'_, AppCtx>,
+    _app: AppHandle<Rt>,
+    _ctx: State<'_, AppCtx>,
     req: InstallStartReq,
-    on_event: Channel<InstallEvent>,
+    _on_event: Channel<InstallEvent>,
 ) -> R<BgRemoveStatus> {
-    not_built("bgremove_model_install")
+    Err(AppError::not_found(EntityKind::Plan, req.plan_id))
 }
 
 #[tauri::command]
 pub async fn bgremove_run<Rt: Runtime>(
-    app: AppHandle<Rt>,
+    _app: AppHandle<Rt>,
     ctx: State<'_, AppCtx>,
     req: BgRemoveRunReq,
     on_event: Channel<BgRemoveEvent>,
 ) -> R<FileHandleInfo> {
-    not_built("bgremove_run")
+    Ok(ctx.app.bgremove_run(&req, shared(on_event)).await?)
 }

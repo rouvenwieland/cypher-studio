@@ -1,24 +1,22 @@
-//! Commands: jobs (Phase 0: antworten mit sauberem Fehler, bis das Modul gebaut ist).
-
-#![allow(unused_variables)]
+//! Commands: jobs (laufende und beendete Aufträge, Abbrechen).
 
 use cypher_core::api::{JobCancelReq, JobInfo, JobRecord};
 use tauri::State;
 
-use super::{R, not_built};
+use super::R;
 use crate::ctx::AppCtx;
 
 #[tauri::command]
 pub async fn jobs_active(ctx: State<'_, AppCtx>) -> R<Vec<JobInfo>> {
-    not_built("jobs_active")
+    Ok(ctx.app.jobs_active())
 }
 
 #[tauri::command]
 pub async fn jobs_recent(ctx: State<'_, AppCtx>) -> R<Vec<JobRecord>> {
-    not_built("jobs_recent")
+    Ok(ctx.app.jobs_recent())
 }
 
 #[tauri::command]
 pub async fn job_cancel(ctx: State<'_, AppCtx>, req: JobCancelReq) -> R<bool> {
-    not_built("job_cancel")
+    Ok(ctx.app.job_cancel(&req))
 }

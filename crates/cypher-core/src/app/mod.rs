@@ -9,7 +9,9 @@ mod misc_ops;
 mod print_ops;
 mod programs_ops;
 mod project_ops;
+pub mod serve;
 mod setup_ops;
+mod shell_ops;
 
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, Ordering};
