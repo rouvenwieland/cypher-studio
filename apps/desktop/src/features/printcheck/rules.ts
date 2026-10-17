@@ -166,6 +166,36 @@ export interface CheckSummary {
   verdict: "ok" | "warning" | "error";
 }
 
+/**
+ * Größe der Druckdatei in Pixeln, wie `printcheck_export` sie schreibt: Das Motiv (ohne leeren Rand) wird auf die geplante
+ * Breite bei 300 dpi gebracht; ohne „Vergrößern erlauben“ wird nie hochgerechnet, es bleibt bei der Breite des Motivs.
+ */
+export function exportSize(
+  plannedWidthMm: number,
+  trimmed: { width: number; height: number } | null,
+  allowUpscale: boolean,
+): { outW: number; outH: number } {
+  const planned = Math.max(1, Math.round((plannedWidthMm / MM_PER_INCH) * 300));
+  if (!trimmed || trimmed.width <= 0) return { outW: planned, outH: 0 };
+  const width = allowUpscale ? planned : Math.min(planned, Math.round(trimmed.width));
+  const scale = width / trimmed.width;
+  return { outW: width, outH: Math.max(1, Math.round(trimmed.height * scale)) };
+}
+
+/**
+ * Korrekturen, die die Nutzerin mit „Beheben“ für den Export vorgemerkt hat, lösen ihre Befunde: Der Prüfpunkt bleibt als
+ * Info sichtbar („wird beim Export behoben“), sperrt aber den Export nicht mehr und zählt nicht mehr als Fehler oder Hinweis.
+ * Hat ein Prüfpunkt auch Befunde ohne vorgemerkte Korrektur, bleibt er, wie er ist.
+ */
+export function withQueuedFixes(results: CheckResult[], queued: ReadonlySet<string>): CheckResult[] {
+  return results.map((r) => {
+    if (r.state !== "error" && r.state !== "warning") return r;
+    const blocking = r.findings.filter((f) => f.severity !== "info");
+    const solved = blocking.length > 0 && blocking.every((f) => f.fix !== null && queued.has(f.fix));
+    return solved ? { ...r, state: "info" } : r;
+  });
+}
+
 export function summarize(results: CheckResult[]): CheckSummary {
   const errors = results.filter((r) => r.state === "error").length;
   const warnings = results.filter((r) => r.state === "warning").length;

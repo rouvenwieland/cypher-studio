@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { PRINT_PROFILES } from "../../ipc/mock/fixtures";
 import { SAMPLES, analyze } from "../../ipc/mock/printcheck";
-import { CHECK_ORDER, evaluateChecks, sortChecks, summarize } from "./rules";
+import { CHECK_ORDER, evaluateChecks, exportSize, sortChecks, summarize, withQueuedFixes } from "./rules";
 import {
   defaultTopOffset,
   fitScale,
@@ -46,6 +46,39 @@ describe("Prüfpunkte aus Befunden", () => {
     expect(checks.find((c) => c.id === "strokes")?.measured).toBe("0,6 mm");
     expect(checks.find((c) => c.id === "resolution")?.measured).toBe("300 dpi bei 280 mm");
   });
+  it("vorgemerkte Korrekturen lösen ihre Befunde: der Fehler sperrt den Export nicht mehr", () => {
+    const base = report("signal_v3.png");
+    const semiError = {
+      ruleId: "alpha.semiTransparent",
+      severity: "error",
+      params: {},
+      region: null,
+      fix: "semiTransparency",
+    };
+    const checks = evaluateChecks({ ...base, findings: [...base.findings, semiError] as never }, profile);
+    const before = summarize(checks);
+    expect(before.errors).toBeGreaterThan(0);
+    // ohne vorgemerkte Korrektur ändert sich nichts
+    expect(withQueuedFixes(checks, new Set())).toEqual(checks);
+    // mit der Korrektur wird aus dem Fehler Info („wird beim Export behoben“)
+    const after = withQueuedFixes(checks, new Set(["semiTransparency"]));
+    const semi = after.find((c) => c.id === "semi");
+    expect(semi?.state).toBe("info");
+    expect(semi?.findings).toHaveLength(checks.find((c) => c.id === "semi")?.findings.length ?? -1);
+    expect(summarize(after).errors).toBe(before.errors - 1);
+    // eine andere vorgemerkte Korrektur ändert diesen Prüfpunkt nicht
+    expect(withQueuedFixes(checks, new Set(["cleanGhostPixels"])).find((c) => c.id === "semi")?.state).toBe("error");
+  });
+  it("hat ein Prüfpunkt noch einen Befund ohne Korrektur, bleibt er stehen", () => {
+    const base = report("signal_v3.png");
+    const findings = [
+      { ruleId: "alpha.semiTransparent", severity: "error", params: {}, region: null, fix: "semiTransparency" },
+      { ruleId: "alpha.semiTransparent", severity: "warning", params: {}, region: null, fix: null },
+    ];
+    const checks = evaluateChecks({ ...base, findings: findings as never }, profile);
+    const out = withQueuedFixes(checks, new Set(["semiTransparency"]));
+    expect(out.find((c) => c.id === "semi")?.state).toBe(checks.find((c) => c.id === "semi")?.state);
+  });
   it("Messwert und Grenze widersprechen sich nie: Grenzen sind als „erlaubt/nötig“ formuliert, Befunde stehen im Messwert", () => {
     const checks = evaluateChecks(report("signal_v3.png"), profile);
     expect(checks.find((c) => c.id === "semi")?.limit).toBe("erlaubt ≤ 0,1 %");
@@ -81,6 +114,19 @@ describe("Prüfpunkte aus Befunden", () => {
     const sum = summarize(checks);
     expect(sum.errors + sum.warnings).toBe(0);
     expect(sum.verdict).toBe("ok");
+  });
+});
+
+describe("Größe der Druckdatei (wie Rust sie schreibt)", () => {
+  it("geplante Breite bei 300 dpi, Höhe nach dem Seitenverhältnis des Motivs", () => {
+    expect(exportSize(280, { width: 3900, height: 5000 }, false)).toEqual({ outW: 3307, outH: 4240 });
+  });
+  it("ohne „Vergrößern erlauben“ nie über die Breite des Motivs hinaus (die Leiste verspricht nicht mehr, als geschrieben wird)", () => {
+    expect(exportSize(280, { width: 3136, height: 4096 }, false)).toEqual({ outW: 3136, outH: 4096 });
+    expect(exportSize(280, { width: 3136, height: 4096 }, true)).toEqual({ outW: 3307, outH: 4319 });
+  });
+  it("ohne Motivmaße nur die Breite", () => {
+    expect(exportSize(100, null, false)).toEqual({ outW: 1181, outH: 0 });
   });
 });
 

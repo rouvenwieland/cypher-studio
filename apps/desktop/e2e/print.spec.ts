@@ -95,6 +95,8 @@ test.describe("Druckprüfer (CONCEPT.md 6.4)", () => {
     await page.getByTestId("check-semi").getByRole("button").first().click();
     await page.getByTestId("fix-semiTransparency").click();
     await expect(page.getByTestId("check-semi")).toContainText("wird beim Export behoben");
+    // die vorgemerkte Korrektur löst den Befund: das Urteil zählt ihn nicht mehr
+    await expect(page.getByTestId("verdict")).toContainText("1 Hinweis · 0 Fehler");
     await page.getByTestId("export-settings").locator("summary").click();
     await expect(page.getByRole("combobox", { name: "Halbtransparenz" })).toHaveValue("threshold");
   });

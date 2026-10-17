@@ -38,7 +38,7 @@ import {
 import { OutputBar, type OutputState } from "../../ui/OutputBar";
 import { PrintCanvas, type CanvasKey, type ViewState } from "./PrintCanvas";
 import { ExportSection, GarmentSection, ReportSection, SizeSection, VerdictBlock } from "./PrintInspector";
-import { evaluateChecks, summarize, type CheckResult } from "./rules";
+import { evaluateChecks, exportSize, summarize, withQueuedFixes, type CheckResult } from "./rules";
 import { defaultTopOffset, heightFor, pxPerMmActual } from "./geometry";
 import { useDebounced } from "../../lib/useDebounced";
 import "./printcheck.css";
@@ -170,8 +170,8 @@ export default function PrintCheck() {
   const analyzing = analysis.isFetching && (!report || report.file.name !== handle?.name);
 
   const checks: CheckResult[] = useMemo(
-    () => (report && profile ? evaluateChecks(report, profile) : []),
-    [report, profile],
+    () => (report && profile ? withQueuedFixes(evaluateChecks(report, profile), fixed) : []),
+    [report, profile, fixed],
   );
   const sum = useMemo(() => summarize(checks), [checks]);
 
@@ -302,15 +302,11 @@ export default function PrintCheck() {
     });
   };
 
-  // Ausgangsleiste
+  // Ausgangsleiste: genau die Maße, die Rust schreibt (ohne „Vergrößern erlauben“ bleibt es bei der Breite des Motivs)
+  const { outW, outH } = exportSize(widthMm, report?.trimmedPx ?? null, options.allowUpscale);
   const estBytes = report
-    ? Math.round(
-        report.file.fileBytes *
-          Math.min(1.5, Math.max(0.2, (Math.round((widthMm / 25.4) * 300) / (report.trimmedPx?.width || 1)) ** 2)),
-      )
+    ? Math.round(report.file.fileBytes * Math.min(1.5, Math.max(0.2, (outW / (report.trimmedPx?.width || 1)) ** 2)))
     : 0;
-  const outW = Math.round((widthMm / 25.4) * 300);
-  const outH = report?.trimmedPx ? Math.round(outW * (report.trimmedPx.height / report.trimmedPx.width)) : 0;
   const summary = report
     ? [
         { label: p.output.format, value: "PNG" },
