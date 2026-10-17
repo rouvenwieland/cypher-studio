@@ -4,9 +4,14 @@ target/
 *.log
 .DS_Store
 Thumbs.db
-# Signierschlüssel nie einchecken
+# Signierschlüssel und Passwortdateien nie einchecken (öffentliche Schlüssel unter catalog/keys/*.pub gehören ins Repo)
 *.key
 *.key.pub.bak
+*.minisign
+*.sec
+*.secret
+PASSWORT*
+*PASSWORT*
 .env
 .env.*
 !.env.example

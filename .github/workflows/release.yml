@@ -1,0 +1,207 @@
+# Release: Installer für Windows, macOS und Linux als ENTWURF auf GitHub (ARCHITEKTUR 6.10, Sicherheitsreview M4).
+#
+# Auslöser: ein Tag `v<Version>` (die Version muss mit src-tauri/tauri.conf.json übereinstimmen) oder von Hand.
+# Veröffentlicht wird nie automatisch: Der Lauf legt einen Entwurf an; ein Mensch prüft und veröffentlicht ihn.
+#
+# Secrets (nur Rouven trägt sie in GitHub ein, am besten als Secrets der Umgebung `release` mit Pflichtfreigabe):
+#   TAURI_SIGNING_PRIVATE_KEY            Inhalt der Updater-Schlüsseldatei
+#   TAURI_SIGNING_PRIVATE_KEY_PASSWORD   Passwort dazu
+# Der Katalog-Schlüssel (catalog.key) gehört NICHT in die CI; der Katalog wird offline signiert (scripts/sign-catalog.mjs).
+# Hinweise zur Einrichtung: docs/security/README.md.
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+# Pro Tag ein Lauf; laufende Läufe nicht abbrechen (sonst halbfertige Entwürfe)
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions: {}
+
+env:
+  APP_DIR: apps/desktop
+
+jobs:
+  prepare:
+    name: Version und Voraussetzungen prüfen
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+
+      - id: v
+        name: Tag passt zur Version in tauri.conf.json
+        run: |
+          set -euo pipefail
+          VERSION="$(jq -r .version "$APP_DIR/src-tauri/tauri.conf.json")"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          if [ "$GITHUB_REF_TYPE" = "tag" ] && [ "$GITHUB_REF_NAME" != "v$VERSION" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME passt nicht zu version $VERSION in tauri.conf.json"
+            exit 1
+          fi
+          # Cargo-Version und Konfiguration müssen übereinstimmen (sonst trägt das Installationsprogramm die falsche Zahl)
+          CARGO_VERSION="$(sed -n 's/^version *= *"\(.*\)"/\1/p' Cargo.toml | head -n 1)"
+          [ "$CARGO_VERSION" = "$VERSION" ] || { echo "::error::Cargo.toml ($CARGO_VERSION) und tauri.conf.json ($VERSION) stimmen nicht überein"; exit 1; }
+
+      - name: Update-Artefakte sind an und der öffentliche Schlüssel eingetragen
+        run: |
+          set -euo pipefail
+          jq -e '.bundle.createUpdaterArtifacts == true' "$APP_DIR/src-tauri/tauri.conf.json" > /dev/null
+          jq -e '.plugins.updater.pubkey | length > 40' "$APP_DIR/src-tauri/tauri.conf.json" > /dev/null
+          jq -e '.plugins.updater.requireSignedVersion == true' "$APP_DIR/src-tauri/tauri.conf.json" > /dev/null
+
+      - name: Lizenzen und Geheimnisse
+        run: |
+          node --test "scripts/*.test.mjs"
+          node scripts/license-check.mjs
+          node scripts/secret-scan.mjs --history
+
+  packs:
+    name: Pakete bauen
+    needs: prepare
+    uses: ./.github/workflows/packs.yml
+    permissions:
+      contents: read
+
+  build:
+    name: build (${{ matrix.name }})
+    needs: [prepare, packs]
+    # Pflichtfreigabe durch einen Menschen: in GitHub unter Settings → Environments → release → Required reviewers
+    environment: release
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: windows-x64
+            os: windows-latest
+            args: "--bundles nsis" # NSIS-Setup pro Benutzer, ohne Administratorrechte
+            targets: ""
+          - name: macos-universal
+            os: macos-latest
+            # ein Bundle für Apple Silicon und Intel; Ad-hoc-Signatur kommt aus src-tauri/tauri.macos.conf.json (signingIdentity "-")
+            args: "--target universal-apple-darwin --bundles app,dmg"
+            targets: "aarch64-apple-darwin x86_64-apple-darwin"
+          - name: linux-x64
+            os: ubuntu-22.04 # älteste unterstützte Basis: niedrigste glibc im AppImage
+            args: "--bundles appimage,deb,rpm"
+            targets: ""
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 90
+    permissions:
+      contents: write # nur dieser Job legt den Entwurf an und lädt die Dateien hoch
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Systempakete für Tauri (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev build-essential curl wget file libxdo-dev libssl-dev \
+            libayatana-appindicator3-dev librsvg2-dev patchelf xdg-utils rpm
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: apps/desktop/package-lock.json
+
+      - name: Rust-Werkzeugkette
+        env:
+          TARGETS: ${{ matrix.targets }}
+        run: |
+          rustup toolchain install
+          if [ -n "$TARGETS" ]; then rustup target add $TARGETS; fi
+          rustc --version
+
+      - uses: Swatinem/rust-cache@63fed3e2fecf6f7b51dc6f043341b79ef82a9ae7 # v2.9.2
+        with:
+          key: release-${{ matrix.name }}
+
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: packs-dist
+          path: packs/dist
+
+      - name: Signier-Secrets der Umgebung sind gesetzt (Werte werden nie ausgegeben)
+        env:
+          KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          [ -n "$KEY" ] || { echo "::error::Secret TAURI_SIGNING_PRIVATE_KEY fehlt"; exit 1; }
+          [ -n "$PASSWORD" ] || { echo "::error::Secret TAURI_SIGNING_PRIVATE_KEY_PASSWORD fehlt (der Schlüssel ist passwortgeschützt)"; exit 1; }
+
+      - name: Oberfläche installieren
+        working-directory: ${{ env.APP_DIR }}
+        run: npm ci --no-fund --no-audit
+
+      - uses: tauri-apps/tauri-action@2d793bf2c8c505b9b76211601b09aab48922225d # v1.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          APPIMAGE_EXTRACT_AND_RUN: "1" # linuxdeploy braucht auf dem Runner kein FUSE
+        with:
+          projectPath: ${{ env.APP_DIR }}
+          tagName: v__VERSION__ # __VERSION__ wird durch die App-Version ersetzt
+          releaseName: "Cypher Studio v__VERSION__"
+          releaseBody: "Installationshinweise stehen auf der Downloadseite. Die Installer sind nicht signiert: Windows SmartScreen und macOS Gatekeeper zeigen Warnungen."
+          releaseDraft: true # Entwurf: ein Mensch prüft und veröffentlicht
+          prerelease: false
+          retryAttempts: 2 # latest.json wird von allen Jobs geschrieben (Konflikte)
+          updaterJsonPreferNsis: true
+          args: ${{ matrix.args }}
+
+  verify-release:
+    name: Entwurf auf Vollständigkeit prüfen
+    needs: [prepare, build]
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: latest.json und Installer im Entwurf
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: v${{ needs.prepare.outputs.version }}
+        run: |
+          set -euo pipefail
+          # Entwürfe sind über /releases/tags/<tag> nicht auffindbar: Liste durchsuchen
+          REL="$(gh api "repos/$GITHUB_REPOSITORY/releases?per_page=30" --jq "map(select(.tag_name==\"$TAG\"))[0]")"
+          if [ -z "$REL" ] || [ "$REL" = "null" ]; then echo "::error::Kein Release für $TAG"; exit 1; fi
+          [ "$(echo "$REL" | jq -r .draft)" = "true" ] || { echo "::error::Das Release $TAG ist kein Entwurf"; exit 1; }
+
+          NAMES="$(echo "$REL" | jq -r '.assets[].name')"
+          echo "$NAMES"
+          for pattern in '\.exe$' '\.dmg$' '\.AppImage$' '\.deb$' '\.rpm$' '\.exe\.sig$' '\.app\.tar\.gz$' '\.app\.tar\.gz\.sig$' '^latest\.json$'; do
+            echo "$NAMES" | grep -Eq "$pattern" || { echo "::error::Im Entwurf fehlt eine Datei mit dem Muster $pattern"; exit 1; }
+          done
+
+          ASSET_ID="$(echo "$REL" | jq -r '.assets[] | select(.name=="latest.json") | .id')"
+          gh api "repos/$GITHUB_REPOSITORY/releases/assets/$ASSET_ID" -H "Accept: application/octet-stream" > latest.json
+          jq . latest.json
+          for k in windows-x86_64 darwin-aarch64 darwin-x86_64 linux-x86_64; do
+            jq -e --arg k "$k" '.platforms | has($k)' latest.json > /dev/null \
+              || { echo "::error::latest.json ohne Plattform $k (Wettlauf der Jobs? Job erneut starten)"; exit 1; }
+          done
+          jq -e --arg v "${TAG#v}" '.version == $v' latest.json > /dev/null
+          echo "Entwurf vollständig. Prüfen und von Hand veröffentlichen."

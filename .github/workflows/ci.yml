@@ -1,0 +1,208 @@
+# Prüfungen bei jedem Push auf main und jedem Pull Request (ARCHITEKTUR 8.7, Sicherheitsreview M4).
+# Alle Actions sind auf den Commit festgelegt (Version im Kommentar); Dependabot hält sie aktuell. Ohne Berechtigungen,
+# außer lesen. Es gibt keine Secrets in diesem Workflow.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Neuer Push ersetzt den laufenden Lauf desselben Zweigs
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions: {}
+
+jobs:
+  hygiene:
+    name: Lizenzen, Geheimnisse, Skripte
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0 # der Verlauf wird auf Schlüssel durchsucht
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      - name: Tests der Prüfskripte
+        run: node --test "scripts/*.test.mjs"
+      - name: npm-Lizenzen gegen die Positivliste
+        run: node scripts/license-check.mjs
+      - name: Private Schlüssel und Zugangsdaten (Dateien und Verlauf)
+        run: node scripts/secret-scan.mjs --history
+
+  packs:
+    name: Pakete bauen
+    uses: ./.github/workflows/packs.yml
+    permissions:
+      contents: read
+
+  packs-tools:
+    name: Pakete prüfen und testen
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: packs/tools/package-lock.json
+      - name: Quellbaum prüfen
+        run: node packs/tools/validate.mjs
+      - name: Tests der Pakete
+        working-directory: packs/tools
+        run: |
+          npm ci --no-fund --no-audit
+          npm test
+
+  rust:
+    name: rust (${{ matrix.os }})
+    needs: packs
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    permissions:
+      contents: read
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Systempakete für Tauri (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev build-essential libxdo-dev libssl-dev \
+            libayatana-appindicator3-dev librsvg2-dev patchelf
+
+      # rust-toolchain.toml legt Version und Komponenten fest (rustfmt, clippy); rustup ist auf den Runnern vorhanden
+      - name: Rust-Werkzeugkette
+        run: |
+          rustup toolchain install
+          rustc --version
+          cargo --version
+
+      - uses: Swatinem/rust-cache@63fed3e2fecf6f7b51dc6f043341b79ef82a9ae7 # v2.9.2
+        with:
+          key: ${{ matrix.os }}
+
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: packs-dist
+          path: packs/dist
+
+      - name: Format
+        run: cargo fmt --all -- --check
+
+      - name: Clippy (Standard)
+        run: cargo clippy --workspace --all-targets --locked -- -D warnings
+
+      - name: Clippy (mit dev-tools)
+        run: cargo clippy -p cypher-studio -p cypher-cli --all-targets --locked --features dev-tools -- -D warnings
+
+      - name: Tests
+        run: cargo test --workspace --locked
+
+      - uses: taiki-e/install-action@8cca0918f8471c33515202b73f56ab27f2bed283 # v2.87.29
+        with:
+          tool: cargo-deny
+
+      - name: cargo deny (Advisories, Verbote, Quellen, Lizenzen)
+        run: cargo deny check advisories bans sources licenses
+
+      # test-util (http gegen 127.0.0.1, anderer Datenordner) darf nie in der ausgelieferten App stecken (Befund N16)
+      - name: Das App-Paket zieht test-util nicht ein
+        if: runner.os == 'Linux'
+        run: |
+          if cargo tree --locked -p cypher-studio -e features -i cypher-core | grep -q 'test-util'; then
+            echo "::error::cypher-core mit Feature test-util im Abhängigkeitsbaum der App"
+            exit 1
+          fi
+      - name: Ein Release-Build mit test-util bricht ab
+        if: runner.os == 'Linux'
+        run: |
+          if cargo check --locked -p cypher-core --release --features test-util 2> "$RUNNER_TEMP/test-util.txt"; then
+            echo "::error::cypher-core --release --features test-util lässt sich bauen, sollte aber abbrechen"
+            exit 1
+          fi
+          grep -q 'nur in Debug- und Testbuilds' "$RUNNER_TEMP/test-util.txt"
+
+      # cargo test erzeugt die TypeScript-Typen des Vertrags; sie müssen eingecheckt und aktuell sein
+      - name: Erzeugte Typen sind eingecheckt
+        if: runner.os == 'Linux'
+        run: git diff --exit-code -- apps/desktop/src/ipc/generated
+
+  frontend:
+    name: Oberfläche (Typen, Lint, Vitest, Playwright-Mock)
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: apps/desktop
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: apps/desktop/package-lock.json
+      - run: npm ci --no-fund --no-audit
+      - name: npm audit (ausgelieferte Abhängigkeiten)
+        run: npm audit --omit=dev
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run lint:css
+      - run: npm run format:check
+      - name: Vitest
+        run: npm test
+      - name: Chromium für Playwright
+        run: npx playwright install --with-deps chromium
+      - name: Playwright gegen den Mock
+        run: npm run e2e
+      - name: Playwright mit Produktions-CSP
+        run: npm run e2e:csp
+
+  site:
+    name: Seite (Einheiten- und Browsertests)
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: site
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+      - run: npm ci --no-fund --no-audit
+      - name: Chromium für Playwright
+        run: npx playwright install --with-deps chromium
+      - name: Tests
+        run: npm test

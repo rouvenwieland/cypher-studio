@@ -478,8 +478,8 @@ pub(crate) mod test_links {
                 .arg("/C")
                 .arg("mklink")
                 .arg("/J")
-                .arg(link)
-                .arg(target)
+                .arg(link.to_string_lossy().replace('/', "\\"))
+                .arg(target.to_string_lossy().replace('/', "\\"))
                 .output()
                 .unwrap();
             assert!(out.status.success(), "mklink: {}", String::from_utf8_lossy(&out.stdout));

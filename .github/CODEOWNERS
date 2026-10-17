@@ -1,0 +1,28 @@
+# Wer prüfen muss, bevor etwas in diesen Pfaden landet (Sicherheitsreview M4). Zusammen mit dem Branch-Schutz auf main
+# ("Require review from Code Owners", GitHub → Settings → Branches) verhindert das, dass jemand per Pull Request einen
+# eigenen Katalogschlüssel, eine weitere erlaubte Adresse oder eine Berechtigung für das Frontend einschleust.
+
+# Schlüssel, die der Katalog vertraut (crates/cypher-core/build.rs bettet jede catalog-*.pub ein)
+/catalog/keys/                                   @rouvenwieland
+/catalog/catalog.json                            @rouvenwieland
+/catalog/catalog.json.minisig                    @rouvenwieland
+
+# Erlaubte Download-Adressen und Prüfungen
+/crates/cypher-core/src/download/                @rouvenwieland
+/crates/cypher-core/src/verify/                  @rouvenwieland
+/crates/cypher-core/src/catalog/                 @rouvenwieland
+/crates/cypher-core/build.rs                     @rouvenwieland
+
+# Tauri: Berechtigungen, Inhalts-Richtlinie, Updater-Schlüssel
+/apps/desktop/src-tauri/tauri.conf.json          @rouvenwieland
+/apps/desktop/src-tauri/tauri.macos.conf.json    @rouvenwieland
+/apps/desktop/src-tauri/capabilities/            @rouvenwieland
+/apps/desktop/src-tauri/permissions/             @rouvenwieland
+
+# Auslieferung und Lieferkette
+/.github/                                        @rouvenwieland
+/scripts/                                        @rouvenwieland
+/deny.toml                                       @rouvenwieland
+/site/public/_headers                            @rouvenwieland
+/site/wrangler.jsonc                             @rouvenwieland
+/docs/security/                                  @rouvenwieland

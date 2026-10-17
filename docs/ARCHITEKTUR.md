@@ -1821,7 +1821,7 @@ object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'; frame-
 
 | Schema | Liefert | Prüfung |
 |---|---|---|
-| `cyfile://localhost/<handleId>` | Bilddateien hinter registrierten Handles; TIFF/16-bit/große Bilder als zwischengespeicherte PNG-Vorschau (max. 4096 px) | Handle existiert; MIME per Inhalt ∈ {png, jpeg, webp, gif}; **kein SVG** (SVG nur gerastert über `resvg`) |
+| `cyfile://localhost/<handleId>` | Bilddateien hinter registrierten Handles; TIFF/16-bit/große Bilder als zwischengespeicherte PNG-Vorschau (max. 4096 px) | Handle existiert; MIME per Inhalt ∈ {png, jpeg, webp, gif, tiff als PNG-Vorschau}, bei unbekanntem Inhalt Rückfall auf die Endung; **kein SVG** (SVG nur gerastert über `resvg`, ohne Verweise auf lokale Dateien) |
 | `cythumb://localhost/<entryId>` | Vorschaubilder der Bibliothek aus dem Cache | Eintrag existiert |
 | `cyasset://localhost/<pfad>` | Paket-Assets (Mockups, Social, Marke, Schriften, Vorschaubilder der Vorlagen) | `ensure_within(<resources>/packs, pfad)` und Whitelist der Unterordner |
 
@@ -1831,13 +1831,14 @@ Antwort-Header: `Content-Type`, `X-Content-Type-Options: nosniff`, `Access-Contr
 
 - Der Katalog ist reines JSON ohne Ausdrücke, Skripte oder Pfade für Schreibziele; `launch.args` sind per Muster auf einfache Flags beschränkt.
 - Einrichtungspakete und Blender-Python liegen im signierten App-Bundle; Paketdateien werden beim Laden gegen ihre im Bundle hinterlegten Hashes geprüft.
-- Ausgeführt werden nur: verifizierte Programme beim Start durch den Nutzer, festgelegte Systemwerkzeuge (6.7) und Blender für die Extension-Installation.
-- Das Frontend lädt keinen Remote-Inhalt (CSP), `dangerouslySetInnerHTML` ist per ESLint-Regel verboten, Release-Notizen werden als Text dargestellt.
+- Ausgeführt werden nur: verifizierte Programme beim Start durch den Nutzer, festgelegte Systemwerkzeuge (6.7) und Blender für die Extension-Installation. Ein heruntergeladenes AppImage wird bei der Installation nie ausgeführt (ohne FUSE entpackt es sich beim Start selbst, `APPIMAGE_EXTRACT_AND_RUN`). Blender startet Dateien aus Bibliothek, Projekten und Paketen mit `--disable-autoexec`.
+- Das Frontend lädt keinen Remote-Inhalt (CSP). `dangerouslySetInnerHTML`, `innerHTML`/`outerHTML`-Zuweisungen, `insertAdjacentHTML`, `document.write`, `eval` und verwandte Aufrufe sind per ESLint verboten (`apps/desktop/eslint.security.js`, getestet in `src/security-lint.test.ts`); Release-Notizen werden als Text dargestellt. Menüs sind nicht modal (`modal={false}`), weil Radix sonst ein `<style>`-Element für die Scroll-Sperre schreibt, das die CSP blockiert.
+- Austauschpakete (`.cypherpack`) dürfen nur Dateitypen der Positivliste mitbringen (`library/model.rs`, `PACK_ALLOWED_EXTENSIONS`: Bilder, Vektoren, Arbeitsdateien von Krita/Blender/Kdenlive/Inkscape, glTF/GLB, Medien, Schriften, Paletten, Dokumente, Text); Programme, Skripte und Verknüpfungen werden abgelehnt.
 
 ### 6.5 Downloads
 
 1. **Hostliste im Binary** (4.2), exakter Hostvergleich, nur `https`, Port 443; der Katalog kann die Liste nicht erweitern.
-2. **Redirect-Prüfung** bei jedem Sprung (eigene `reqwest::redirect::Policy`).
+2. **Redirect-Prüfung** bei jedem Sprung (eigene `reqwest::redirect::Policy`). Spiegelverteiler (`download.kde.org`) dürfen nur auf öffentliche DNS-Namen weiterleiten: Port 443, mindestens zwei Namensteile, keine IP-Adresse (auch nicht als Zahl oder in Klammern), kein `localhost`, `.local`, `.internal`, `.lan` und ähnliche Endungen (`hosts::check_public_mirror`); der DNS-Auflöser des Clients lehnt zusätzlich Namen ab, die auf private, Loopback-, Link-Local- oder Carrier-NAT-Adressen zeigen. Jede Weiterleitung ohne bekannten Ursprung scheitert (geschlossen).
 3. **Prüfsumme immer von der Hauptquelle**: Die SHA-256 im Katalog stammt aus der offiziellen Prüfsummendatei des Projekts (CI vergleicht sie mit dem selbst berechneten Wert), nie von einem Spiegel. Signaturdateien werden direkt von der Hauptquelle geladen.
 4. **Signatur zusätzlich**, wenn das Projekt signiert (PGP mit rPGP, Schlüssel und Fingerprints im signierten Katalog).
 5. **Größe festgenagelt** (`size`), Abbruch bei Überschreitung; Entpack-Limits gegen Archivbomben.
@@ -1850,14 +1851,16 @@ Antwort-Header: `Content-Type`, `X-Content-Type-Options: nosniff`, `Access-Contr
 - absolute Pfade, Laufwerks- und UNC-Präfixe (`C:`, `\\server`, `\\?\`), führendes `/` oder `\`;
 - Komponenten `..` und `.` (nach Normalisierung von `\` zu `/`), leere Komponenten;
 - NUL, Steuerzeichen, `:` (Windows-ADS), `* ? " < > |`;
-- reservierte Windows-Namen (`CON`, `PRN`, `AUX`, `NUL`, `COM1`–`COM9`, `LPT1`–`LPT9`, auch mit Endung), Komponenten mit Punkt/Leerzeichen am Ende;
+- reservierte Windows-Namen (`CON`, `PRN`, `AUX`, `NUL`, `COM0`–`COM9`, `LPT0`–`LPT9`, auch hochgestellt `COM¹ ² ³`, `CONIN$`, `CONOUT$`, `CLOCK$`; Vergleich nach NFKC und ohne Groß/Klein, auch mit Endung), Komponenten mit Punkt/Leerzeichen am Ende;
 - Komponenten > 240 Byte; Duplikate nach Unicode-NFC und (Windows/macOS) Groß-/Kleinschreibung.
+
+Schreibwege in geteilten Ordnern (Bibliothek, Projekte, Austauschpakete, Bildexport) benutzen `fsx::prepare_write_target`/`create_dir_all_within`: Ordner werden Glied für Glied angelegt, jedes bestehende Glied darf kein Symlink und keine Junction sein (`PathError::LinkInPath`), der aufgelöste Pfad muss unter der aufgelösten Wurzel liegen, und unmittelbar vor dem Platzieren der Datei wird erneut geprüft (`verify_write_target`). Der Ordner `.cypher` ist in jeder Schreibweise gesperrt (`.CYPHER`, `.cypher\x`, Kurzname `CYPHER~1`; `library::model::is_meta_path`).
 
 Beim Entpacken: Ziel nur innerhalb des Staging-Ordners; Dateien mit `create_new`; Symlinks nur mit `allow_symlinks` und nur, wenn das Ziel relativ zum Link-Ordner innerhalb des Staging-Ordners bleibt; Hardlinks, Geräte, FIFOs → `archiveUnsafeEntry`. Vom Nutzer gewählte Ordner (Programme, Projekte, Bibliothek): kein Systemordner (`C:\Windows`, `%ProgramFiles%`, `/System`, `/usr`, `/etc`, `/` …), Bibliothek nicht innerhalb des App-Datenordners, Schreibprobe mit Temp-Datei.
 
 ### 6.7 Prozesse
 
-Nur `std::process::Command` mit absolutem Programmpfad und Argumentliste, nie eine Shell. Erlaubte Systemwerkzeuge: macOS `/usr/bin/hdiutil`, `/usr/bin/ditto`, `/usr/bin/codesign`, `/usr/sbin/spctl`, `/usr/bin/open`, `/usr/bin/mdfind`, `/usr/sbin/sysctl`; Linux `flatpak`, `snap`, `fc-cache`, `ldconfig` (einmal per `which` aufgelöst, Pfad geloggt); Windows keine (Registry über `winreg`, Schriften über Win32-API). Jeder Aufruf mit Timeout und bereinigter Umgebung (2.9).
+Nur `std::process::Command` mit absolutem Programmpfad und Argumentliste, nie eine Shell. Erlaubte Systemwerkzeuge: macOS `/usr/bin/hdiutil`, `/usr/bin/ditto`, `/usr/bin/codesign`, `/usr/sbin/spctl`, `/usr/bin/open`, `/usr/bin/mdfind`, `/usr/sbin/sysctl`; Linux `flatpak`, `snap`, `fc-cache`, `ldconfig` (einmal per `which` aufgelöst, Pfad geloggt); Windows `explorer.exe` aus dem Windows-Ordner für Store-Apps (sonst keine; Registry über `winreg`, Schriften über Win32-API). Jeder Aufruf mit Timeout und bereinigter Umgebung (2.9).
 
 ### 6.8 Netzwerk-Inventar, keine Telemetrie
 
@@ -1866,6 +1869,7 @@ Nur `std::process::Command` mit absolutem Programmpfad und Argumentliste, nie ei
 | `studio.cypherxcypher.de/catalog/v1/…` (Fallback `raw.githubusercontent.com`) | Start, Knopf | ja (`catalog.autoRefresh`) |
 | `studio.cypherxcypher.de/releases/latest.json` (Fallback GitHub Releases) | Start + 10 s (täglich/wöchentlich), Knopf | ja (`updates.frequency = never`) |
 | Hosts aus 4.2 für Artefakte/Signaturen | nur nach Zustimmung | – |
+| Microsoft (WebView2-Bootstrapper, `webviewInstallMode: downloadBootstrapper`) | nur bei der Installation, wenn WebView2 fehlt | nein (Teil des Installers) |
 
 Die Liste kommt zur Laufzeit aus `network_info` (Endpunkte + letzte Anfragen) und steht in Einstellungen → „Netzwerk und Daten“; der Test „Netzwerkprotokoll eines kompletten Erststarts = Liste in den Einstellungen“ (DESIGN.md) prüft das. Sonst nichts: keine Telemetrie, keine Absturzberichte nach außen, keine Schriften/Bilder aus dem Netz, User-Agent ohne Kennung (`CypherStudio/<version>`). „Diagnose exportieren“ erzeugt eine ZIP-Datei, die der Nutzer selbst weitergibt.
 
@@ -1883,7 +1887,8 @@ Die Liste kommt zur Laufzeit aus `network_info` (Endpunkte + letzte Anfragen) un
 - `cargo deny check` (Lizenzen nach Allowlist, Advisories, gesperrte Crates wie `openssl-sys`, nur crates.io als Quelle); npm-Lizenzcheck (`scripts/license-check.mjs`) mit derselben Allowlist; GPL/LGPL/AGPL in App-Abhängigkeiten verboten.
 - GitHub Actions auf Commit-SHA gepinnt; Dependabot wöchentlich, gruppiert.
 - Schlüssel: Katalog offline (Mensch), Updater als GitHub-Secret im geschützten Environment; kein Schlüssel im Repo, keine Schlüssel in diesem Dokument.
-- Vor der ersten öffentlichen Veröffentlichung: einmaliger Sicherheitscheck (Strix) gegen den Release-Build, Ergebnis in `docs/security/`.
+- Workflows liegen in `.github/workflows/` (`ci.yml`, `release.yml`, `packs.yml`), `CODEOWNERS` schützt Katalogschlüssel, Hostliste, Tauri-Konfiguration und Workflows; Hinweise zu Schlüsseln und Secrets in `docs/security/README.md`.
+- Vor der ersten öffentlichen Veröffentlichung: einmaliger Sicherheitscheck (Strix) gegen den Release-Build, Ergebnis in `docs/security/` (offen: braucht Docker und einen Modellschlüssel).
 
 ---
 

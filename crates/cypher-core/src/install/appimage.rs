@@ -3,7 +3,6 @@
 
 use std::path::Path;
 
-use crate::api::IoOp;
 use crate::error::IoError;
 
 /// Umgebungsvariablen, die ein von Cypher Studio gestartetes Programm nicht erben darf (wichtig, wenn Cypher
@@ -59,6 +58,7 @@ pub fn fuse2_available_in(dev_fuse: &Path, lib_dirs: &[&str]) -> bool {
 pub fn make_executable(path: &Path) -> Result<(), IoError> {
     #[cfg(unix)]
     {
+        use crate::api::IoOp;
         use std::os::unix::fs::PermissionsExt;
         std::fs::set_permissions(path, std::fs::Permissions::from_mode(0o755))
             .map_err(|e| IoError::new(IoOp::Write, path, e))

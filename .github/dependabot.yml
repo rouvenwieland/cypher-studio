@@ -1,0 +1,78 @@
+# Abhängigkeiten aktuell halten (Sicherheitsreview M4, ARCHITEKTUR 6.10). Wöchentlich, gebündelt nach Art der Änderung;
+# Sicherheitsmeldungen von GitHub kommen unabhängig davon sofort. Jeder Vorschlag läuft durch die CI (ci.yml), bevor er
+# übernommen wird; Actions sind auf Commits festgelegt, Dependabot setzt den Kommentar mit der Version mit.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Europe/Berlin
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "ci"
+    groups:
+      actions:
+        patterns: ["*"]
+
+  - package-ecosystem: cargo
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Europe/Berlin
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "deps"
+    groups:
+      rust-patch-minor:
+        update-types: [patch, minor]
+    ignore:
+      # Tauri und seine Plugins werden gemeinsam aktualisiert, damit Laufzeit und Befehlszeile zusammenpassen
+      - dependency-name: "tauri*"
+        update-types: [version-update:semver-major]
+
+  - package-ecosystem: npm
+    directory: /apps/desktop
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Europe/Berlin
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "deps"
+    groups:
+      desktop-patch-minor:
+        update-types: [patch, minor]
+
+  - package-ecosystem: npm
+    directory: /site
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Europe/Berlin
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: "deps"
+    groups:
+      site-patch-minor:
+        update-types: [patch, minor]
+
+  - package-ecosystem: npm
+    directory: /packs/tools
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Europe/Berlin
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: "deps"
+    groups:
+      packs-patch-minor:
+        update-types: [patch, minor]

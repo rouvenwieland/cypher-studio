@@ -1,0 +1,70 @@
+# Baut packs/dist (Einrichtungspakete, Vorlagen, Schriften) einmal und gibt das Ergebnis als Artefakt weiter.
+# Wiederverwendbar aus ci.yml und release.yml. Blender wird aus download.blender.org geladen und gegen die SHA-256 aus dem
+# signierten Katalog geprüft (catalog/catalog.json, Blender 5.2.2 Linux x64); das Programm erzeugt Startszene und
+# Erweiterungs-ZIP, die in packs/dist eingehen. Läuft auf ubuntu-22.04, damit das Ergebnis nicht von der Plattform abhängt.
+name: packs
+
+on:
+  workflow_call:
+
+permissions: {}
+
+env:
+  BLENDER_VERSION: "5.2.2"
+  BLENDER_URL: https://download.blender.org/release/Blender5.2/blender-5.2.2-linux-x64.tar.xz
+  # aus https://download.blender.org/release/Blender5.2/blender-5.2.2.sha256, gleich dem Wert in catalog/catalog.json
+  BLENDER_SHA256: 84098912789dc450e95697c4184fb8a90acbe5111c2ba4aede3fecb57806a168
+
+jobs:
+  build:
+    name: packs/dist bauen
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+
+      - name: Bibliotheken für Blender ohne Oberfläche
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libxi6 libxxf86vm1 libxfixes3 libxrender1 libxkbcommon0 \
+            libgl1 libegl1 libsm6 libice6
+
+      - name: Blender laden und prüfen
+        run: |
+          set -euo pipefail
+          archive="$RUNNER_TEMP/blender.tar.xz"
+          curl --fail --location --silent --show-error --proto '=https' --tlsv1.2 --retry 3 --output "$archive" "$BLENDER_URL"
+          echo "$BLENDER_SHA256  $archive" | sha256sum --check --strict
+          mkdir -p "$RUNNER_TEMP/blender"
+          tar -xJf "$archive" -C "$RUNNER_TEMP/blender" --strip-components=1
+          rm -f "$archive"
+          echo "BLENDER=$RUNNER_TEMP/blender/blender" >> "$GITHUB_ENV"
+          "$RUNNER_TEMP/blender/blender" --version | head -n 1
+
+      - name: Startszene und Erweiterung bauen
+        run: python3 packs/blender/build.py --blender "$BLENDER"
+
+      - name: Pakete prüfen und bauen
+        run: |
+          node packs/tools/validate.mjs
+          node packs/tools/build.mjs
+          du -sh packs/dist
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: packs-dist
+          path: packs/dist
+          if-no-files-found: error
+          retention-days: 3

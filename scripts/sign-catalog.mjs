@@ -3,6 +3,8 @@
 // Aufruf:
 //   node scripts/sign-catalog.mjs --key C:\Users\<du>\.cypher-studio-keys\catalog.key [--password-file <datei>] [--file catalog/catalog.json]
 // Passwort: aus --password-file (Zeile "Passwort: …" oder ganze Datei) oder Umgebungsvariable CYPHER_CATALOG_KEY_PASSWORD.
+// Das Passwort geht an den Signierer über die Umgebung seines Prozesses (TAURI_SIGNING_PRIVATE_KEY_PASSWORD), nie als
+// Kommandozeilenargument: Argumente sind für andere Prozesse desselben Benutzers sichtbar (Sicherheitsreview M4).
 // Nie in CI ausführen; der Katalog-Schlüssel bleibt beim Katalog-Verantwortlichen.
 import { execFileSync } from "node:child_process";
 import { readFileSync, writeFileSync, rmSync, existsSync } from "node:fs";
@@ -26,7 +28,10 @@ if (!password) { console.error("Kein Passwort: --password-file oder CYPHER_CATAL
 // Plausibilität: gültiges JSON, Sequenz zum Mitschreiben
 const catalog = JSON.parse(readFileSync(file, "utf8"));
 const cli = join(root, "apps", "desktop", "node_modules", "@tauri-apps", "cli", "tauri.js");
-execFileSync(process.execPath, [cli, "signer", "sign", "-f", key, "-p", password, file], { stdio: ["ignore", "ignore", "inherit"] });
+execFileSync(process.execPath, [cli, "signer", "sign", "-f", key, file], {
+  stdio: ["ignore", "ignore", "inherit"],
+  env: { ...process.env, TAURI_SIGNING_PRIVATE_KEY_PASSWORD: password },
+});
 const sigB64 = readFileSync(`${file}.sig`, "utf8").trim();
 rmSync(`${file}.sig`);
 const minisig = Buffer.from(sigB64, "base64").toString("utf8");
