@@ -26,7 +26,13 @@ import { useSetupTab } from "./setupTab";
 const d = t.programs.detail;
 
 function Overview({ p }: { p: ProgramOverview }) {
-  const library = useCmd("library_query", { req: { limit: 60, sort: "modifiedDesc" as const } }, { retry: false });
+  // Erst fragen, wenn ein Bibliotheksordner eingerichtet ist; sonst lehnt der Kern mit libraryNotConfigured ab.
+  const status = useCmd("library_status", undefined);
+  const library = useCmd(
+    "library_query",
+    { req: { limit: 60, sort: "modifiedDesc" as const } },
+    { retry: false, enabled: status.data?.configured === true },
+  );
   const files = (library.data?.entries ?? []).filter((e) => e.openWith === p.id).slice(0, 5);
   const setPreferred = (installationId: string) =>
     void call("program_set_preferred", { req: { programId: p.id, installationId } });

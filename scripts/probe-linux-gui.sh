@@ -17,5 +17,5 @@ xwininfo -root -tree | grep -i -E "cypher|tauri" | head -5
 import -window root "$OUT/deb-erststart.png" && echo "Foto gespeichert"
 echo "--- Log:"; tail -8 /tmp/cs.log
 pgrep -a cypher-studio | head -3
-kill $APP 2>/dev/null; pkill -f cypher-studio; kill $XV 2>/dev/null
+kill $APP 2>/dev/null; pkill -x cypher-studio; kill $XV 2>/dev/null
 ls ~/.local/share/de.cypherxcypher.studio/data 2>/dev/null | sed 's/^/Daten: /'
