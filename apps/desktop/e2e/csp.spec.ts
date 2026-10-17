@@ -95,6 +95,9 @@ test.describe("Produktions-CSP (ARCHITEKTUR 6.2)", () => {
     await expect(page.getByRole("menu")).toBeVisible();
     await page.getByRole("menuitem", { name: /Deinstallieren/ }).click();
     await expect(page.getByRole("dialog")).toBeVisible();
+    // Radix nimmt die Ebene des Menüs erst einen Augenblick nach dem Öffnen des Dialogs weg (in der Sonde 7 ms, auf einem
+    // ausgelasteten Rechner mehr); solange sie steht, verbraucht sie das Escape und der Dialog bliebe offen. Also warten.
+    await expect(page.getByRole("menu")).toHaveCount(0);
     await page.keyboard.press("Escape");
     await expect(page.getByRole("dialog")).toHaveCount(0);
 
@@ -108,9 +111,11 @@ test.describe("Produktions-CSP (ARCHITEKTUR 6.2)", () => {
     await page.getByTestId("nav-jobs").click();
     await expect(page.getByTestId("jobs-popover")).toBeVisible();
     await page.keyboard.press("Escape");
+    await expect(page.getByTestId("jobs-popover")).toHaveCount(0);
     await page.keyboard.press("Control+k");
     await expect(page.locator("[cmdk-input]")).toBeFocused();
     await page.keyboard.press("Escape");
+    await expect(page.locator("[cmdk-input]")).toHaveCount(0);
 
     // Bibliothek: Menü eines Eintrags
     await page.getByTestId("nav-library").click();

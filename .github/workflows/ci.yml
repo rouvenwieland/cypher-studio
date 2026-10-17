@@ -189,6 +189,15 @@ jobs:
       - name: Playwright mit Produktions-CSP
         if: ${{ !cancelled() }}
         run: npm run e2e:csp
+      # Spuren (trace.zip) und Fehlerkontext der gescheiterten Browsertests, damit ein Fehler vom Runner nachvollziehbar ist
+      - name: Spuren der Browsertests (nur bei Fehlern)
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: playwright-spuren-oberflaeche
+          path: apps/desktop/test-results
+          if-no-files-found: ignore
+          retention-days: 7
 
   site:
     name: Seite (Einheiten- und Browsertests)
@@ -213,3 +222,11 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Tests
         run: npm test
+      - name: Spuren der Browsertests (nur bei Fehlern)
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: playwright-spuren-seite
+          path: site/test-results
+          if-no-files-found: ignore
+          retention-days: 7

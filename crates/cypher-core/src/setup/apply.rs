@@ -98,21 +98,6 @@ fn target_of(roots: &BTreeMap<RootId, String>, root: RootId, rel: &str) -> Optio
     fsx::safe_join(Path::new(roots.get(&root)?), rel).ok()
 }
 
-/// Name der Markierungsdatei, die fontconfig (z. B. 2.13.1 unter Ubuntu 22.04) beim Auffrischen des Schriftcaches in einen
-/// Schriftordner legt. Sie gehört nicht zum Inhalt, den die Einrichtung angelegt hat.
-const FONTCONFIG_MARKER: &str = ".uuid";
-
-/// Entfernt die fontconfig-Markierung, wenn sie das Einzige ist, was in `dir` noch liegt.
-fn remove_lone_fontconfig_marker(dir: &Path) {
-    let Ok(mut entries) = std::fs::read_dir(dir) else { return };
-    if let Some(Ok(only)) = entries.next()
-        && entries.next().is_none()
-        && only.file_name() == FONTCONFIG_MARKER
-    {
-        let _ = std::fs::remove_file(only.path());
-    }
-}
-
 /// Ordner entfernen, solange sie leer sind (nie die Wurzel selbst). Eine allein verbliebene fontconfig-Markierung zählt
 /// nicht als Inhalt: Sonst bliebe nach dem Zurücknehmen von Schriften ein Ordner mit nur dieser Datei zurück.
 fn prune_empty_parents(file: &Path, root_dir: &Path) {
@@ -121,7 +106,7 @@ fn prune_empty_parents(file: &Path, root_dir: &Path) {
         if d == root_dir || !d.starts_with(root_dir) {
             break;
         }
-        remove_lone_fontconfig_marker(d);
+        super::fonts::remove_lone_fontconfig_marker(d);
         if std::fs::remove_dir(d).is_err() {
             break;
         }

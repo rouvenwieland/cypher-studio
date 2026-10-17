@@ -14,6 +14,21 @@ use std::time::Duration;
 
 use crate::process::CommandRunner;
 
+/// Name der Markierungsdatei, die fontconfig (z. B. 2.13.1 unter Ubuntu 22.04) beim Auffrischen des Schriftcaches in einen
+/// Schriftordner legt. Sie gehört nicht zum Inhalt, den die Einrichtung angelegt hat.
+const FONTCONFIG_MARKER: &str = ".uuid";
+
+/// Entfernt die fontconfig-Markierung, wenn sie das Einzige ist, was in `dir` noch liegt (ein Ordner ohne Schriften).
+pub(crate) fn remove_lone_fontconfig_marker(dir: &Path) {
+    let Ok(mut entries) = std::fs::read_dir(dir) else { return };
+    if let Some(Ok(only)) = entries.next()
+        && entries.next().is_none()
+        && only.file_name() == FONTCONFIG_MARKER
+    {
+        let _ = std::fs::remove_file(only.path());
+    }
+}
+
 /// Meldet Schriften beim Betriebssystem an und ab.
 pub trait FontInstaller: Send + Sync {
     /// Meldet `file` (liegt bereits im Benutzer-Schriftordner) an. Gibt den Namen des Registrywerts zurück (Windows).
@@ -75,9 +90,11 @@ impl FontInstaller for FcCacheFonts {
         let dirs = self.pending.lock().map(|mut p| std::mem::take(&mut *p)).unwrap_or_default();
         let Some(tool) = &self.fc_cache else { return };
         for dir in dirs {
-            let args: Vec<OsString> = vec!["-f".into(), dir.into_os_string()];
+            let args: Vec<OsString> = vec!["-f".into(), dir.clone().into_os_string()];
             // Ein fehlgeschlagener Cache-Lauf ist kein Fehler der Einrichtung: Programme finden die Schrift beim nächsten Start
             let _ = self.runner.run(tool, &args, Duration::from_secs(60));
+            // Ältere fontconfig-Versionen legen auch in einem Ordner ohne Schriften eine Markierung an
+            remove_lone_fontconfig_marker(&dir);
         }
     }
 }
@@ -243,6 +260,36 @@ mod tests {
         fonts.register(Path::new("/x/A.ttf"), "A").unwrap();
         fonts.flush();
         assert!(runner.calls().is_empty());
+    }
+
+    /// Ersatz für `fc-cache` älterer fontconfig-Versionen: legt in den Ordner (zweites Argument) eine Datei `.uuid`.
+    struct MarkerRunner;
+
+    impl CommandRunner for MarkerRunner {
+        fn run(&self, _exe: &Path, args: &[OsString], _timeout: Duration) -> io::Result<crate::process::CommandOutput> {
+            if let Some(dir) = args.get(1) {
+                std::fs::write(Path::new(dir).join(".uuid"), b"0000")?;
+            }
+            Ok(crate::process::CommandOutput { code: Some(0), ..Default::default() })
+        }
+    }
+
+    #[test]
+    fn the_fontconfig_marker_stays_only_while_the_folder_has_fonts() {
+        let tmp = tempfile::tempdir().unwrap();
+        let dir = tmp.path().join("cypher");
+        std::fs::create_dir_all(&dir).unwrap();
+        let font = dir.join("A.ttf");
+        std::fs::write(&font, b"font").unwrap();
+        let fonts = FcCacheFonts::new(std::sync::Arc::new(MarkerRunner), Some("/usr/bin/fc-cache".into()));
+        fonts.register(&font, "A").unwrap();
+        fonts.flush();
+        assert!(dir.join(".uuid").is_file(), "mit Schriften bleibt die Markierung");
+        std::fs::remove_file(&font).unwrap();
+        fonts.unregister(&font, None).unwrap();
+        fonts.flush();
+        assert!(!dir.join(".uuid").exists(), "ohne Schriften ist der Ordner wieder leer");
+        assert!(dir.is_dir(), "der Ordner selbst bleibt (er ist die Wurzel der Einrichtung)");
     }
 
     #[test]

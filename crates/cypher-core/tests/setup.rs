@@ -11,9 +11,9 @@ use cypher_core::api::{
     SetupOperationKind, SetupRecordStatus, SetupStatus,
 };
 use cypher_core::error::SetupError;
-use cypher_core::process::{CommandOutput, FakeRunner};
+use cypher_core::process::{CommandOutput, CommandRunner, FakeRunner};
 use cypher_core::progress::{Collect, NoProgress};
-use cypher_core::setup::fonts::{FontInstaller, RecordingFonts};
+use cypher_core::setup::fonts::{FcCacheFonts, RecordingFonts};
 use cypher_core::setup::{
     ApplyEnv, ApplySelection, PackManifest, PlanInput, ResolvedScope, RootId, RootsEnv, SetupInstall, SetupStore,
     history, load_packs, plan, recover, resolve_scopes, summary, undo,
@@ -643,39 +643,32 @@ fn fonts_are_copied_registered_once_and_unregistered_on_undo() {
 }
 
 /// Ersatz für `fc-cache` älterer fontconfig-Versionen (z. B. 2.13.1 unter Ubuntu 22.04): Beim Auffrischen des Caches legen
-/// sie in jeden vorhandenen Schriftordner eine Datei `.uuid`.
-#[derive(Default)]
-struct UuidWritingFonts {
-    recording: RecordingFonts,
-    dirs: std::sync::Mutex<std::collections::BTreeSet<PathBuf>>,
-}
+/// sie in den Ordner (zweites Argument) eine Datei `.uuid`, auch wenn er keine Schriften mehr enthält.
+struct MarkerRunner;
 
-impl FontInstaller for UuidWritingFonts {
-    fn register(&self, file: &Path, display_name: &str) -> std::io::Result<Option<String>> {
-        self.dirs.lock().unwrap().insert(file.parent().unwrap().to_path_buf());
-        self.recording.register(file, display_name)
-    }
-
-    fn unregister(&self, file: &Path, registry_name: Option<&str>) -> std::io::Result<()> {
-        self.dirs.lock().unwrap().insert(file.parent().unwrap().to_path_buf());
-        self.recording.unregister(file, registry_name)
-    }
-
-    fn flush(&self) {
-        for dir in std::mem::take(&mut *self.dirs.lock().unwrap()) {
-            if dir.is_dir() {
-                std::fs::write(dir.join(".uuid"), b"0000").unwrap();
-            }
+impl CommandRunner for MarkerRunner {
+    fn run(
+        &self,
+        _exe: &Path,
+        args: &[std::ffi::OsString],
+        _timeout: std::time::Duration,
+    ) -> std::io::Result<CommandOutput> {
+        if let Some(dir) = args.get(1).map(Path::new).filter(|dir| dir.is_dir()) {
+            std::fs::write(dir.join(".uuid"), b"0000")?;
         }
+        Ok(CommandOutput { code: Some(0), ..Default::default() })
     }
 }
 
-#[test]
-fn undoing_fonts_leaves_no_folder_or_fontconfig_marker_behind() {
-    let fx = Fixture::new();
-    font_pack_in(&fx, "cypher/");
-    let (pack, scope) = (fx.pack(), font_scope(&fx));
-    let fonts = UuidWritingFonts::default();
+/// Wie unter Linux: Die Wurzel der Schriften ist ein eigener Ordner (`fonts/cypher`), die Dateien liegen unmittelbar darin.
+fn linux_font_scope(fx: &Fixture) -> ResolvedScope {
+    let mut scope = font_scope(fx);
+    scope.roots = BTreeMap::from([(RootId::UserFonts, fx.profile.join("fonts/cypher"))]);
+    scope
+}
+
+fn apply_fonts_with_marker(fx: &Fixture, fonts: &FcCacheFonts) -> cypher_core::api::SetupRecord {
+    let (pack, scope) = (fx.pack(), linux_font_scope(fx));
     let runner = FakeRunner::new();
     let p = plan(&PlanInput {
         pack: &pack,
@@ -687,30 +680,63 @@ fn undoing_fonts_leaves_no_folder_or_fontconfig_marker_behind() {
         program_running: false,
     })
     .unwrap();
-    let record = cypher_core::setup::apply::apply(
+    cypher_core::setup::apply::apply(
         p,
         &ApplySelection::default(),
-        &ApplyEnv { store: &fx.store, runner: &runner, fonts: &fonts, job_id: "j" },
+        &ApplyEnv { store: &fx.store, runner: &runner, fonts, job_id: "j" },
         &NoProgress,
         &CancellationToken::new(),
     )
-    .unwrap();
+    .unwrap()
+}
+
+fn files_below(dir: &Path) -> Vec<PathBuf> {
+    let mut out = Vec::new();
+    for entry in std::fs::read_dir(dir).unwrap().map(Result::unwrap) {
+        if entry.path().is_dir() {
+            out.extend(files_below(&entry.path()));
+        } else {
+            out.push(entry.path());
+        }
+    }
+    out
+}
+
+#[test]
+fn undoing_fonts_leaves_no_fontconfig_marker_behind() {
+    let fx = Fixture::new();
+    font_pack(&fx);
+    let fonts = FcCacheFonts::new(std::sync::Arc::new(MarkerRunner), Some("/usr/bin/fc-cache".into()));
+    let record = apply_fonts_with_marker(&fx, &fonts);
     let folder = fx.profile.join("fonts/cypher");
     assert!(folder.join("A.ttf").is_file());
     assert!(folder.join(".uuid").is_file(), "der Cache-Lauf beim Anwenden hat die Markierung angelegt");
 
     let report = undo(&record.setup_id, &fx.store, &fonts).unwrap();
     assert_eq!(report.removed, 2);
-    let left: Vec<_> = std::fs::read_dir(fx.profile.join("fonts")).unwrap().map(|e| e.unwrap().path()).collect();
+    let left = files_below(&fx.profile.join("fonts"));
     assert!(left.is_empty(), "nach dem Zurücknehmen liegt nichts mehr da: {left:?}");
 }
 
 #[test]
-fn a_foreign_file_next_to_the_fonts_keeps_the_folder_and_the_marker() {
+fn a_foreign_file_next_to_the_fonts_keeps_the_marker() {
+    let fx = Fixture::new();
+    font_pack(&fx);
+    let fonts = FcCacheFonts::new(std::sync::Arc::new(MarkerRunner), Some("/usr/bin/fc-cache".into()));
+    let record = apply_fonts_with_marker(&fx, &fonts);
+    let folder = fx.profile.join("fonts/cypher");
+    std::fs::write(folder.join("Eigene.ttf"), b"vom Nutzer").unwrap();
+    undo(&record.setup_id, &fx.store, &fonts).unwrap();
+    assert!(folder.join("Eigene.ttf").is_file(), "fremde Dateien bleiben");
+    assert!(folder.join(".uuid").is_file(), "und mit ihnen die Markierung");
+}
+
+#[test]
+fn undoing_fonts_in_a_subfolder_removes_the_folder_with_its_marker() {
     let fx = Fixture::new();
     font_pack_in(&fx, "cypher/");
+    let fonts = FcCacheFonts::new(std::sync::Arc::new(MarkerRunner), Some("/usr/bin/fc-cache".into()));
     let (pack, scope) = (fx.pack(), font_scope(&fx));
-    let fonts = UuidWritingFonts::default();
     let runner = FakeRunner::new();
     let p = plan(&PlanInput {
         pack: &pack,
@@ -730,11 +756,9 @@ fn a_foreign_file_next_to_the_fonts_keeps_the_folder_and_the_marker() {
         &CancellationToken::new(),
     )
     .unwrap();
-    let folder = fx.profile.join("fonts/cypher");
-    std::fs::write(folder.join("Eigene.ttf"), b"vom Nutzer").unwrap();
+    assert!(fx.profile.join("fonts/cypher/.uuid").is_file());
     undo(&record.setup_id, &fx.store, &fonts).unwrap();
-    assert!(folder.join("Eigene.ttf").is_file(), "fremde Dateien bleiben");
-    assert!(folder.join(".uuid").is_file(), "und mit ihnen die Markierung");
+    assert!(!fx.profile.join("fonts/cypher").exists(), "der Unterordner ist samt Markierung weg");
 }
 
 #[test]
