@@ -177,7 +177,8 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 10
     permissions:
-      contents: read
+      # Entwürfe sieht die API nur mit Schreibrecht (mit contents: read meldet sie „kein Release“); der Job ändert nichts
+      contents: write
     steps:
       - name: latest.json und Installer im Entwurf
         env:
