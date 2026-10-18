@@ -62,7 +62,7 @@ test('jede Eingabe bricht ab und stellt Cyan her: Zeigerbewegung, Taste, Scrolle
     await record(page);
     await page.goto(B + '/');
     await expect(page.locator('.tb[data-on="news"]')).toBeVisible({ timeout: 20_000 });
-    if (input === 'mouse') await page.mouse.move(300, 300);
+    if (input === 'mouse') await page.mouse.move(300, 300, { steps: 6 }); // wie eine echte Hand: mehrere Punkte, Bewegung > 0
     if (input === 'key') await page.keyboard.press('Tab');
     if (input === 'wheel') await page.mouse.wheel(0, 120);
     await page.waitForTimeout(1800);

@@ -51,6 +51,9 @@ cpSync(join(root, 'public'), out, {
   },
 });
 
+// ── 1a. Mit --release (Tests, Vorschau) liefert die Seite genau diesen Zustand auch als /release.json aus ──
+if (v.release) write('release.json', readFileSync(resolve(root, v.release)));
+
 // ── 1b. Signierter Programm-Katalog für die App (ARCHITEKTUR 5.8): /catalog/v1/catalog.json(+.minisig) ──
 {
   const catDir = resolve(root, '..', 'catalog');

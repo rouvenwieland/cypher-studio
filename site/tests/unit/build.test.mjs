@@ -21,7 +21,7 @@ function build(name, releasePath) {
 }
 const read = (out, p) => readFileSync(join(out, p), 'utf8');
 
-const a = build('a');
+const a = build('a', fixture('release-a.json')); // Zustand A aus der Fixture, unabhängig vom echten public/release.json
 const b = build('b', fixture('release-b.json'));
 const signedPath = join(tmp, 'release-signed.json');
 writeFileSync(signedPath, JSON.stringify({ ...readJson(fixture('release-b.json')), signed: { windows: true, macos: true } }));

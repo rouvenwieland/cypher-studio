@@ -1,6 +1,6 @@
 // Testlauf für die Seite: baut beide Zustände, startet zwei lokale Server (wrangler dev, ohne Konto),
 // führt die Playwright-Tests aus und räumt auf.
-//   Port 8788: Zustand A (public/release.json, "noch kein Release")
+//   Port 8788: Zustand A (tests/fixtures/release-a.json, "noch kein Release"; unabhängig vom echten public/release.json)
 //   Port 38789: Zustand B (tests/fixtures/release-b.json, mit kleinen Fixture-Installern)
 // Läuft schon etwas auf dem Port (z. B. "npm run dev"), wird es weiterverwendet.
 // Aufruf: node tests/run.mjs [playwright-Argumente, z. B. -g Erkennung]
@@ -28,7 +28,7 @@ async function up(port) {
 }
 
 // 1. Bauen
-run(['scripts/build.mjs', '--quiet']);
+run(['scripts/build.mjs', '--quiet', '--release', fixture('release-a.json')]);
 run(['scripts/build.mjs', '--quiet', '--release', fixture('release-b.json'), '--out', B.dir]);
 // kleine Fixture-Installer für den Download-Test (nur die auf der Seite gehosteten Dateien)
 const rel = readJson(fixture('release-b.json'));

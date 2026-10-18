@@ -22,3 +22,7 @@ apps/desktop/src-tauri/gen/schemas/
 dist-builds/
 # ts-rs ohne gesetzten Zielordner (z. B. Testläufe unter Windows)
 crates/cypher-core/bindings/
+# Installer auf der Seite: werden je Release aus dem GitHub-Release geladen, nicht eingecheckt
+site/public/releases/*
+!site/public/releases/latest.json
+!site/public/releases/.gitkeep

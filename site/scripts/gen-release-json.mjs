@@ -71,12 +71,30 @@ export function buildRelease(gh, opts = {}) {
   return validateRelease(release, 'erzeugtes release.json');
 }
 
-/** latest.json von tauri-action → gleiche Signaturen, URLs auf die Seite. */
-export function buildUpdaterJson(tauri, siteOrigin, siteBase = '/releases/') {
+/**
+ * latest.json von tauri-action → gleiche Signaturen, URLs auf die Seite.
+ * tauri-action v1 schreibt API-Adressen mit Asset-ID (…/releases/assets/<id>); die werden über die Assets des
+ * GitHub-Releases in Dateinamen übersetzt. Dateien über 24 MiB liegen nicht auf der Seite und behalten den
+ * GitHub-Download-Link (browser_download_url), sonst bekäme der Updater eine tote Adresse.
+ */
+export function buildUpdaterJson(tauri, siteOrigin, siteBase = '/releases/', ghAssets = []) {
   const out = { version: tauri.version, notes: tauri.notes ?? '', pub_date: tauri.pub_date, platforms: {} };
   for (const [key, p] of Object.entries(tauri.platforms ?? {})) {
-    const name = decodeURIComponent(basename(new URL(p.url).pathname)).replaceAll(' ', '.');
-    out.platforms[key] = { signature: p.signature, url: `${siteOrigin}${siteBase}${name}` };
+    const path = new URL(p.url).pathname;
+    const byId = path.match(/\/releases\/assets\/(\d+)$/);
+    let asset;
+    if (byId) {
+      asset = ghAssets.find((a) => String(a.id) === byId[1]);
+      if (!asset) throw new Error(`latest.json verweist auf Asset ${byId[1]} (${key}), das im GitHub-Release fehlt.`);
+    }
+    const name = asset ? asset.name : decodeURIComponent(basename(path)).replaceAll(' ', '.');
+    asset ??= ghAssets.find((a) => a.name === name);
+    const url =
+      asset && asset.size > MAX_FILE_BYTES
+        ? asset.browser_download_url
+        : `${siteOrigin}${siteBase}${name}`;
+    if (!/^https:\/\//.test(url ?? '')) throw new Error(`Keine gültige Download-Adresse für ${key} (${name}).`);
+    out.platforms[key] = { signature: p.signature, url };
   }
   return out;
 }
@@ -118,7 +136,7 @@ async function main() {
     console.log(`${hosted.length} Dateien kopiert nach ${v['copy-to']} (${release.files.length - hosted.length} größer als 24 MiB: Link auf GitHub)`);
   }
   if (v['tauri-latest']) {
-    const updater = buildUpdaterJson(readJson(v['tauri-latest']), config.siteUrl, v['site-base']);
+    const updater = buildUpdaterJson(readJson(v['tauri-latest']), config.siteUrl, v['site-base'], readJson(v['github-release']).assets ?? []);
     write(resolve(v['latest-out']), updater);
     console.log(`Updater-JSON (${Object.keys(updater.platforms).length} Plattformen) → ${v['latest-out']}`);
   }

@@ -1,0 +1,55 @@
+{
+  "version": "0.1.0",
+  "notes": "Installationshinweise stehen auf der Downloadseite. Die Installer sind nicht signiert: Windows SmartScreen und macOS Gatekeeper zeigen Warnungen.",
+  "pub_date": "2026-10-17T22:27:54.032Z",
+  "platforms": {
+    "linux-x86_64": {
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTeWJTNzlNamU3TXVzRm9hUU1HSWZmYUdVanhNUmt2MWlxSWZKdFE5VTIwVlpOTGhqVXlYdUlNTllJVDcyV09LVU9MbTE2ZDUyRjVkQ3Zzb053L1g2WlFOUDY4Vmd4TEFRPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyMjc1NTU5CWZpbGU6Q3lwaGVyIFN0dWRpb18wLjEuMF9hbWQ2NC5BcHBJbWFnZQl2ZXJzaW9uOjAuMS4wCkRKd3drazlZZ1lIOEsvNUY4bWtwTTRRdWtwSVplcTZtTE1PTXpHam43L0x1aDZFK1U4bXdrSUN3Z2dxUy82OGFCMDgwWXZsQjJtVmRzeW1nQS9IN0RRPT0K",
+      "url": "https://github.com/rouvenwieland/cypher-studio/releases/download/v0.1.0/Cypher.Studio_0.1.0_amd64.AppImage"
+    },
+    "linux-x86_64-appimage": {
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTeWJTNzlNamU3TXVzRm9hUU1HSWZmYUdVanhNUmt2MWlxSWZKdFE5VTIwVlpOTGhqVXlYdUlNTllJVDcyV09LVU9MbTE2ZDUyRjVkQ3Zzb053L1g2WlFOUDY4Vmd4TEFRPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyMjc1NTU5CWZpbGU6Q3lwaGVyIFN0dWRpb18wLjEuMF9hbWQ2NC5BcHBJbWFnZQl2ZXJzaW9uOjAuMS4wCkRKd3drazlZZ1lIOEsvNUY4bWtwTTRRdWtwSVplcTZtTE1PTXpHam43L0x1aDZFK1U4bXdrSUN3Z2dxUy82OGFCMDgwWXZsQjJtVmRzeW1nQS9IN0RRPT0K",
+      "url": "https://github.com/rouvenwieland/cypher-studio/releases/download/v0.1.0/Cypher.Studio_0.1.0_amd64.AppImage"
+    },
+    "linux-x86_64-deb": {
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTeWJTNzlNamU3TW9xYVJKTG5sOVJsVkRvT3Z2OUtEcEVVbW90LzFWK2phSEtqQjl2VmJXQytXcTl4QjJncEpiRzN5emVPemg2R0Q1Y2hVcTdJUjFtTzFTMWlqR05YdWdJPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyMjc1NTU5CWZpbGU6Q3lwaGVyIFN0dWRpb18wLjEuMF9hbWQ2NC5kZWIJdmVyc2lvbjowLjEuMApnYjlvdWlsN0dJMHMzSTRtdW5vOXVoSzkzcWRHZ2pxRnpZVERCNDY5SVFtZW51QUF1NlRWWk1wMzZXZlljMDJMRU4xRldQUFdRRG11T1I3MzJaQmtCQT09Cg==",
+      "url": "https://studio.cypherxcypher.de/releases/Cypher.Studio_0.1.0_amd64.deb"
+    },
+    "linux-x86_64-rpm": {
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTeWJTNzlNamU3TW83emZ2MVB2L3lzU2QvNS9JekN1L3hGUVR6N0RFcVJjbFRzdW50cExVM2NWY3kweC9UWjBsTndFV1hJZ0VVZTBhK1dFSFVXL2RrTEJobzRaY1dwN2c0PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyMjc1NTYwCWZpbGU6Q3lwaGVyIFN0dWRpby0wLjEuMC0xLng4Nl82NC5ycG0JdmVyc2lvbjowLjEuMAovL1RvajZuM1k1enpQTWlSTDBTTTZ2dlJXWEhKdkZQNEJpd0M3MFg3R1NjKytnVjFhUlVzL2plOVRZVTg0L0JYeTZEVHJYYXIwV1VjUDlIeGtPbXREdz09Cg==",
+      "url": "https://studio.cypherxcypher.de/releases/Cypher.Studio-0.1.0-1.x86_64.rpm"
+    },
+    "windows-x86_64": {
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTeWJTNzlNamU3TWg2dWhwMjRiVnJEdFYwelRFQXhpclV2TjBkTG1OeVA1T3FZbTVWcFRZUDd3Y2pVT0tNcHpXZkd2S2VabzVQMEtRK3hpb3RSTGNZZmR3dGFtSUZad1FJPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyMjc1OTIwCWZpbGU6Q3lwaGVyIFN0dWRpb18wLjEuMF94NjQtc2V0dXAuZXhlCXZlcnNpb246MC4xLjAKc3h0bG9sbjVoWnhwc2Rrc1FlMmNTZmtscE1GelRlOEdzV1B2bGtKUWJNUFVsVVB3RnowRmJlNUQwTm02NVEwclU1RzQ0bjB4VlNSSE5XUEU3T3ZDRHc9PQo=",
+      "url": "https://studio.cypherxcypher.de/releases/Cypher.Studio_0.1.0_x64-setup.exe"
+    },
+    "windows-x86_64-nsis": {
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTeWJTNzlNamU3TWg2dWhwMjRiVnJEdFYwelRFQXhpclV2TjBkTG1OeVA1T3FZbTVWcFRZUDd3Y2pVT0tNcHpXZkd2S2VabzVQMEtRK3hpb3RSTGNZZmR3dGFtSUZad1FJPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyMjc1OTIwCWZpbGU6Q3lwaGVyIFN0dWRpb18wLjEuMF94NjQtc2V0dXAuZXhlCXZlcnNpb246MC4xLjAKc3h0bG9sbjVoWnhwc2Rrc1FlMmNTZmtscE1GelRlOEdzV1B2bGtKUWJNUFVsVVB3RnowRmJlNUQwTm02NVEwclU1RzQ0bjB4VlNSSE5XUEU3T3ZDRHc9PQo=",
+      "url": "https://studio.cypherxcypher.de/releases/Cypher.Studio_0.1.0_x64-setup.exe"
+    },
+    "darwin-aarch64": {
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTeWJTNzlNamU3TWl6Z0QwQjk2akRGZXRZWjlxRWZ3aElRcWpwWUFWdHpiS21tcW45eHZtN0p2bkxaUU45WExyMVZIcFZGVTBVUm92WjFoa2UvOWNNTythUDhxRzlCalFnPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyMjc2MDY4CWZpbGU6Q3lwaGVyIFN0dWRpby5hcHAudGFyLmd6CXZlcnNpb246MC4xLjAKZi92SFNjcW9Vd2t4TTd3NDQ2SFl1S0l3M2RWSDdSSjhRd2FQRmxGeVBDMUJiQy96SElLL2lTQUFiTitOTVloWXY0Qm8wMGhTdWFxY3NXbmkzTXlaRHc9PQo=",
+      "url": "https://github.com/rouvenwieland/cypher-studio/releases/download/v0.1.0/Cypher.Studio_0.1.0_universal.app.tar.gz"
+    },
+    "darwin-x86_64": {
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTeWJTNzlNamU3TWl6Z0QwQjk2akRGZXRZWjlxRWZ3aElRcWpwWUFWdHpiS21tcW45eHZtN0p2bkxaUU45WExyMVZIcFZGVTBVUm92WjFoa2UvOWNNTythUDhxRzlCalFnPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyMjc2MDY4CWZpbGU6Q3lwaGVyIFN0dWRpby5hcHAudGFyLmd6CXZlcnNpb246MC4xLjAKZi92SFNjcW9Vd2t4TTd3NDQ2SFl1S0l3M2RWSDdSSjhRd2FQRmxGeVBDMUJiQy96SElLL2lTQUFiTitOTVloWXY0Qm8wMGhTdWFxY3NXbmkzTXlaRHc9PQo=",
+      "url": "https://github.com/rouvenwieland/cypher-studio/releases/download/v0.1.0/Cypher.Studio_0.1.0_universal.app.tar.gz"
+    },
+    "darwin-universal": {
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTeWJTNzlNamU3TWl6Z0QwQjk2akRGZXRZWjlxRWZ3aElRcWpwWUFWdHpiS21tcW45eHZtN0p2bkxaUU45WExyMVZIcFZGVTBVUm92WjFoa2UvOWNNTythUDhxRzlCalFnPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyMjc2MDY4CWZpbGU6Q3lwaGVyIFN0dWRpby5hcHAudGFyLmd6CXZlcnNpb246MC4xLjAKZi92SFNjcW9Vd2t4TTd3NDQ2SFl1S0l3M2RWSDdSSjhRd2FQRmxGeVBDMUJiQy96SElLL2lTQUFiTitOTVloWXY0Qm8wMGhTdWFxY3NXbmkzTXlaRHc9PQo=",
+      "url": "https://github.com/rouvenwieland/cypher-studio/releases/download/v0.1.0/Cypher.Studio_0.1.0_universal.app.tar.gz"
+    },
+    "darwin-aarch64-app": {
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTeWJTNzlNamU3TWl6Z0QwQjk2akRGZXRZWjlxRWZ3aElRcWpwWUFWdHpiS21tcW45eHZtN0p2bkxaUU45WExyMVZIcFZGVTBVUm92WjFoa2UvOWNNTythUDhxRzlCalFnPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyMjc2MDY4CWZpbGU6Q3lwaGVyIFN0dWRpby5hcHAudGFyLmd6CXZlcnNpb246MC4xLjAKZi92SFNjcW9Vd2t4TTd3NDQ2SFl1S0l3M2RWSDdSSjhRd2FQRmxGeVBDMUJiQy96SElLL2lTQUFiTitOTVloWXY0Qm8wMGhTdWFxY3NXbmkzTXlaRHc9PQo=",
+      "url": "https://github.com/rouvenwieland/cypher-studio/releases/download/v0.1.0/Cypher.Studio_0.1.0_universal.app.tar.gz"
+    },
+    "darwin-x86_64-app": {
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTeWJTNzlNamU3TWl6Z0QwQjk2akRGZXRZWjlxRWZ3aElRcWpwWUFWdHpiS21tcW45eHZtN0p2bkxaUU45WExyMVZIcFZGVTBVUm92WjFoa2UvOWNNTythUDhxRzlCalFnPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyMjc2MDY4CWZpbGU6Q3lwaGVyIFN0dWRpby5hcHAudGFyLmd6CXZlcnNpb246MC4xLjAKZi92SFNjcW9Vd2t4TTd3NDQ2SFl1S0l3M2RWSDdSSjhRd2FQRmxGeVBDMUJiQy96SElLL2lTQUFiTitOTVloWXY0Qm8wMGhTdWFxY3NXbmkzTXlaRHc9PQo=",
+      "url": "https://github.com/rouvenwieland/cypher-studio/releases/download/v0.1.0/Cypher.Studio_0.1.0_universal.app.tar.gz"
+    },
+    "darwin-universal-app": {
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTeWJTNzlNamU3TWl6Z0QwQjk2akRGZXRZWjlxRWZ3aElRcWpwWUFWdHpiS21tcW45eHZtN0p2bkxaUU45WExyMVZIcFZGVTBVUm92WjFoa2UvOWNNTythUDhxRzlCalFnPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyMjc2MDY4CWZpbGU6Q3lwaGVyIFN0dWRpby5hcHAudGFyLmd6CXZlcnNpb246MC4xLjAKZi92SFNjcW9Vd2t4TTd3NDQ2SFl1S0l3M2RWSDdSSjhRd2FQRmxGeVBDMUJiQy96SElLL2lTQUFiTitOTVloWXY0Qm8wMGhTdWFxY3NXbmkzTXlaRHc9PQo=",
+      "url": "https://github.com/rouvenwieland/cypher-studio/releases/download/v0.1.0/Cypher.Studio_0.1.0_universal.app.tar.gz"
+    }
+  }
+}

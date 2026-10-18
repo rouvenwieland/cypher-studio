@@ -17,9 +17,13 @@ const file = (over = {}) => ({
 });
 const released = (over = {}) => ({ schemaVersion: 1, state: 'released', version: '0.4.0', date: '2026-11-02', files: [file()], ...over });
 
-test('die ausgelieferte public/release.json ist Zustand A und gültig', () => {
+test('die ausgelieferte public/release.json ist gültig (Zustand A oder ein echtes Release mit SHA-256 je Datei)', () => {
   const r = loadRelease(join(siteRoot, 'public/release.json'));
-  assert.equal(r.state, 'none');
+  assert.ok(r.state === 'none' || r.state === 'released', r.state);
+  if (r.state === 'released') {
+    assert.ok(r.files.length > 0);
+    for (const f of r.files) assert.match(f.sha256, /^[0-9a-f]{64}$/, f.name);
+  }
 });
 
 test('Schema: Zustand A und B sind gültig', () => {
@@ -152,4 +156,25 @@ test('Hilfen: Größe, Prüfsumme, Hauptdatei', () => {
     ],
   };
   assert.equal(primaryFile(split, 'macos').arch, 'aarch64');
+});
+
+test('gen-release-json: Updater-JSON übersetzt Asset-IDs von tauri-action v1, große Dateien behalten den GitHub-Link', () => {
+  const big = 30 * 1024 * 1024;
+  const gh = [
+    { id: 11, name: 'Cypher.Studio_0.1.0_x64-setup.exe', size: 18_000_000, browser_download_url: 'https://github.com/o/r/releases/download/v0.1.0/Cypher.Studio_0.1.0_x64-setup.exe' },
+    { id: 12, name: 'Cypher.Studio_0.1.0_universal.app.tar.gz', size: big, browser_download_url: 'https://github.com/o/r/releases/download/v0.1.0/Cypher.Studio_0.1.0_universal.app.tar.gz' },
+  ];
+  const tauri = {
+    version: '0.1.0',
+    pub_date: '2026-10-18T00:00:00Z',
+    platforms: {
+      'windows-x86_64': { signature: 'S-WIN', url: 'https://api.github.com/repos/o/r/releases/assets/11' },
+      'darwin-aarch64': { signature: 'S-MAC', url: 'https://api.github.com/repos/o/r/releases/assets/12' },
+    },
+  };
+  const up = buildUpdaterJson(tauri, 'https://studio.cypherxcypher.de', '/releases/', gh);
+  assert.equal(up.platforms['windows-x86_64'].url, 'https://studio.cypherxcypher.de/releases/Cypher.Studio_0.1.0_x64-setup.exe');
+  assert.equal(up.platforms['darwin-aarch64'].url, gh[1].browser_download_url);
+  assert.equal(up.platforms['darwin-aarch64'].signature, 'S-MAC');
+  assert.throws(() => buildUpdaterJson({ ...tauri, platforms: { x: { signature: 's', url: 'https://api.github.com/repos/o/r/releases/assets/99' } } }, 'https://s', '/releases/', gh), /Asset 99/);
 });
