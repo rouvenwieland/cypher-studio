@@ -132,7 +132,7 @@ jobs:
           if [ -n "$TARGETS" ]; then rustup target add $TARGETS; fi
           rustc --version
 
-      - uses: Swatinem/rust-cache@63fed3e2fecf6f7b51dc6f043341b79ef82a9ae7 # v2.9.2
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
         with:
           key: release-${{ matrix.name }}
 
@@ -154,7 +154,7 @@ jobs:
         working-directory: ${{ env.APP_DIR }}
         run: npm ci --no-fund --no-audit
 
-      - uses: tauri-apps/tauri-action@2d793bf2c8c505b9b76211601b09aab48922225d # v1.0.0
+      - uses: tauri-apps/tauri-action@1deb371b0cd8bd54025b384f1cd735e725c4060f # v1.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
