@@ -18,7 +18,7 @@ test('Tastatur: das erste Tab zeigt „Zum Download springen“, danach der Reih
       const cs = getComputedStyle(el);
       const r = a.getBoundingClientRect();
       return {
-        text: (a.getAttribute('aria-label') || a.textContent).trim().replace(/\s+/g, ' ').slice(0, 40),
+        text: (a.getAttribute('aria-label') || a.textContent).trim().replace(/\s+/g, ' ').slice(0, 100),
         ring: cs.outlineStyle !== 'none' && parseFloat(cs.outlineWidth) >= 2,
         inView: r.bottom > 0 && r.top < innerHeight,
       };
