@@ -70,7 +70,7 @@ unicode-normalization = "0.1.25"
 base64 = "0.22"
 
 [target.'cfg(windows)'.dependencies]
-winreg = "0.55"
+winreg = "0.56"
 # Schriften des Benutzerprofils anmelden (zwei FFI-Aufrufe, einziger `unsafe`-Ort im Kern)
 windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_Graphics_Gdi", "Win32_UI_WindowsAndMessaging"] }
 
