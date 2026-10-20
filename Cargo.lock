@@ -1339,7 +1339,7 @@ version = "0.1.0"
 dependencies = [
  "arc-swap",
  "axum",
- "base64 0.22.1",
+ "base64 0.23.1",
  "cypher-core",
  "directories",
  "fast_image_resize",
@@ -4384,7 +4384,7 @@ dependencies = [
  "aes-gcm",
  "aes-kw",
  "argon2",
- "base64 0.22.1",
+ "base64 0.21.7",
  "bitfields",
  "block-padding 0.3.3",
  "blowfish",

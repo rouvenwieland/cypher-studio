@@ -67,7 +67,7 @@ moxcms = "0.9"
 notify = "8"
 resvg = { version = "0.48", default-features = false, features = ["text"] }
 unicode-normalization = "0.1.25"
-base64 = "0.22"
+base64 = "0.23"
 
 [target.'cfg(windows)'.dependencies]
 winreg = "0.55"
