@@ -78,7 +78,7 @@ windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_Graphic
 pretty_assertions = "1"
 sevenz-rust2 = { version = "0.24", features = ["compress"] }
 axum = "0.8"
-minisign = "0.9"
+minisign = "0.10"
 proptest = "1"
 # dieselben Versionen wie rPGP (rand_core 0.6), damit die erzeugten Testschlüssel passen
 rand = "0.8"
