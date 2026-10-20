@@ -198,12 +198,14 @@ async fn cancel_keeps_the_part_and_a_later_download_continues() {
     let dir = tempfile::tempdir().unwrap();
     let req = request(&server, dir.path(), &data);
     let cancel = CancellationToken::new();
+    // Abbruch nach dem ersten geschriebenen Block statt nach fester Wanduhrzeit (zeitunabhängig)
     let c2 = cancel.clone();
-    tokio::spawn(async move {
-        tokio::time::sleep(Duration::from_millis(300)).await;
-        c2.cancel();
-    });
-    let err = fetch_to_file(&client(), &req, &Collect::new(), &cancel).await.unwrap_err();
+    let cancel_after_first_bytes = move |e: DownloadProgress| {
+        if matches!(e, DownloadProgress::Progress { done, .. } if done > 0) {
+            c2.cancel();
+        }
+    };
+    let err = fetch_to_file(&client(), &req, &cancel_after_first_bytes, &cancel).await.unwrap_err();
     assert!(matches!(err, DownloadError::Cancelled), "{err}");
     let partial = std::fs::metadata(&req.part_path).unwrap().len();
     assert!(partial > 0 && partial < 200_000, "{partial}");
