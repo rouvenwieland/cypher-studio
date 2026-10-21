@@ -30,10 +30,11 @@ for (const [name, ua, os, href] of DESKTOP) {
     const mine = rows.find((r) => r.os === os);
     expect(mine.y).toBe(Math.min(...rows.map((r) => r.y)));
     for (const r of rows.filter((x) => x.os !== os)) expect(mine.cta).toBeGreaterThan(r.cta * 1.5);
-    // der Name nennt System, Version und Größe
-    const label = await main.getAttribute('aria-label');
-    expect(label).toContain('Version 0.4.0');
-    expect(label).toMatch(/\d+,\d MB/);
+    // der Name ist der sichtbare Inhalt (WCAG 2.5.3) und nennt System, Version und Größe
+    await expect(main).not.toHaveAttribute('aria-label');
+    await expect(main).toHaveAccessibleName(/Cypher Studio für .+ laden/);
+    await expect(main).toHaveAccessibleName(/Version 0\.4\.0/);
+    await expect(main).toHaveAccessibleName(/\d+,\d MB/);
     // nie automatischer Download: ohne Klick kommt keine Datei
     await expect(page.locator('.dl-mobile')).toBeHidden();
     await ctx.close();

@@ -26,13 +26,12 @@ function dlRow(os, ctx) {
     return `<li class="dl-row dl-row-soon" data-os="${os}"><p class="dl-soon"><span class="dl-os">${m.name}</span><span class="dl-fact">Datei folgt</span></p></li>`;
   }
   const alts = filesFor(ctx.release, os).filter((x) => x !== f);
-  const label = `${m.cta}, Version ${ctx.release.version}, ${formatSize(f.size)}`;
   const detail = os === 'macos' && f.arch !== 'universal' ? `${m.detail.split(' · ')[0]} · ${altLabel(f)}` : m.detail;
   return `<li class="dl-row" data-os="${os}">
-      <a class="dl-main" href="${esc(f.url)}" download${relAttr(f.url)} aria-label="${esc(label)}" data-dl="${os}">
+      <a class="dl-main" href="${esc(f.url)}" download${relAttr(f.url)} data-dl="${os}">
         <span class="dl-os">${m.name}<span class="dl-os-d"> · ${esc(detail)}</span></span>
         <span class="dl-cta">${esc(m.cta)}</span>
-        <span class="dl-fact"><span>${esc(ctx.release.version)}</span><span>${formatSize(f.size)}</span><span class="dl-sha">SHA-256 ${hashShort(f.sha256)}</span></span>
+        <span class="dl-fact"><span><span class="sr">Version </span>${esc(ctx.release.version)}</span><span>${formatSize(f.size)}</span><span class="dl-sha">SHA-256 ${hashShort(f.sha256)}</span></span>
         ${ARROW}
       </a>${alts.length ? `
       <p class="dl-alt"><span class="dl-alt-l">Auch als</span> ${alts.map((a) => `<a href="${esc(a.url)}" download${relAttr(a.url)} data-dl="${os}">${esc(altLabel(a))}</a>`).join('<span class="dl-sep" aria-hidden="true"> · </span>')}</p>` : ''}
@@ -278,7 +277,7 @@ function pruefen(ctx) {
       ${f.map((x) => `<li class="sum" data-os="${x.os}">
         <div class="sum-h"><a class="sum-name data" href="${esc(x.url)}" download${relAttr(x.url)}>${esc(x.name)}</a><span class="data sum-size">${formatSize(x.size)}</span></div>
         <p class="sum-hash data" id="h-${esc(x.name)}"><span class="sr">SHA-256: </span>${hashGroups(x.sha256).map((g) => `<span class="grp">${g}</span>`).join(' ')}</p>
-        <button type="button" class="btn-copy" data-copy-hash="${x.sha256}" hidden aria-label="SHA-256 von ${esc(x.name)} kopieren">Prüfsumme kopieren</button>
+        <button type="button" class="btn-copy" data-copy-hash="${x.sha256}" hidden aria-label="Prüfsumme kopieren: SHA-256 von ${esc(x.name)}">Prüfsumme kopieren</button>
       </li>`).join('\n      ')}
     </ul>`
     : `<p class="sums-none">Sobald die erste Version erscheint, steht hier zu jeder Datei die erwartete Prüfsumme in Vierergruppen, mit Knopf zum Kopieren. Die Befehle unten funktionieren schon jetzt.</p>`;

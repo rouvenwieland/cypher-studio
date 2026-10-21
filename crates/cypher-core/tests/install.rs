@@ -22,7 +22,7 @@ use cypher_core::error::{ArchiveError, DownloadError, InstallError, VerifyError}
 use cypher_core::install::{self, InstallCtx, InstallPlanData, PlanInput};
 use cypher_core::platform::{AppDirs, PlatformInfo};
 use cypher_core::process::FakeRunner;
-use cypher_core::progress::Collect;
+use cypher_core::progress::{Collect, ProgressSink};
 use cypher_core::settings;
 use cypher_core::state::StateStore;
 use tokio_util::sync::CancellationToken;
@@ -160,7 +160,7 @@ impl Env {
     async fn install(
         &self,
         plan: InstallPlanData,
-        sink: &Collect<InstallEvent>,
+        sink: &dyn ProgressSink<InstallEvent>,
         cancel: &CancellationToken,
     ) -> Result<cypher_core::api::Installation, InstallError> {
         let consent = Self::consent(&plan);
@@ -417,12 +417,15 @@ async fn cancelling_the_download_keeps_the_part_and_installs_nothing() {
     *env.server.behavior.trickle.lock().unwrap() = Some((8_000, Duration::from_millis(25)));
     let plan = env.plan().unwrap();
     let cancel = CancellationToken::new();
+    // Abbruch, sobald der erste Block auf der Platte liegt (statt nach fester Wanduhrzeit: auf langsamen
+    // Windows-Runnern war nach 250 ms manchmal noch kein Byte geschrieben, dann gab es nichts fortzusetzen)
     let c2 = cancel.clone();
-    tokio::spawn(async move {
-        tokio::time::sleep(Duration::from_millis(250)).await;
-        c2.cancel();
-    });
-    let err = env.install(plan.clone(), &Collect::new(), &cancel).await.unwrap_err();
+    let cancel_after_first_bytes = move |e: InstallEvent| {
+        if matches!(e, InstallEvent::DownloadProgress { downloaded_bytes, .. } if downloaded_bytes > 0) {
+            c2.cancel();
+        }
+    };
+    let err = env.install(plan.clone(), &cancel_after_first_bytes, &cancel).await.unwrap_err();
     assert!(matches!(err, InstallError::Download(DownloadError::Cancelled)), "{err}");
     let parts: Vec<_> = std::fs::read_dir(env.dirs.downloads())
         .unwrap()
