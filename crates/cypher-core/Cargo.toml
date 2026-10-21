@@ -43,7 +43,7 @@ walkdir = "2"
 globset = "0.4"
 which = "8"
 sysinfo = { version = "0.38", default-features = false, features = ["system"] }
-infer = "0.19"
+infer = "0.22"
 uuid = { version = "1", features = ["v4"] }
 time = { version = "0.3", features = ["formatting", "parsing", "macros"] }
 arc-swap = "1"
