@@ -54,7 +54,7 @@ fn embedded_catalog_matches_the_json_schema() {
         serde_json::from_slice(&std::fs::read(repo_file("catalog/schema/catalog.schema.json")).unwrap()).unwrap();
     let validator = jsonschema::validator_for(&schema).unwrap();
     let doc: serde_json::Value = serde_json::from_slice(catalog::EMBEDDED_CATALOG_JSON).unwrap();
-    let errors: Vec<String> = validator.iter_errors(&doc).map(|e| format!("{} bei {}", e, e.instance_path)).collect();
+    let errors: Vec<String> = validator.iter_errors(&doc).map(|e| format!("{} bei {}", e, e.instance_path())).collect();
     assert!(errors.is_empty(), "Schema-Verstöße: {errors:#?}");
 
     // Das Schema fängt echte Fehler: falsche Prüfsumme, unbekannter Schlüssel, fremdes Feld

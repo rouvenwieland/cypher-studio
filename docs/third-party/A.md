@@ -72,7 +72,7 @@ Jede direkte Abhängigkeit mit Version (aufgelöst in `Cargo.lock`), Lizenz und 
 | `proptest` | 1.12 | MIT OR Apache-2.0 | Eigenschaftstests (Pfadprüfung) |
 | `axum` | 0.8 | MIT | lokaler Test-Server (Range, Weiterleitungen, Abbrüche) |
 | `minisign` | 0.9 | MIT | Testschlüssel, Testsignaturen |
-| `jsonschema` | 0.33 | MIT | Katalog gegen das JSON-Schema prüfen |
+| `jsonschema` | 0.58 (ohne Standard-Features) | MIT | Katalog gegen das JSON-Schema prüfen |
 | `sevenz-rust2` (mit `compress`) | 0.24 | Apache-2.0 | 7z-Testarchive erzeugen |
 | `rand`, `rand_chacha` | 0.8 / 0.3 | MIT OR Apache-2.0 | Testschlüssel für die PGP-Prüfung (dieselbe `rand_core`-Version wie rPGP) |
 | `tempfile`, `sha2`, `zip`, `image`, `png` (in `cypher-cli`, `src-tauri`) | wie oben | wie oben | Testdaten der Kommandozeilen- und Tauri-Tests (keine Auslieferung) |
