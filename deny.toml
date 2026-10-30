@@ -20,6 +20,11 @@ ignore = [
   # Signaturen (Krita-/Inkscape-AppImage); es gibt keine Entschlüsselung und keine Signatur mit privaten RSA-Schlüsseln.
   # Upstream hat keine Korrektur ("patched = []").
   "RUSTSEC-2023-0071",
+  # crypto-bigint 0.5.5 (Laufzeitunterschiede bei Rechnungen mit geheimen Zahlen, gemeldet 10/2026) kommt über rPGP
+  # (Kurven-Crates). Gefährdet wären nur Operationen mit geheimen Schlüsseln; wir prüfen ausschließlich öffentliche
+  # Signaturen, es gibt keinen privaten Schlüssel in der App. Die Korrektur (>= 0.7.6) liegt in einer neuen Hauptversion
+  # der Kurven-Crates, die rPGP 0.21 noch nicht nutzt. Erledigt sich mit einem rPGP-Update (Dependabot meldet es).
+  "RUSTSEC-2026-0387",
   # zip 4.6.1 steckt in tauri-plugin-updater 2.14 (Entpacken von Update-Paketen). Betroffen ist nur `extract()` mit
   # Symlinks und SUID-Bits; unsere Update-Artefakte sind NSIS-Installer (Windows) und .tar.gz (macOS, Linux), und der eigene
   # Entpacker nutzt zip 9. Erledigt sich mit einem Update des Plugins, das zip >= 9 verwendet.
